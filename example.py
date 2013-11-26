@@ -23,12 +23,38 @@ def abort_if_todo_doesnt_exist(todo_id):
 parser = reqparse.RequestParser()
 parser.add_argument('task', type=str)
 
+class ModelClass:
+    pass
 
 # Todo
 #   show a single todo item and lets you delete them
 class Todo(Resource):
     "Describing elephants"
-    @swagger.operation(notes='some really good notes')
+    @swagger.operation(
+        notes='some really good notes',
+        responseClass=ModelClass,
+        nickname='upload',
+        parameters=[
+            {
+              "name": "body",
+              "description": "blueprint object that needs to be added. YAML.",
+              "required": True,
+              "allowMultiple": False,
+              "dataType": "Blueprint",
+              "paramType": "body"
+            }
+          ],
+        responseMessages=[
+            {
+              "code": 201,
+              "message": "Created. The URL of the created blueprint should be in the Location header"
+            },
+            {
+              "code": 405,
+              "message": "Invalid input"
+            }
+          ]
+        )
     def get(self, todo_id):
         "Get a todo task"
         abort_if_todo_doesnt_exist(todo_id)

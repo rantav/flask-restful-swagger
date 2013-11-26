@@ -56,7 +56,12 @@ class SwaggerEndpoint(object):
         op['summary'] = method_impl.__doc__
       if '__swagger_attr' in method_impl.__dict__:
         decorators = method_impl.__dict__['__swagger_attr']
-        if decorators['notes']: op['notes'] = decorators['notes']
+        for name, value in decorators.items():
+          if isinstance(value, (basestring, int, list)):
+            op[name] = value
+          else:
+            op[name] = value.__name__
+
       operations.append(op)
     return operations
 
