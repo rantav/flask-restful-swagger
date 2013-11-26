@@ -26,13 +26,16 @@ parser.add_argument('task', type=str)
 class ModelClass:
     pass
 
+class ModelClass2:
+    pass
+
 # Todo
 #   show a single todo item and lets you delete them
 class Todo(Resource):
     "Describing elephants"
     @swagger.operation(
         notes='some really good notes',
-        responseClass=ModelClass,
+        responseClass=ModelClass.__name__,
         nickname='upload',
         parameters=[
             {
@@ -40,7 +43,7 @@ class Todo(Resource):
               "description": "blueprint object that needs to be added. YAML.",
               "required": True,
               "allowMultiple": False,
-              "dataType": "Blueprint",
+              "dataType": ModelClass2.__name__,
               "paramType": "body"
             }
           ],
