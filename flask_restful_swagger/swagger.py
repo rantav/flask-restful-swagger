@@ -46,8 +46,26 @@ class SwaggerEndpoint(object):
 
   @staticmethod
   def extract_operations(resource):
-    return []
+    operations = []
+    for method in resource.methods:
+      method_impl = resource.__dict__[method.lower()]
+      op = {
+          'method': method
+      }
+      if method_impl.__doc__ is not None:
+        op['summary'] = method_impl.__doc__
+      if '__swagger_attr' in method_impl.__dict__:
+        decorators = method_impl.__dict__['__swagger_attr']
+        if decorators['notes']: op['notes'] = decorators['notes']
+      operations.append(op)
+    return operations
 
 class SwaggerRegistry(Resource):
   def get(self):
     return registry
+
+def operation(**kwargs):
+  def inner(f):
+    f.__swagger_attr = kwargs
+    return f
+  return inner

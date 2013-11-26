@@ -28,7 +28,9 @@ parser.add_argument('task', type=str)
 #   show a single todo item and lets you delete them
 class Todo(Resource):
     "Describing elephants"
+    @swagger.operation(notes='some really good notes')
     def get(self, todo_id):
+        "Get a todo task"
         abort_if_todo_doesnt_exist(todo_id)
         return TODOS[todo_id]
 
