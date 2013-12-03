@@ -6,7 +6,7 @@ from flask_restful_swagger import registry, registered
 
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
-         basePath='http://localhost:5000/',
+         basePath='http://localhost:5000',
          resourcePath='/', produces=["application/json"]):
 
   api_add_resource = api.add_resource
@@ -126,9 +126,10 @@ def model(c, *args, **kwargs):
     properties = model['properties'] = {}
     for arg in argspec.args[:-len(defaults)]:
       required.append(arg)
-      # properties[arg] = {"required": True}
+      # type: string for lack of better knowledge, until we add more metadata
+      properties[arg] = {'type': 'string'}
     for k, v in defaults:
-      properties[k] = {"default": v}
+      properties[k] = {'type': 'string', "default": v}
 
   return inner
 
