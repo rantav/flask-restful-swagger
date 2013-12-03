@@ -46,9 +46,13 @@ class Todo(Resource):
       notes='get a todo item by ID',
       responseClass=ModelClass.__name__,
       nickname='get',
+      # Parameters can be automatically extracted from URLs (e.g. <string:id>)
+      # but you could also override them here.
+      # Overriding the parameters array will override the entire auto extracted
+      # parameters.
       parameters=[
           {
-            "name": "todo_id",
+            "name": "todo_id_x",
             "description": "The ID of the TODO item",
             "required": True,
             "allowMultiple": False,

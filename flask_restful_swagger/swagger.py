@@ -55,17 +55,19 @@ def swagger_endpoint(resource, path):
 class SwaggerEndpoint(object):
   def __init__(self, resource, path):
     self.path = extract_swagger_path(path)
+    path_arguments = extract_path_arguments(path)
     if not resource.__doc__ is None:
       self.description = resource.__doc__
-    self.operations = self.extract_operations(resource)
+    self.operations = self.extract_operations(resource, path_arguments)
 
   @staticmethod
-  def extract_operations(resource):
+  def extract_operations(resource, path_arguments=[]):
     operations = []
     for method in resource.methods:
       method_impl = resource.__dict__[method.lower()]
       op = {
-          'method': method
+          'method': method,
+          'parameters': path_arguments
       }
       if method_impl.__doc__ is not None:
         op['summary'] = method_impl.__doc__
@@ -136,3 +138,27 @@ def extract_swagger_path(path):
   to this: /{lang_code}/{id}/{probability}
   """
   return re.sub('<(?:[^:]+:)?([^>]+)>', '{\\1}', path)
+
+
+def extract_path_arguments(path):
+  """
+  Extracts a swagger path arguments from the given flask path.
+  This /path/<parameter> extracts [{name: 'parameter'}]
+  And this /<string(length=2):lang_code>/<string:id>/<float:probability>
+  extracts: [
+    {name: 'lang_code', dataType: 'string'},
+    {name: 'id', dataType: 'string'}
+    {name: 'probability', dataType: 'float'}]
+  """
+  # Remove all paranteses
+  path = re.sub('\([^\)]*\)', '', path)
+  args = re.findall('<([^>]+)>', path)
+
+  def split_arg(arg):
+    spl = arg.split(':')
+    if len(spl) == 1:
+      return {'name': spl[0]}
+    else:
+      return {'name': spl[1], 'dataType': spl[0]}
+
+  return map(split_arg, args)
