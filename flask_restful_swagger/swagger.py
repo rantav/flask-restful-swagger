@@ -38,7 +38,7 @@ def register_once(add_resource, apiVersion, swaggerVersion, basePath,
     registry['basePath'] = basePath
     registry['resourcePath'] = resourcePath
     registry['produces'] = produces
-    add_resource(SwaggerRegistry, '/resources.json')
+    add_resource(SwaggerRegistry, '/api/spec.json')
 
 
 def swagger_endpoint(resource, path):
@@ -69,7 +69,8 @@ class SwaggerEndpoint(object):
       method_impl = resource.__dict__[method.lower()]
       op = {
           'method': method,
-          'parameters': path_arguments
+          'parameters': path_arguments,
+          'nickname': 'nickname'
       }
       if method_impl.__doc__ is not None:
         op['summary'] = method_impl.__doc__
