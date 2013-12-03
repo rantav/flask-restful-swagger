@@ -1,10 +1,4 @@
-
 marshal_with: http://flask-restful.readthedocs.org/en/latest/fields.html
  - If the returned type has an attributed "marshaled_fields" then use only them to describe the datatype
-
-Deduce parameters from path variables such as /todo/<string:todo_id> ("paramType": "path")
-Can this be done also for "paramType": "query"?
-
-On the Api class - delegate (forward) all unhandled methods to the wrapped instance. Is there a way to do so automaticly in python???
 
 Support for HTML pages

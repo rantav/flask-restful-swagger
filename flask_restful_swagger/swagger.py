@@ -12,12 +12,14 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
   api_add_resource = api.add_resource
 
   def add_resource(resource, path, *args, **kvargs):
-    endpoint = "%s_help" % resource.__name__
-    api_add_resource(swagger_endpoint(resource, path), "%s.help.json" % path,
-                     endpoint=endpoint)
-    # TODO: Add an HTML endpoint
-    # api_add_resource(swagger_endpoint(resource, path), "%s.help.html" % path,
-    #  endpoint=endpoint)
+    endpoint = swagger_endpoint(resource, path)
+    # TODO: Add a nice JSON help url
+    # endpoint_path = "%s_help" % resource.__name__
+    # api_add_resource(endpoint, "%s.help.json" % path,
+    #                  endpoint=endpoint_path)
+    # TODO: Add a nice HTML help url
+    # api_add_resource(endpoint, "%s.help.html" % path,
+    #                  endpoint_=endpoint_path)
     register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces)
     return api_add_resource(resource, path, *args, **kvargs)
