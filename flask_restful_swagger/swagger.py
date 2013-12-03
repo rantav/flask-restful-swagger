@@ -3,7 +3,7 @@ import inspect
 from flask_restful_swagger import registry, registered
 
 
-def docs(api, version='0.0', swaggerVersion='1.2'):
+def docs(api, apiVersion='0.0', swaggerVersion='1.2'):
 
   api_add_resource = api.add_resource
   def add_resource(resource, path, *args, **kvargs):
@@ -11,17 +11,17 @@ def docs(api, version='0.0', swaggerVersion='1.2'):
     api_add_resource(swagger_endpoint(resource, path), "%s.help.json" % path, endpoint=endpoint)
     # TODO: Add an HTML endpoint
     # api_add_resource(swagger_endpoint(resource, path), "%s.help.html" % path, endpoint=endpoint)
-    register_once(api_add_resource, version, swaggerVersion)
+    register_once(api_add_resource, apiVersion, swaggerVersion)
     return api_add_resource(resource, path, *args, **kvargs)
   api.add_resource = add_resource
 
   return api
 
-def register_once(add_resource, version, swaggerVersion):
+def register_once(add_resource, apiVersion, swaggerVersion):
   global registered
   if not registered:
     registered = True
-    registry['apiVersion'] = version
+    registry['apiVersion'] = apiVersion
     registry['swaggerVersion'] = swaggerVersion
     add_resource(SwaggerRegistry, '/resources.json')
 

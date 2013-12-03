@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 ###################################
 # This is important:
-api = swagger.docs(Api(app), version='0.1')
+api = swagger.docs(Api(app), apiVersion='0.1')
 ###################################
 
 TODOS = {
@@ -98,6 +98,6 @@ api.add_resource(Todo, '/todos/<string:todo_id>')
 
 
 if __name__ == '__main__':
-  print ModelClass()
-  print ModelClass2(1, 2, '3')
+  ModelClass()
+  ModelClass2(1, 2, '3')
   app.run(debug=True)
