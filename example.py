@@ -33,7 +33,7 @@ class ModelClass:
 
 
 @swagger.model
-class ModelClass2:
+class TodoItem:
   def __init__(self, arg1, arg2, arg3='123'):
     pass
 
@@ -41,30 +41,19 @@ class ModelClass2:
 # Todo
 #   show a single todo item and lets you delete them
 class Todo(Resource):
-  "Describing elephants"
+  "My TODO API"
   @swagger.operation(
-      notes='some really good notes',
+      notes='get a todo item by ID',
       responseClass=ModelClass.__name__,
-      nickname='upload',
+      nickname='get',
       parameters=[
           {
-            "name": "body",
-            "description": "blueprint object that needs to be added. YAML.",
+            "name": "todo_id",
+            "description": "The ID of the TODO item",
             "required": True,
             "allowMultiple": False,
-            "dataType": ModelClass2.__name__,
-            "paramType": "body"
-          }
-      ],
-      responseMessages=[
-          {
-              "code": 201,
-              "message": "Created. The URL of the created blueprint should be \
-               in the Location header"
-          },
-          {
-              "code": 405,
-              "message": "Invalid input"
+            "dataType": 'string',
+            "paramType": "path"
           }
       ])
   def get(self, todo_id):
@@ -91,6 +80,31 @@ class TodoList(Resource):
   def get(self):
     return TODOS
 
+  @swagger.operation(
+      notes='Creates a new TODO item',
+      responseClass=TodoItem.__name__,
+      nickname='create',
+      parameters=[
+          {
+            "name": "body",
+            "description": "A TODO item",
+            "required": True,
+            "allowMultiple": False,
+            "dataType": TodoItem.__name__,
+            "paramType": "body"
+          }
+      ],
+      responseMessages=[
+          {
+              "code": 201,
+              "message": "Created. The URL of the created blueprint should " +
+              "be in the Location header"
+          },
+          {
+              "code": 405,
+              "message": "Invalid input"
+          }
+      ])
   def post(self):
     args = parser.parse_args()
     todo_id = 'todo%d' % (len(TODOS) + 1)
@@ -106,5 +120,5 @@ api.add_resource(Todo, '/todos/<string:todo_id>')
 
 if __name__ == '__main__':
   ModelClass()
-  ModelClass2(1, 2, '3')
+  TodoItem(1, 2, '3')
   app.run(debug=True)
