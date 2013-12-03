@@ -1,5 +1,6 @@
 from flask.ext.restful import Resource
 import inspect
+import functools
 from flask_restful_swagger import registry, registered
 
 
@@ -92,10 +93,11 @@ def operation(**kwargs):
 
 
 def model(c, *args, **kwargs):
+
   def inner(*args, **kwargs):
-    # c.__swagger_attr = kwargs
     return c(*args, **kwargs)
 
+  functools.update_wrapper(inner, c)
   models = registry['models']
   name = c.__name__
   model = models[name] = {'id': name}
