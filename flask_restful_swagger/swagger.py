@@ -1,6 +1,7 @@
 from flask.ext.restful import Resource
 import inspect
 import functools
+import re
 from flask_restful_swagger import registry, registered
 
 
@@ -53,7 +54,7 @@ def swagger_endpoint(resource, path):
 
 class SwaggerEndpoint(object):
   def __init__(self, resource, path):
-    self.path = path
+    self.path = extract_swagger_path(path)
     if not resource.__doc__ is None:
       self.description = resource.__doc__
     self.operations = self.extract_operations(resource)
@@ -69,6 +70,7 @@ class SwaggerEndpoint(object):
       if method_impl.__doc__ is not None:
         op['summary'] = method_impl.__doc__
       if '__swagger_attr' in method_impl.__dict__:
+        # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
         for name, value in decorators.items():
           if isinstance(value, (basestring, int, list)):
@@ -86,6 +88,12 @@ class SwaggerRegistry(Resource):
 
 
 def operation(**kwargs):
+  """
+  This dedorator marks a function as a swagger operation so that we can easily
+  extract attributes from it.
+  It saves the decorator's key-values at the function level so we can later
+  extract them later when add_resource is invoked.
+  """
   def inner(f):
     f.__swagger_attr = kwargs
     return f
@@ -118,3 +126,13 @@ def model(c, *args, **kwargs):
       properties[k] = {"default": v}
 
   return inner
+
+
+def extract_swagger_path(path):
+  """
+  Extracts a swagger type path from the given flask style path.
+  This /path/<parameter> turns into this /path/{parameter}
+  And this /<string(length=2):lang_code>/<string:id>/<float:probability>
+  to this: /{lang_code}/{id}/{probability}
+  """
+  return re.sub('<(?:[^:]+:)?([^>]+)>', '{\\1}', path)
