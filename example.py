@@ -23,10 +23,13 @@ def abort_if_todo_doesnt_exist(todo_id):
 parser = reqparse.RequestParser()
 parser.add_argument('task', type=str)
 
+@swagger.model
 class ModelClass:
-    pass
+  pass
 
+@swagger.model
 class ModelClass2:
+  def __init__(self, arg1, arg2, arg3='123'):
     pass
 
 # Todo
@@ -95,4 +98,6 @@ api.add_resource(Todo, '/todos/<string:todo_id>')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+  print ModelClass()
+  print ModelClass2(1, 2, '3')
+  app.run(debug=True)

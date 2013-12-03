@@ -1,9 +1,7 @@
-from flask.ext.restful import reqparse, abort, Api, Resource
+from flask.ext.restful import Resource
+import inspect
+from flask_restful_swagger import registry, registered
 
-registry = {
-  'apis': []
-}
-registered = False
 
 def docs(api, version='0.0', swaggerVersion='1.2'):
 
@@ -73,4 +71,30 @@ def operation(**kwargs):
   def inner(f):
     f.__swagger_attr = kwargs
     return f
+  return inner
+
+def model(c, *args, **kwargs):
+  def inner(*args, **kwargs):
+    # c.__swagger_attr = kwargs
+    return c(*args, **kwargs)
+
+  models = registry['models']
+  name = c.__name__
+  model = models[name] = {'id': name}
+  if '__init__' in dir(c):
+    # Credits for this snippet go to Robin Walsh
+    # https://github.com/hobbeswalsh/flask-sillywalk
+    argspec = inspect.getargspec(c.__init__)
+    argspec.args.remove("self")
+    defaults = {}
+    required = model['required'] = []
+    if argspec.defaults:
+      defaults = zip(argspec.args[-len(argspec.defaults):], argspec.defaults)
+    properties = model['properties'] = {}
+    for arg in argspec.args[:-len(defaults)]:
+      required.append(arg)
+      # properties[arg] = {"required": True}
+    for k, v in defaults:
+      properties[k] = {"default": v}
+
   return inner
