@@ -6,7 +6,8 @@ app = Flask(__name__)
 
 ###################################
 # This is important:
-api = swagger.docs(Api(app), apiVersion='0.1')
+api = swagger.docs(Api(app), apiVersion='0.1', basePath ='http://localhost:5000/', resourcePath='/',
+    produces=["application/json","text/plain","text/html"])
 ###################################
 
 TODOS = {
