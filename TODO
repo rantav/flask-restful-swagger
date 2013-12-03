@@ -10,6 +10,8 @@ In the path, replace <string:todo_id> with just {todo_id}
 Deduce parameters from path variables such as /todo/<string:todo_id> ("paramType": "path")
 Can this be done also for "paramType": "query"?
 
+On the Api class - delegate (forward) all unhandled methods to the wrapped instance. Is there a way to do so automaticly in python???
+
 Support for multifile declarations
 
 Support for HTML pages
