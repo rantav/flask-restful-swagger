@@ -3,22 +3,29 @@ import inspect
 from flask_restful_swagger import registry, registered
 
 
-def docs(api, apiVersion='0.0', swaggerVersion='1.2', basePath ='http://localhost:5000/',
-    resourcePath='/', produces=["application/json"]):
+def docs(api, apiVersion='0.0', swaggerVersion='1.2',
+         basePath='http://localhost:5000/',
+         resourcePath='/', produces=["application/json"]):
 
   api_add_resource = api.add_resource
+
   def add_resource(resource, path, *args, **kvargs):
     endpoint = "%s_help" % resource.__name__
-    api_add_resource(swagger_endpoint(resource, path), "%s.help.json" % path, endpoint=endpoint)
+    api_add_resource(swagger_endpoint(resource, path), "%s.help.json" % path,
+                     endpoint=endpoint)
     # TODO: Add an HTML endpoint
-    # api_add_resource(swagger_endpoint(resource, path), "%s.help.html" % path, endpoint=endpoint)
-    register_once(api_add_resource, apiVersion, swaggerVersion, basePath, resourcePath, produces)
+    # api_add_resource(swagger_endpoint(resource, path), "%s.help.html" % path,
+    #  endpoint=endpoint)
+    register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
+                  resourcePath, produces)
     return api_add_resource(resource, path, *args, **kvargs)
   api.add_resource = add_resource
 
   return api
 
-def register_once(add_resource, apiVersion, swaggerVersion, basePath, resourcePath, produces):
+
+def register_once(add_resource, apiVersion, swaggerVersion, basePath,
+                  resourcePath, produces):
   global registered
   if not registered:
     registered = True
@@ -29,21 +36,25 @@ def register_once(add_resource, apiVersion, swaggerVersion, basePath, resourcePa
     registry['produces'] = produces
     add_resource(SwaggerRegistry, '/resources.json')
 
+
 def swagger_endpoint(resource, path):
   registry['apis'].append(SwaggerEndpoint(resource, path).__dict__)
+
   class SwaggerResource(Resource):
     def get(self, *args, **kvargs):
       return {
-        'args': args,
-        'kvargs': kvargs,
-        'path': path
+          'args': args,
+          'kvargs': kvargs,
+          'path': path
       }
   return SwaggerResource
+
 
 class SwaggerEndpoint(object):
   def __init__(self, resource, path):
     self.path = path
-    if not resource.__doc__  is None: self.description = resource.__doc__
+    if not resource.__doc__ is None:
+      self.description = resource.__doc__
     self.operations = self.extract_operations(resource)
 
   @staticmethod
@@ -67,15 +78,18 @@ class SwaggerEndpoint(object):
       operations.append(op)
     return operations
 
+
 class SwaggerRegistry(Resource):
   def get(self):
     return registry
+
 
 def operation(**kwargs):
   def inner(f):
     f.__swagger_attr = kwargs
     return f
   return inner
+
 
 def model(c, *args, **kwargs):
   def inner(*args, **kwargs):
