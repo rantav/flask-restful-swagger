@@ -66,3 +66,5 @@ And visit:
 ```
 curl http://localhost:5000/resources.json
 ```
+
+__This project is part of the [Cloudify Cosmo project](https://github.com/CloudifySource/)__
