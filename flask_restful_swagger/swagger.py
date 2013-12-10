@@ -1,9 +1,11 @@
 from flask.ext.restful import Resource
+from flask import request
 import inspect
 import functools
 import re
 import flask_restful
 from flask_restful_swagger import registry, registered
+from flask_restful_swagger import html
 
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
@@ -16,13 +18,15 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
   def add_resource(resource, path, *args, **kvargs):
     endpoint = swagger_endpoint(resource, path)
+    # Add a .help.json help url
     swagger_path = extract_swagger_path(path)
-    endpoint_path = "%s_help" % resource.__name__
+    endpoint_path = "%s_help_json" % resource.__name__
     api_add_resource(endpoint, "%s.help.json" % swagger_path,
                      endpoint=endpoint_path)
-    # TODO: Add a nice HTML help url
-    # api_add_resource(endpoint, "%s.help.html" % path,
-    #                  endpoint_=endpoint_path)
+    # Add a .help.html help url
+    endpoint_path = "%s_help_html" % resource.__name__
+    api_add_resource(endpoint, "%s.help.html" % swagger_path,
+                     endpoint=endpoint_path)
     register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, api_spec_url)
     return api_add_resource(resource, path, *args, **kvargs)
@@ -50,7 +54,10 @@ def swagger_endpoint(resource, path):
 
   class SwaggerResource(Resource):
     def get(self):
-      return endpoint.__dict__
+      if request.path.endswith('.help.json'):
+        return endpoint.__dict__
+      if request.path.endswith('.help.html'):
+        return html.render_endpoint(endpoint)
   return SwaggerResource
 
 
