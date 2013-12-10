@@ -11,7 +11,7 @@ html = """
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Api Docs</title>
+    <title>Api Docs for {{path}}</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
     <style>
       body {margin-top: 60px;}
@@ -27,14 +27,13 @@ html = """
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Start Bootstrap</a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse navbar-ex1-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#contact">Contact</a></li>
+            {% for operation in operations %}
+              <li><a href="#{{operation.method}}">{{operation.method}}</a></li>
+            {% endfor %}
           </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container -->
@@ -42,22 +41,43 @@ html = """
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <h1>A better Bootstrap starter template.</h1>
-          <p>Complete with pre-defined file paths that you won't have to change!</p>
+          <h1>{{path}}</h1>
+          <p class='lead'>{{description if description != None}}</p>
         </div>
+        <div class="col-lg-12">
+        {% for operation in operations %}
+          <div class="panel panel-success" id='{{operation.method}}'>
+            <div class="panel-heading">
+              <h3 class="panel-title">{{operation.method}}</h3>
+              <p>{{operation.summary if operation.summary != None}}</p>
+            </div>
+            <div class="panel-body">
+              {% if operation.parameters %}
+                <h4>Parameters</h4>
+                <dl>
+                  {% for parameter in operation.parameters %}
+                    <dt>
+                      {{parameter.name}}
+                      {% if parameter.description %}
+                        - {{parameter.description}}
+                      {% endif %}
+                    </dt>
+                    <dd>Type: {{parameter.dataType}}</dd>
+                    <dd>Allow Multiple: {{parameter.allowMultiple}}</dd>
+                    <dd>Required: {{parameter.required}}</dd>
+                  {% endfor %}
+                </dl>
+              {% endif %}
+              {% if operation.notes %}
+                <p><strong>Implementation notes</strong>: {{operation.notes}}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
       </div>
     </div><!-- /.container -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
   </body>
 </html>
-"""
-
-"""
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-
-<!-- Optional theme -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
 """
