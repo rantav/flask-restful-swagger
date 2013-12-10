@@ -1,6 +1,6 @@
 from flask import Flask, redirect
-from flask.ext.restful import reqparse, abort, Api, Resource, marshal_with,\
-    fields
+from flask.ext.restful import reqparse, abort, Api, Resource, fields,\
+    marshal_with
 from flask_restful_swagger import swagger
 
 app = Flask(__name__)
@@ -10,8 +10,8 @@ app = Flask(__name__)
 api = swagger.docs(Api(app), apiVersion='0.1',
                    basePath='http://localhost:5000',
                    resourcePath='/',
-                   produces=["application/json", "text/html"])
-# marshal_with = swagger.marshal_with(marshal_with)
+                   produces=["application/json", "text/html"],
+                   api_spec_url='/myapi/swagger.json')
 ###################################
 
 TODOS = {
@@ -41,7 +41,7 @@ class TodoItem:
 
 
 @swagger.model
-class TodoItemWithMarshaledFields:
+class TodoItemWithResourceFields:
   """This is an example of how Output Fields work
   (http://flask-restful.readthedocs.org/en/latest/fields.html).
   Output Fields lets you add resource_fields to your model in which you specify
@@ -65,7 +65,7 @@ class Todo(Resource):
   "My TODO API"
   @swagger.operation(
       notes='get a todo item by ID',
-      responseClass=TodoItemWithMarshaledFields,
+      responseClass=TodoItemWithResourceFields,
       nickname='get',
       # Parameters can be automatically extracted from URLs (e.g. <string:id>)
       # but you could also override them here, or add other parameters.
@@ -79,6 +79,7 @@ class Todo(Resource):
             "paramType": "path"
           }
       ])
+  @marshal_with(TodoItemWithResourceFields.resource_fields)
   def get(self, todo_id):
     # This goes into the summary
     "Get a todo task"
@@ -148,6 +149,6 @@ def docs():
 
 
 if __name__ == '__main__':
-  TodoItemWithMarshaledFields()
+  TodoItemWithResourceFields()
   TodoItem(1, 2, '3')
   app.run(debug=True)

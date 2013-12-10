@@ -64,18 +64,127 @@ api.add_resource(TodoList, '/todos')
 api.add_resource(Todo, '/todos/<string:todo_id>')
 
 # You define models like this:
--- TODO
+@swagger.model
+class TodoItem:
+  "A description ..."
+  pass
+
+# Swagger json: 
+    "models": {
+        "TodoItemWithArgs": {
+            "description": "A description...",
+            "id": "TodoItem",
+        },
+
+# If you declare an __init__ method with meaningful arguments then those args could be used to deduce the swagger model fields. 
+@swagger.model
+class TodoItemWithArgs:
+  "A description ..."
+  def __init__(self, arg1, arg2, arg3='123'):
+    pass
+
+# Swagger json: 
+    "models": {
+        "TodoItemWithArgs": {
+            "description": "A description...",
+            "id": "TodoItem",
+            "properties": {
+                "arg1": {
+                    "type": "string"
+                },
+                "arg2": {
+                    "type": "string"
+                },
+                "arg3": {
+                    "default": "123",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "arg1",
+                "arg2"
+            ]
+        },
+
+
+# Additionally, if the model class has a `resource_fields` class member then flask-restful-swagger is able to deduce the swagger spec by this list of fields. 
+
+@swagger.model
+class TodoItemWithResourceFields:
+  resource_fields = {
+      'a_string': fields.String
+  }
+
+# Swagger json: 
+    "models": {
+        "TodoItemWithResourceFields": {
+            "id": "TodoItemWithResourceFields",
+            "properties": {
+                "a_string": {
+                    "type": "string"
+                },
+            }
+        }
+
+# And in order to close the loop with flask-restify you'd also need to tell flask-restify to @marshal_with the same list of fields when defining your methods. 
+# Example:
+
+@marshal_with(TodoItemWithResourceFields.resource_fields)
+def get()
+  return ...
 
 ```
 
-Now run your flask app
+# Using @marshal_with
+Let us recap usage of @marshal_with.  
+flask-restful has a decorator `@marshal_with`. With the following setup it's possible to define the swagger model types with the same logic as `@marshal_with`.
+
+You have to:
+
+```
+# Define youe model with resource_fields
+@swagger.model
+class TodoItemWithResourceFields:
+  resource_fields = {
+      'a_string': fields.String
+  }
+
+# And use @marshal_with(YourClass.resource_fields):
+@marshal_with(TodoItemWithResourceFields.resource_fields)
+def get()
+  return ...
+```
+
+
+# Running and testing
+
+Now run your flask app  
+
 ```
 python example.py
 ```
 
 And visit:
+
 ```
-curl http://localhost:5000/resources.json
+curl http://localhost:5000/api/spec.json
+```
+
+# Passing more metadata to swagger
+When creating the `swagger.docs` object you may pass additional arguments, such as the following:
+
+```
+api_spec_url - where to server the swagger spec from. Default is /api/spec.json
+
+apiVersion - passed directly to swagger as the apiVersion attribute. Default: 0.0
+
+basePath - passed directly to swagger as the basePath attribute. Default: 'http://localhost:5000' (do not include a slash at the end)
+
+resourcePath - same as before. default: '/'
+
+produces - same as before, passed directly to swagger. The default is ["application/json"]
+
+swaggerVersion - passed directly to swagger. Default: 1.2
 ```
 
 __This project is part of the [Cloudify Cosmo project](https://github.com/CloudifySource/)__

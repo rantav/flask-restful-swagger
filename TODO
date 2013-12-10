@@ -1,8 +1,3 @@
-marshal_with: http://flask-restful.readthedocs.org/en/latest/fields.html
- - If the returned type has an attributed "marshaled_fields" then use only them to describe the datatype
- - Support for resource_fields in the returned type (will work only for return type, not input type)
- - Maybe it's possible to use flask's types, such as flask.String to deduce parameter types
-
 Syntactic sugar and smartness around dataType. Support the following:
  - 'Model'
  - Model

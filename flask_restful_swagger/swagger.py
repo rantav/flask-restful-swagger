@@ -8,7 +8,9 @@ from flask_restful_swagger import registry, registered
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
          basePath='http://localhost:5000',
-         resourcePath='/', produces=["application/json"]):
+         resourcePath='/',
+         produces=["application/json"],
+         api_spec_url='/api/spec.json'):
 
   api_add_resource = api.add_resource
 
@@ -22,7 +24,7 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
     # api_add_resource(endpoint, "%s.help.html" % path,
     #                  endpoint_=endpoint_path)
     register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces)
+                  resourcePath, produces, api_spec_url)
     return api_add_resource(resource, path, *args, **kvargs)
   api.add_resource = add_resource
 
@@ -30,7 +32,7 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
 
 def register_once(add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces):
+                  resourcePath, produces, api_spec_url):
   global registered
   if not registered:
     registered = True
@@ -39,7 +41,7 @@ def register_once(add_resource, apiVersion, swaggerVersion, basePath,
     registry['basePath'] = basePath
     registry['resourcePath'] = resourcePath
     registry['produces'] = produces
-    add_resource(SwaggerRegistry, '/api/spec.json')
+    add_resource(SwaggerRegistry, api_spec_url)
 
 
 def swagger_endpoint(resource, path):
