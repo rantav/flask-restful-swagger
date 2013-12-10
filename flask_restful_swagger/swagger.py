@@ -16,10 +16,10 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
   def add_resource(resource, path, *args, **kvargs):
     endpoint = swagger_endpoint(resource, path)
-    # TODO: Add a nice JSON help url
-    # endpoint_path = "%s_help" % resource.__name__
-    # api_add_resource(endpoint, "%s.help.json" % path,
-    #                  endpoint=endpoint_path)
+    swagger_path = extract_swagger_path(path)
+    endpoint_path = "%s_help" % resource.__name__
+    api_add_resource(endpoint, "%s.help.json" % swagger_path,
+                     endpoint=endpoint_path)
     # TODO: Add a nice HTML help url
     # api_add_resource(endpoint, "%s.help.html" % path,
     #                  endpoint_=endpoint_path)
@@ -45,15 +45,12 @@ def register_once(add_resource, apiVersion, swaggerVersion, basePath,
 
 
 def swagger_endpoint(resource, path):
-  registry['apis'].append(SwaggerEndpoint(resource, path).__dict__)
+  endpoint = SwaggerEndpoint(resource, path)
+  registry['apis'].append(endpoint.__dict__)
 
   class SwaggerResource(Resource):
-    def get(self, *args, **kvargs):
-      return {
-          'args': args,
-          'kvargs': kvargs,
-          'path': path
-      }
+    def get(self):
+      return endpoint.__dict__
   return SwaggerResource
 
 

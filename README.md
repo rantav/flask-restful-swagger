@@ -187,4 +187,122 @@ produces - same as before, passed directly to swagger. The default is ["applicat
 swaggerVersion - passed directly to swagger. Default: 1.2
 ```
 
+# Accessing individual endpoints (.help.json)
+flask-restful-swagger adds some useful help pages (well, json documents) to each of your resources. This isn't part of the swagger spec, but could be useful anyhow.  
+With each endpoint you register, there's also an automatically registered help endpoint which ends with a .help.json extension.
+So for example when registering the resource `api.add_resource(TodoList, '/todos')` you may access the actual api through the url `/todos` and you may also access the help page at `/todos.help.json`. This help page spits out the relevant json content only for this endpoint (as opposed to `/api/spec.json` which spits out the entire swagger document, which could be daunting)
+
+Example: 
+
+```
+### python: 
+
+> api.add_resource(TodoList, '/todos')
+
+### Shell:
+
+$ curl localhost:5000/todos.help.json
+{
+    "description": null,
+    "operations": [
+        {
+            "method": "GET",
+            "nickname": "nickname",
+            "parameters": [],
+            "summary": null
+        },
+        {
+            "method": "POST",
+            "nickname": "create",
+            "notes": "Creates a new TODO item",
+            "parameters": [
+                {
+                    "allowMultiple": false,
+                    "dataType": "TodoItem",
+                    "description": "A TODO item",
+                    "name": "body",
+                    "paramType": "body",
+                    "required": true
+                }
+            ],
+            "responseClass": "TodoItem",
+            "responseMessages": [
+                {
+                    "code": 201,
+                    "message": "Created. The URL of the created blueprint should be in the Location header"
+                },
+                {
+                    "code": 405,
+                    "message": "Invalid input"
+                }
+            ],
+            "summary": null
+        }
+    ],
+    "path": "/todos"
+}
+```
+When registering an endpoint with path parameters (e.g. `/todos/<string:id>`) then the .help url is may be found at the swagger path, e.g. `/todos/{id}.help.json` where {id} is just that - a literal string "{id}"
+
+Example: 
+
+```
+### Python:
+> api.add_resource(Todo, '/todos/<string:todo_id>')
+
+### Shell:
+ # You might need to quote and escape to prevent the shell from messing around 
+
+curl 'localhost:5000/todos/\{todo_id\}.help.json' 
+{
+    "description": "My TODO API",
+    "operations": [
+        {
+            "method": "DELETE",
+            "nickname": "nickname",
+            "parameters": [
+                {
+                    "dataType": "string",
+                    "name": "todo_id"
+                }
+            ],
+            "summary": null
+        },
+        {
+            "method": "GET",
+            "nickname": "get",
+            "notes": "get a todo item by ID",
+            "parameters": [
+                {
+                    "allowMultiple": false,
+                    "dataType": "string",
+                    "description": "The ID of the TODO item",
+                    "name": "todo_id_x",
+                    "paramType": "path",
+                    "required": true
+                }
+            ],
+            "responseClass": "TodoItemWithResourceFields",
+            "summary": "Get a todo task"
+        },
+        {
+            "method": "PUT",
+            "nickname": "nickname",
+            "parameters": [
+                {
+                    "dataType": "string",
+                    "name": "todo_id"
+                }
+            ],
+            "summary": null
+        }
+    ],
+    "path": "/todos/{todo_id}"
+}
+```
+
+
+
+
+
 __This project is part of the [Cloudify Cosmo project](https://github.com/CloudifySource/)__
