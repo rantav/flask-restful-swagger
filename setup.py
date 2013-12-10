@@ -3,11 +3,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
-with open('README.md') as file:
+with open('README') as file:
     long_description = file.read()
 
 setup(name='flask-restful-swagger',
-      version='0.1',
+      version='0.1.1',
       url='https://github.com/rantav/flask-restful-swagger',
       packages=['flask_restful_swagger'],
       description='Extrarct swagger specs from your flast-restful project',
