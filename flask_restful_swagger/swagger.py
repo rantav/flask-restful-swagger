@@ -2,6 +2,7 @@ from flask.ext.restful import Resource
 import inspect
 import functools
 import re
+import flask_restful
 from flask_restful_swagger import registry, registered
 
 
@@ -58,8 +59,7 @@ class SwaggerEndpoint(object):
   def __init__(self, resource, path):
     self.path = extract_swagger_path(path)
     path_arguments = extract_path_arguments(path)
-    if not resource.__doc__ is None:
-      self.description = resource.__doc__
+    self.description = inspect.getdoc(resource)
     self.operations = self.extract_operations(resource, path_arguments)
 
   @staticmethod
@@ -72,17 +72,15 @@ class SwaggerEndpoint(object):
           'parameters': path_arguments,
           'nickname': 'nickname'
       }
-      if method_impl.__doc__ is not None:
-        op['summary'] = method_impl.__doc__
+      op['summary'] = inspect.getdoc(method_impl)
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
-        for name, value in decorators.items():
-          if isinstance(value, (basestring, int, list)):
-            op[name] = value
-          else:
-            op[name] = value.__name__
-
+        for att_name, att_value in decorators.items():
+          if isinstance(att_value, (basestring, int, list)):
+            op[att_name] = att_value
+          elif isinstance(att_value, object):
+            op[att_name] = att_value.__name__
       operations.append(op)
     return operations
 
@@ -111,16 +109,33 @@ def model(c, *args, **kwargs):
     return c(*args, **kwargs)
 
   functools.update_wrapper(inner, c)
+  add_model(c)
+  return inner
+
+
+def add_model(model_class):
   models = registry['models']
-  name = c.__name__
+  name = model_class.__name__
   model = models[name] = {'id': name}
-  description = c.__doc__
-  if description:
-    model['description'] = description
-  if '__init__' in dir(c):
+  model['description'] = inspect.getdoc(model_class)
+  if 'resource_fields' in dir(model_class):
+    # We take special care when the model class has a field resource_fields.
+    # By convension this field specifies what flask-restful would return when
+    # this model is used as a return value from an HTTP endpoint.
+    # We look at the class and search for an attribute named
+    # resource_fields.
+    # If that attribute exists then we deduce the swagger model by the content
+    # of this attribute
+    properties = model['properties'] = {}
+    for field_name, field_type in model_class.resource_fields.iteritems():
+      properties[field_name] = {'type': deduce_swagger_type(field_type)}
+  elif '__init__' in dir(model_class):
+    # Alternatively, if a resource_fields does not exist, we deduce the model
+    # fields from the parameters sent to its __init__ method
+
     # Credits for this snippet go to Robin Walsh
     # https://github.com/hobbeswalsh/flask-sillywalk
-    argspec = inspect.getargspec(c.__init__)
+    argspec = inspect.getargspec(model_class.__init__)
     argspec.args.remove("self")
     defaults = {}
     required = model['required'] = []
@@ -134,7 +149,26 @@ def model(c, *args, **kwargs):
     for k, v in defaults:
       properties[k] = {'type': 'string', "default": v}
 
-  return inner
+
+def deduce_swagger_type(python_type):
+  if issubclass(python_type, (basestring,
+                              flask_restful.fields.String,
+                              flask_restful.fields.FormattedString,
+                              flask_restful.fields.Url)):
+    return 'string'
+  if issubclass(python_type, (int,
+                              flask_restful.fields.Integer)):
+    return 'integer'
+  if issubclass(python_type, (float,
+                              flask_restful.fields.Float,
+                              flask_restful.fields.Arbitrary,
+                              flask_restful.fields.Fixed)):
+    return 'number'
+  if issubclass(python_type, (bool,
+                              flask_restful.fields.Boolean)):
+    return 'boolean'
+  if issubclass(python_type, (flask_restful.fields.DateTime)):
+    return 'date-time'
 
 
 def extract_swagger_path(path):

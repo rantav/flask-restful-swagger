@@ -1,5 +1,6 @@
 from flask import Flask, redirect
-from flask.ext.restful import reqparse, abort, Api, Resource
+from flask.ext.restful import reqparse, abort, Api, Resource, marshal_with,\
+    fields
 from flask_restful_swagger import swagger
 
 app = Flask(__name__)
@@ -10,6 +11,7 @@ api = swagger.docs(Api(app), apiVersion='0.1',
                    basePath='http://localhost:5000',
                    resourcePath='/',
                    produces=["application/json", "text/html"])
+# marshal_with = swagger.marshal_with(marshal_with)
 ###################################
 
 TODOS = {
@@ -28,11 +30,6 @@ parser.add_argument('task', type=str)
 
 
 @swagger.model
-class ModelClass:
-  pass
-
-
-@swagger.model
 class TodoItem:
   """This is an example of a model class that has parameters in its constructor
   and the fields in the swagger spec are derived from the parameters
@@ -43,18 +40,35 @@ class TodoItem:
     pass
 
 
-# Todo
-#   show a single todo item and lets you delete them
+@swagger.model
+class TodoItemWithMarshaledFields:
+  """This is an example of how Output Fields work
+  (http://flask-restful.readthedocs.org/en/latest/fields.html).
+  Output Fields lets you add resource_fields to your model in which you specify
+  the output of the model when it gets sent as an HTTP response.
+  flask-restful-swagger takes advantage of this to specify the fields in
+  the model"""
+  resource_fields = {
+      'a_string': fields.String,
+      'a_formatted_string': fields.FormattedString,
+      'an_int': fields.Integer,
+      'a_bool': fields.Boolean,
+      'a_url': fields.Url,
+      'a_float': fields.Float,
+      'an_float_with_arbitrary_precision': fields.Arbitrary,
+      'a_fixed_point_decimal': fields.Fixed,
+      'a_datetime': fields.DateTime
+  }
+
+
 class Todo(Resource):
   "My TODO API"
   @swagger.operation(
       notes='get a todo item by ID',
-      responseClass=ModelClass.__name__,
+      responseClass=TodoItemWithMarshaledFields,
       nickname='get',
       # Parameters can be automatically extracted from URLs (e.g. <string:id>)
-      # but you could also override them here.
-      # Overriding the parameters array will override the entire auto extracted
-      # parameters.
+      # but you could also override them here, or add other parameters.
       parameters=[
           {
             "name": "todo_id_x",
@@ -86,6 +100,7 @@ class Todo(Resource):
 # TodoList
 #   shows a list of all todos, and lets you POST to add new tasks
 class TodoList(Resource):
+
   def get(self):
     return TODOS
 
@@ -133,6 +148,6 @@ def docs():
 
 
 if __name__ == '__main__':
-  ModelClass()
+  TodoItemWithMarshaledFields()
   TodoItem(1, 2, '3')
   app.run(debug=True)
