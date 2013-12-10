@@ -114,6 +114,9 @@ def model(c, *args, **kwargs):
   models = registry['models']
   name = c.__name__
   model = models[name] = {'id': name}
+  description = c.__doc__
+  if description:
+    model['description'] = description
   if '__init__' in dir(c):
     # Credits for this snippet go to Robin Walsh
     # https://github.com/hobbeswalsh/flask-sillywalk

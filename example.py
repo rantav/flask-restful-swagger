@@ -34,6 +34,11 @@ class ModelClass:
 
 @swagger.model
 class TodoItem:
+  """This is an example of a model class that has parameters in its constructor
+  and the fields in the swagger spec are derived from the parameters
+  to __init__.
+  In this case we would have args, arg2 as required parameters and arg3 as
+  optional parameter."""
   def __init__(self, arg1, arg2, arg3='123'):
     pass
 
