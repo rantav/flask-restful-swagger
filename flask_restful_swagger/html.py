@@ -71,6 +71,9 @@ html = """
               {% if operation.notes %}
                 <p><strong>Implementation notes</strong>: {{operation.notes}}</p>
               {% endif %}
+              {% if operation.responseClass %}
+                <p><strong>Response Class</strong>: {{operation.responseClass}}</p>
+              {% endif %}
             </div>
           </div>
         {% endfor %}

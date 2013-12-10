@@ -302,6 +302,11 @@ curl 'localhost:5000/todos/\{todo_id\}.help.json'
 ```
 
 
+# Accessing individual endpoints as HTML (.help.html)
+Similarly to the `.help.json` URLs we have `.help.html` pages which are static HTML pages to document your APIs.
+Here's a screenshot to illustrate:
+![An example .help.html page](http://cl.ly/image/160E3G2F2B3u/Screen%20Shot%202013-12-10%20at%209.49.37%20PM.png) 
+
 
 
 
