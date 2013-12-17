@@ -196,8 +196,6 @@ You may also access /api/spec.html where you'd find an interactive HTML page tha
 
 Here's how this HTML page would look like: 
 
-http://cl.ly/image/312Q2u091u24
-
 ![An example /api/spec.html page](http://cl.ly/image/312Q2u091u24/Screen%20Shot%202013-12-17%20at%2012.26.02%20PM.png)
 
 # Accessing individual endpoints (.help.json)
