@@ -3,7 +3,7 @@
   "swaggerVersion": "1.2",
   "apis": [
     {
-      "path": "http://localhost:8100/api/spec.json",
+      "path": "/../../api/spec.json",
       "description": "My TODO service"
     }
   ]
