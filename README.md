@@ -142,11 +142,12 @@ flask-restful has a decorator `@marshal_with`. With the following setup it's pos
 You have to:
 
 ```
-# Define youe model with resource_fields
+# Define your model with resource_fields
 @swagger.model
 class TodoItemWithResourceFields:
   resource_fields = {
-      'a_string': fields.String
+      'a_string': fields.String,
+      'a_second_string': fields.String(attribute='a_second_string_field_name')
   }
 
 # And use @marshal_with(YourClass.resource_fields):

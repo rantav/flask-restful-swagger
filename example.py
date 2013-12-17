@@ -49,7 +49,7 @@ class TodoItemWithResourceFields:
   flask-restful-swagger takes advantage of this to specify the fields in
   the model"""
   resource_fields = {
-      'a_string': fields.String,
+      'a_string': fields.String(attribute='a_string_field_name'),
       'a_formatted_string': fields.FormattedString,
       'an_int': fields.Integer,
       'a_bool': fields.Boolean,
