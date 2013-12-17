@@ -1,4 +1,4 @@
-from flask.ext.restful import Resource
+from flask.ext.restful import Resource, fields
 from flask import request
 import inspect
 import functools
@@ -84,7 +84,10 @@ class SwaggerEndpoint(object):
         decorators = method_impl.__dict__['__swagger_attr']
         for att_name, att_value in decorators.items():
           if isinstance(att_value, (basestring, int, list)):
-            op[att_name] = att_value
+            if att_name == 'parameters':
+              op['parameters'] = op['parameters'] + att_value
+            else:
+              op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
       operations.append(op)
@@ -156,25 +159,31 @@ def add_model(model_class):
       properties[k] = {'type': 'string', "default": v}
 
 
-def deduce_swagger_type(python_type):
-  if issubclass(python_type, (basestring,
-                              flask_restful.fields.String,
-                              flask_restful.fields.FormattedString,
-                              flask_restful.fields.Url)):
-    return 'string'
-  if issubclass(python_type, (int,
-                              flask_restful.fields.Integer)):
-    return 'integer'
-  if issubclass(python_type, (float,
-                              flask_restful.fields.Float,
-                              flask_restful.fields.Arbitrary,
-                              flask_restful.fields.Fixed)):
-    return 'number'
-  if issubclass(python_type, (bool,
-                              flask_restful.fields.Boolean)):
-    return 'boolean'
-  if issubclass(python_type, (flask_restful.fields.DateTime)):
-    return 'date-time'
+def deduce_swagger_type(python_type_or_object):
+    import inspect
+
+    if inspect.isclass(python_type_or_object):
+        predicate = issubclass
+    else:
+        predicate = isinstance
+    if predicate(python_type_or_object, (basestring,
+                                         fields.String,
+                                         fields.FormattedString,
+                                         fields.Url)):
+        return 'string'
+    if predicate(python_type_or_object, (int,
+                                         fields.Integer)):
+        return 'integer'
+    if predicate(python_type_or_object, (float,
+                                         fields.Float,
+                                         fields.Arbitrary,
+                                         fields.Fixed)):
+        return 'number'
+    if predicate(python_type_or_object, (bool,
+                                         fields.Boolean)):
+        return 'boolean'
+    if predicate(python_type_or_object, (fields.DateTime,)):
+        return 'date-time'
 
 
 def extract_swagger_path(path):
@@ -204,8 +213,11 @@ def extract_path_arguments(path):
   def split_arg(arg):
     spl = arg.split(':')
     if len(spl) == 1:
-      return {'name': spl[0]}
+      return {'name': spl[0],
+              'paramType': 'path'}
     else:
-      return {'name': spl[1], 'dataType': spl[0]}
+      return {'name': spl[1],
+              'dataType': spl[0],
+              'paramType': 'path'}
 
   return map(split_arg, args)
