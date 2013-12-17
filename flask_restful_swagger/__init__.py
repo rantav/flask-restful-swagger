@@ -4,3 +4,4 @@ registry = {
 }
 
 registered = False
+api_spec_endpoint = ''

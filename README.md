@@ -4,7 +4,7 @@ flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.read
 
 In essense, you just need to wrap the Api instance and add a few python decorators to get full swagger support.
 
-Install: 
+Install:
 
 ```
 pip install flask-restful-swagger
@@ -69,21 +69,21 @@ class TodoItem:
   "A description ..."
   pass
 
-# Swagger json: 
+# Swagger json:
     "models": {
         "TodoItemWithArgs": {
             "description": "A description...",
             "id": "TodoItem",
         },
 
-# If you declare an __init__ method with meaningful arguments then those args could be used to deduce the swagger model fields. 
+# If you declare an __init__ method with meaningful arguments then those args could be used to deduce the swagger model fields.
 @swagger.model
 class TodoItemWithArgs:
   "A description ..."
   def __init__(self, arg1, arg2, arg3='123'):
     pass
 
-# Swagger json: 
+# Swagger json:
     "models": {
         "TodoItemWithArgs": {
             "description": "A description...",
@@ -107,7 +107,7 @@ class TodoItemWithArgs:
         },
 
 
-# Additionally, if the model class has a `resource_fields` class member then flask-restful-swagger is able to deduce the swagger spec by this list of fields. 
+# Additionally, if the model class has a `resource_fields` class member then flask-restful-swagger is able to deduce the swagger spec by this list of fields.
 
 @swagger.model
 class TodoItemWithResourceFields:
@@ -115,7 +115,7 @@ class TodoItemWithResourceFields:
       'a_string': fields.String
   }
 
-# Swagger json: 
+# Swagger json:
     "models": {
         "TodoItemWithResourceFields": {
             "id": "TodoItemWithResourceFields",
@@ -126,7 +126,7 @@ class TodoItemWithResourceFields:
             }
         }
 
-# And in order to close the loop with flask-restify you'd also need to tell flask-restify to @marshal_with the same list of fields when defining your methods. 
+# And in order to close the loop with flask-restify you'd also need to tell flask-restify to @marshal_with the same list of fields when defining your methods.
 # Example:
 
 @marshal_with(TodoItemWithResourceFields.resource_fields)
@@ -136,7 +136,7 @@ def get()
 ```
 
 # Using @marshal_with
-Let us recap usage of @marshal_with.  
+Let us recap usage of @marshal_with.
 flask-restful has a decorator `@marshal_with`. With the following setup it's possible to define the swagger model types with the same logic as `@marshal_with`.
 
 You have to:
@@ -159,7 +159,7 @@ def get()
 
 # Running and testing
 
-Now run your flask app  
+Now run your flask app
 
 ```
 python example.py
@@ -175,7 +175,9 @@ curl http://localhost:5000/api/spec.json
 When creating the `swagger.docs` object you may pass additional arguments, such as the following:
 
 ```
-api_spec_url - where to server the swagger spec from. Default is /api/spec.json
+api_spec_url - where to serve the swagger spec from. Default is /api/spec. This will make the json
+available at /api/spec as well as /api/spec.json and will also present a nice interactive
+HTML interface at /api/spec.html
 
 apiVersion - passed directly to swagger as the apiVersion attribute. Default: 0.0
 
@@ -188,15 +190,25 @@ produces - same as before, passed directly to swagger. The default is ["applicat
 swaggerVersion - passed directly to swagger. Default: 1.2
 ```
 
+# Accessing the result json spec and an Interactive HTML interface
+Assuming you provided `swagger.docs` with a parameter `api_spec_url='/api/spec'` (or left out in which case the default is '/api/spec') you may access the resulting json at /api/spec.json.
+You may also access /api/spec.html where you'd find an interactive HTML page that lets you play with the API to some extent.  
+
+Here's how this HTML page would look like: 
+
+http://cl.ly/image/312Q2u091u24
+
+![An example /api/spec.html page](http://cl.ly/image/312Q2u091u24/Screen%20Shot%202013-12-17%20at%2012.26.02%20PM.png)
+
 # Accessing individual endpoints (.help.json)
-flask-restful-swagger adds some useful help pages (well, json documents) to each of your resources. This isn't part of the swagger spec, but could be useful anyhow.  
+flask-restful-swagger adds some useful help pages (well, json documents) to each of your resources. This isn't part of the swagger spec, but could be useful anyhow.
 With each endpoint you register, there's also an automatically registered help endpoint which ends with a .help.json extension.
 So for example when registering the resource `api.add_resource(TodoList, '/todos')` you may access the actual api through the url `/todos` and you may also access the help page at `/todos.help.json`. This help page spits out the relevant json content only for this endpoint (as opposed to `/api/spec.json` which spits out the entire swagger document, which could be daunting)
 
-Example: 
+Example:
 
 ```
-### python: 
+### python:
 
 > api.add_resource(TodoList, '/todos')
 
@@ -245,16 +257,16 @@ $ curl localhost:5000/todos.help.json
 ```
 When registering an endpoint with path parameters (e.g. `/todos/<string:id>`) then the .help url is may be found at the swagger path, e.g. `/todos/{id}.help.json` where {id} is just that - a literal string "{id}"
 
-Example: 
+Example:
 
 ```
 ### Python:
 > api.add_resource(Todo, '/todos/<string:todo_id>')
 
 ### Shell:
- # You might need to quote and escape to prevent the shell from messing around 
+ # You might need to quote and escape to prevent the shell from messing around
 
-curl 'localhost:5000/todos/\{todo_id\}.help.json' 
+curl 'localhost:5000/todos/\{todo_id\}.help.json'
 {
     "description": "My TODO API",
     "operations": [
@@ -306,7 +318,7 @@ curl 'localhost:5000/todos/\{todo_id\}.help.json'
 # Accessing individual endpoints as HTML (.help.html)
 Similarly to the `.help.json` URLs we have `.help.html` pages which are static HTML pages to document your APIs.
 Here's a screenshot to illustrate:
-![An example .help.html page](http://cl.ly/image/160E3G2F2B3u/Screen%20Shot%202013-12-10%20at%209.49.37%20PM.png) 
+![An example .help.html page](http://cl.ly/image/160E3G2F2B3u/Screen%20Shot%202013-12-10%20at%209.49.37%20PM.png)
 
 
 

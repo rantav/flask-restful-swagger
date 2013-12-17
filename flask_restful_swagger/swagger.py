@@ -4,15 +4,17 @@ import inspect
 import functools
 import re
 import flask_restful
-from flask_restful_swagger import registry, registered
+from flask_restful_swagger import registry, registered, api_spec_endpoint
 from flask_restful_swagger import html
 
+
+resource_listing_endpoint = None
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
          basePath='http://localhost:5000',
          resourcePath='/',
          produces=["application/json"],
-         api_spec_url='/api/spec.json'):
+         api_spec_url='/api/spec'):
 
   api_add_resource = api.add_resource
 
@@ -35,9 +37,11 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
   return api
 
 
-def register_once(add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, api_spec_url):
+def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
+                  resourcePath, produces, endpoint):
   global registered
+  global api_spec_endpoint
+  global resource_listing_endpoint
   if not registered:
     registered = True
     registry['apiVersion'] = apiVersion
@@ -45,7 +49,27 @@ def register_once(add_resource, apiVersion, swaggerVersion, basePath,
     registry['basePath'] = basePath
     registry['resourcePath'] = resourcePath
     registry['produces'] = produces
-    add_resource(SwaggerRegistry, api_spec_url)
+    add_resource_func(SwaggerRegistry, endpoint, endpoint=endpoint)
+    api_spec_endpoint = endpoint + '.json'
+    add_resource_func(SwaggerRegistry, api_spec_endpoint, endpoint=api_spec_endpoint)
+    ep = endpoint + '.html'
+    add_resource_func(SwaggerRegistry, ep, endpoint=ep)
+    resource_listing_endpoint = endpoint + '/_/resource_list.json'
+    add_resource_func(ResourceLister, resource_listing_endpoint, endpoint=resource_listing_endpoint)
+
+
+class ResourceLister(Resource):
+  def get(self):
+    return {
+      "apiVersion": registry['apiVersion'],
+      "swaggerVersion": registry['swaggerVersion'],
+      "apis": [
+        {
+          "path": '/..' * (len(api_spec_endpoint.split('/')) + 1)  + api_spec_endpoint,
+          "description": "Auto generated API docs by flask-restful-swagger"
+        }
+      ]
+    }
 
 
 def swagger_endpoint(resource, path):
@@ -96,6 +120,8 @@ class SwaggerEndpoint(object):
 
 class SwaggerRegistry(Resource):
   def get(self):
+    if request.path.endswith('.html'):
+      return html.render_homepage(resource_listing_endpoint)
     return registry
 
 

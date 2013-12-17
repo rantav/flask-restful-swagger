@@ -2,10 +2,91 @@ from flask import Response
 from jinja2 import Template
 
 def render_endpoint(endpoint):
-  template = Template(html)
+  template = Template(endpoint_html)
   return Response(template.render(endpoint.__dict__), mimetype='text/html')
 
-html = """
+def render_homepage(resource_list_url):
+  template = Template(homepage_html)
+  conf = {'resource_list_url': resource_list_url}
+  return Response(template.render(conf), mimetype='text/html')
+
+homepage_html = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Spec</title>
+  <link href='//fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'/>
+  <link href='http://rantav.github.io/flask-restful-swagger/static/css/hightlight.default.css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='http://rantav.github.io/flask-restful-swagger/static/css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
+  <script type="text/javascript" src="http://rantav.github.io/flask-restful-swagger/static/js/all.js" /></script>
+  <script type="text/javascript">
+    $(function () {
+      window.swaggerUi = new SwaggerUi({
+      url: "{{resource_list_url}}",
+      dom_id: "swagger-ui-container",
+      supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
+      onComplete: function(swaggerApi, swaggerUi){
+        if(console) {
+          console.log("Loaded SwaggerUI")
+        }
+        $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
+      },
+      onFailure: function(data) {
+        if(console) {
+          console.log("Unable to Load SwaggerUI");
+          console.log(data);
+        }
+      },
+      docExpansion: "none"
+    });
+    $('#input_apiKey').change(function() {
+      var key = $('#input_apiKey')[0].value;
+      console.log("key: " + key);
+      if(key && key.trim() != "") {
+        console.log("added key " + key);
+        window.authorizations.add("key", new ApiKeyAuthorization("api_key", key, "query"));
+      }
+    })
+    window.swaggerUi.load();
+  });
+  </script>
+  <style type="text/css">
+    ul.links a {
+      line-height: 25px;
+      color: #fff;
+      font-weight: bolder;
+      text-decoration: none;
+    }
+    ul.links a:hover {
+      text-decoration: underline;
+    }
+    ul.links li:before {
+     color: #fff;
+     content: "\00BB";
+    }
+  </style>
+</head>
+<body>
+<div id='header'>
+  <div class="swagger-ui-wrap">
+    <a id="logo" href="http://swagger.wordnik.com">swagger</a>
+    <form id='api_selector'>
+      <div class='input icon-btn'>
+        <img id="show-wordnik-dev-icon" src="http://rantav.github.io/flask-restful-swagger/static/images/wordnik_api.png" title="Show Wordnik Developer Apis">
+      </div>
+      <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+      <div class='input'><input disabled='disabled' placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+      <div class='input'><a id="explore" href="#">Explore</a></div>
+    </form>
+  </div>
+</div>
+<div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>
+<div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+</body>
+</html>
+"""
+
+endpoint_html = """
 <!DOCTYPE html>
 <html lang="en">
   <head>
