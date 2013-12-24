@@ -109,7 +109,7 @@ class SwaggerEndpoint(object):
         for att_name, att_value in decorators.items():
           if isinstance(att_value, (basestring, int, list)):
             if att_name == 'parameters':
-              op['parameters'] = op['parameters'] + att_value
+              op['parameters'] = merge_parameter_list(op['parameters'], att_value)
             else:
               op[att_name] = att_value
           elif isinstance(att_value, object):
@@ -117,6 +117,17 @@ class SwaggerEndpoint(object):
       operations.append(op)
     return operations
 
+def merge_parameter_list(base, override):
+  base = list(base)
+  names = map(lambda x: x['name'], base)
+  for o in override:
+    if o['name'] in names:
+      for n, i in enumerate(base):
+        if i['name'] == o['name']:
+          base[n] = o
+    else:
+      base.append(o)
+  return base
 
 class SwaggerRegistry(Resource):
   def get(self):
