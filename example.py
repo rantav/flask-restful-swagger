@@ -41,6 +41,15 @@ class TodoItem:
 
 
 @swagger.model
+class ModelWithResourceFields:
+  resource_fields = {
+      'a_string': fields.String()
+  }
+
+@swagger.model
+@swagger.nested(
+   a_nested_attribute=ModelWithResourceFields.__name__,
+   a_list_of_nested_types=ModelWithResourceFields.__name__)
 class TodoItemWithResourceFields:
   """This is an example of how Output Fields work
   (http://flask-restful.readthedocs.org/en/latest/fields.html).
@@ -58,7 +67,9 @@ class TodoItemWithResourceFields:
       'an_float_with_arbitrary_precision': fields.Arbitrary,
       'a_fixed_point_decimal': fields.Fixed,
       'a_datetime': fields.DateTime,
-      'a_list_of_strings': fields.List(fields.String)
+      'a_list_of_strings': fields.List(fields.String),
+      'a_nested_attribute': fields.Nested(ModelWithResourceFields.resource_fields),
+      'a_list_of_nested_types': fields.List(fields.Nested(ModelWithResourceFields.resource_fields)),
   }
 
 
