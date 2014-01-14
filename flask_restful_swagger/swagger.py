@@ -251,6 +251,8 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
     if predicate(python_type_or_object, (fields.Nested)):
         return {'type': nested_type}
 
+    return {'type': 'null'}
+
 def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
     if nested_type:
       return nested_type
