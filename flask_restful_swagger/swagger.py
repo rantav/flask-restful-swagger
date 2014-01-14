@@ -149,7 +149,7 @@ def operation(**kwargs):
   return inner
 
 
-def model(c, *args, **kwargs):
+def model(c=None, *args, **kwargs):
 
   def inner(*args, **kwargs):
     return c(*args, **kwargs)
@@ -158,6 +158,28 @@ def model(c, *args, **kwargs):
   add_model(c)
   return inner
 
+class _Nested(object):
+  def __init__(self, klass, **kwargs):
+    self._nested = kwargs
+
+  def __call__(self, *args):
+    pass
+
+  def nested(self):
+    return self._nested
+
+# wrap _Cache to allow for deferred calling
+def nested(klass=None, **kwargs):
+  if klass:
+    ret = _Nested(klass)
+    functools.update_wrapper(ret, klass)
+  else:
+    def wrapper(klass):
+      wrapped = _Nested(klass, **kwargs)
+      functools.update_wrapper(wrapped, klass)
+      return wrapped
+    ret = wrapper
+  return ret
 
 def add_model(model_class):
   models = registry['models']
@@ -173,8 +195,10 @@ def add_model(model_class):
     # If that attribute exists then we deduce the swagger model by the content
     # of this attribute
     properties = model['properties'] = {}
+    nested = model_class.nested() if isinstance(model_class, _Nested) else {}
     for field_name, field_type in model_class.resource_fields.iteritems():
-      properties[field_name] = {'type': deduce_swagger_type(field_type)}
+      nested_type = nested[field_name] if field_name in nested else None
+      properties[field_name] = deduce_swagger_type(field_type, nested_type)
   elif '__init__' in dir(model_class):
     # Alternatively, if a resource_fields does not exist, we deduce the model
     # fields from the parameters sent to its __init__ method
@@ -196,7 +220,40 @@ def add_model(model_class):
       properties[k] = {'type': 'string', "default": v}
 
 
-def deduce_swagger_type(python_type_or_object):
+def deduce_swagger_type(python_type_or_object, nested_type=None):
+    import inspect
+
+    if inspect.isclass(python_type_or_object):
+        predicate = issubclass
+    else:
+        predicate = isinstance
+    if predicate(python_type_or_object, (basestring,
+                                         fields.String,
+                                         fields.FormattedString,
+                                         fields.Url,
+                                         int,
+                                         fields.Integer,
+                                         float,
+                                         fields.Float,
+                                         fields.Arbitrary,
+                                         fields.Fixed,
+                                         bool,
+                                         fields.Boolean,
+                                         fields.DateTime)):
+        return {'type': deduce_swagger_type_flat(python_type_or_object)}
+    if predicate(python_type_or_object, (fields.List)):
+        if inspect.isclass(python_type_or_object):
+          return {'type': 'array'}
+        else:
+          return {'type': 'array',
+                  'items': {
+                    '$ref': deduce_swagger_type_flat(python_type_or_object.container, nested_type)}}
+    if predicate(python_type_or_object, (fields.Nested)):
+        return {'type': nested_type}
+
+def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
+    if nested_type:
+      return nested_type
     import inspect
 
     if inspect.isclass(python_type_or_object):
