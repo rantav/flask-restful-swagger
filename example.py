@@ -57,7 +57,8 @@ class TodoItemWithResourceFields:
       'a_float': fields.Float,
       'an_float_with_arbitrary_precision': fields.Arbitrary,
       'a_fixed_point_decimal': fields.Fixed,
-      'a_datetime': fields.DateTime
+      'a_datetime': fields.DateTime,
+      'a_list_of_strings': fields.List(fields.String)
   }
 
 

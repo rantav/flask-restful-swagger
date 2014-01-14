@@ -174,7 +174,7 @@ def add_model(model_class):
     # of this attribute
     properties = model['properties'] = {}
     for field_name, field_type in model_class.resource_fields.iteritems():
-      properties[field_name] = {'type': deduce_swagger_type(field_type)}
+      properties[field_name] = deduce_swagger_type(field_type)
   elif '__init__' in dir(model_class):
     # Alternatively, if a resource_fields does not exist, we deduce the model
     # fields from the parameters sent to its __init__ method
@@ -197,6 +197,35 @@ def add_model(model_class):
 
 
 def deduce_swagger_type(python_type_or_object):
+    import inspect
+
+    if inspect.isclass(python_type_or_object):
+        predicate = issubclass
+    else:
+        predicate = isinstance
+    if predicate(python_type_or_object, (basestring,
+                                         fields.String,
+                                         fields.FormattedString,
+                                         fields.Url,
+                                         int,
+                                         fields.Integer,
+                                         float,
+                                         fields.Float,
+                                         fields.Arbitrary,
+                                         fields.Fixed,
+                                         bool,
+                                         fields.Boolean,
+                                         fields.DateTime)):
+        return {'type': deduce_swagger_type_flat(python_type_or_object)}
+    if predicate(python_type_or_object, (fields.List)):
+        if inspect.isclass(python_type_or_object):
+          return {'type': 'array'}
+        else:
+          return {'type': 'array',
+                  'items': {
+                    '$ref': deduce_swagger_type_flat(python_type_or_object.container)}}
+
+def deduce_swagger_type_flat(python_type_or_object):
     import inspect
 
     if inspect.isclass(python_type_or_object):
