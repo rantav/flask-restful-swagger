@@ -161,9 +161,10 @@ def model(c=None, *args, **kwargs):
 class _Nested(object):
   def __init__(self, klass, **kwargs):
     self._nested = kwargs
+    self._klass = klass
 
-  def __call__(self, *args):
-    pass
+  def __call__(self, *args, **kwargs):
+    return self._klass(*args, **kwargs)
 
   def nested(self):
     return self._nested
