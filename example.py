@@ -89,6 +89,14 @@ class Todo(Resource):
             "allowMultiple": False,
             "dataType": 'string',
             "paramType": "path"
+          },
+          {
+            "name": "a_bool",
+            "description": "The ID of the TODO item",
+            "required": True,
+            "allowMultiple": False,
+            "dataType": 'boolean',
+            "paramType": "path"
           }
       ])
   @marshal_with(TodoItemWithResourceFields.resource_fields)
