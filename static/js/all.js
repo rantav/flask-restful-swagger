@@ -5358,7 +5358,7 @@ b,c){var d;d=b&&b.hasOwnProperty("constructor")?b.constructor:function(){a.apply
         parameter.name = parameter.name || parameter.dataType;
         if (parameter.dataType.toLowerCase() === 'boolean') {
           parameter.allowableValues = {};
-          parameter.allowableValues.values = this.resource.api.booleanValues;
+          parameter.allowableValues.values = ["true", "false"];
         }
         parameter.signature = this.getSignature(parameter.dataType, this.resource.models);
         parameter.sampleJSON = this.getSampleJSON(parameter.dataType, this.resource.models);
