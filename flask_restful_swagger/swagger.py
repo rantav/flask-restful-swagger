@@ -150,13 +150,8 @@ def operation(**kwargs):
 
 
 def model(c=None, *args, **kwargs):
-
-  def inner(*args, **kwargs):
-    return c(*args, **kwargs)
-
-  functools.update_wrapper(inner, c)
   add_model(c)
-  return inner
+  return c
 
 class _Nested(object):
   def __init__(self, klass, **kwargs):
