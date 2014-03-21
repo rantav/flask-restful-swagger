@@ -39,45 +39,10 @@ class TodoItem:
   def __init__(self, arg1, arg2, arg3='123'):
     pass
 
-
-@swagger.model
-class ModelWithResourceFields:
-  resource_fields = {
-      'a_string': fields.String()
-  }
-
-@swagger.model
-@swagger.nested(
-   a_nested_attribute=ModelWithResourceFields.__name__,
-   a_list_of_nested_types=ModelWithResourceFields.__name__)
-class TodoItemWithResourceFields:
-  """This is an example of how Output Fields work
-  (http://flask-restful.readthedocs.org/en/latest/fields.html).
-  Output Fields lets you add resource_fields to your model in which you specify
-  the output of the model when it gets sent as an HTTP response.
-  flask-restful-swagger takes advantage of this to specify the fields in
-  the model"""
-  resource_fields = {
-      'a_string': fields.String(attribute='a_string_field_name'),
-      'a_formatted_string': fields.FormattedString,
-      'an_int': fields.Integer,
-      'a_bool': fields.Boolean,
-      'a_url': fields.Url,
-      'a_float': fields.Float,
-      'an_float_with_arbitrary_precision': fields.Arbitrary,
-      'a_fixed_point_decimal': fields.Fixed,
-      'a_datetime': fields.DateTime,
-      'a_list_of_strings': fields.List(fields.String),
-      'a_nested_attribute': fields.Nested(ModelWithResourceFields.resource_fields),
-      'a_list_of_nested_types': fields.List(fields.Nested(ModelWithResourceFields.resource_fields)),
-  }
-
-
 class Todo(Resource):
   "My TODO API"
   @swagger.operation(
       notes='get a todo item by ID',
-      responseClass=TodoItemWithResourceFields,
       nickname='get',
       # Parameters can be automatically extracted from URLs (e.g. <string:id>)
       # but you could also override them here, or add other parameters.
@@ -99,7 +64,6 @@ class Todo(Resource):
             "paramType": "path"
           }
       ])
-  @marshal_with(TodoItemWithResourceFields.resource_fields)
   def get(self, todo_id):
     # This goes into the summary
     "Get a todo task"
@@ -156,11 +120,53 @@ class TodoList(Resource):
     TODOS[todo_id] = {'task': args['task']}
     return TODOS[todo_id], 201
 
+@swagger.model
+class ModelWithResourceFields:
+  resource_fields = {
+      'a_string': fields.String()
+  }
+
+@swagger.model
+@swagger.nested(
+   a_nested_attribute=ModelWithResourceFields.__name__,
+   a_list_of_nested_types=ModelWithResourceFields.__name__)
+class TodoItemWithResourceFields:
+  """This is an example of how Output Fields work
+  (http://flask-restful.readthedocs.org/en/latest/fields.html).
+  Output Fields lets you add resource_fields to your model in which you specify
+  the output of the model when it gets sent as an HTTP response.
+  flask-restful-swagger takes advantage of this to specify the fields in
+  the model"""
+  resource_fields = {
+      'a_string': fields.String(attribute='a_string_field_name'),
+      'a_formatted_string': fields.FormattedString,
+      'an_int': fields.Integer,
+      'a_bool': fields.Boolean,
+      'a_url': fields.Url,
+      'a_float': fields.Float,
+      'an_float_with_arbitrary_precision': fields.Arbitrary,
+      'a_fixed_point_decimal': fields.Fixed,
+      'a_datetime': fields.DateTime,
+      'a_list_of_strings': fields.List(fields.String),
+      'a_nested_attribute': fields.Nested(ModelWithResourceFields.resource_fields),
+      'a_list_of_nested_types': fields.List(fields.Nested(ModelWithResourceFields.resource_fields)),
+  }
+
+class MarshalWithExample(Resource):
+  @swagger.operation(
+      notes='get something',
+      responseClass=TodoItemWithResourceFields,
+      nickname='get')
+  @marshal_with(TodoItemWithResourceFields.resource_fields)
+  def get(self):
+    return {}
+
 ##
 ## Actually setup the Api resource routing here
 ##
 api.add_resource(TodoList, '/todos')
 api.add_resource(Todo, '/todos/<string:todo_id>')
+api.add_resource(MarshalWithExample, '/marshal_with')
 
 
 @app.route('/docs')
