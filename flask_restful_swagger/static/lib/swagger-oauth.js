@@ -74,7 +74,7 @@ function handleLogin() {
 
     var authSchemes = window.swaggerUi.api.authSchemes;
     var host = window.location;
-    var redirectUrl = host.protocol + '//' + host.host + "/o2c.html";
+    var redirectUrl = "{{full_base_url}}o2c.html";
     var url = null;
 
     var p = window.swaggerUi.api.authSchemes;

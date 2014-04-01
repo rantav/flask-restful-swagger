@@ -32,6 +32,7 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
     register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, api_spec_url)
     return api_add_resource(resource, path, *args, **kvargs)
+
   api.add_resource = add_resource
 
   return api
@@ -71,7 +72,10 @@ def render_homepage(resource_list_url):
   return render_page("index.html", conf)
 
 def render_page(page, info):
-  conf = {'base_url': api_spec_static}
+  url = registry['basePath']
+  if url.endswith('/'):
+    url = url.rtrim('/')
+  conf = {'base_url': api_spec_static, 'full_base_url': url + api_spec_static}
   if info != None:
     conf.update(info)
   global templates
@@ -96,7 +100,7 @@ class StaticFiles(Resource):
         filePath = "%s/%s" % (filePath, dir2)
         if dir3 != None:
           filePath = "%s/%s" % (filePath, dir3)
-    if filePath in ["index.html", "o2c.html", "swagger-ui.js", "swagger-ui.min"]:
+    if filePath in ["index.html", "o2c.html", "swagger-ui.js", "swagger-ui.min", "lib/swagger-oauth.js"]:
       conf = {'resource_list_url': api_spec_endpoint}
       return render_page(filePath, conf)
     mime = 'text/plain'
