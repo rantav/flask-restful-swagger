@@ -12,11 +12,12 @@ setup(name='flask-restful-swagger',
       zip_safe=False,
       packages=['flask_restful_swagger'],
       package_data= {
-        'flask_restful_swagger.static': [
-          'css/*.*',
-          'images/*.*',
-          'lib/*.*',
-          'lib/shred/*.*',
+        'flask_restful_swagger': [
+          'static/*.*',
+          'static/css/*.*',
+          'static/images/*.*',
+          'static/lib/*.*',
+          'static/lib/shred/*.*',
         ]
       },
       description='Extrarct swagger specs from your flast-restful project',
