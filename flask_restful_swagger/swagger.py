@@ -1,12 +1,12 @@
 from flask.ext.restful import Resource, fields
-from flask import request
+from flask import request, abort, Response
 import inspect
 import functools
 import re
 import flask_restful
 from flask_restful_swagger import registry, registered, api_spec_endpoint
-from flask_restful_swagger import html
-
+from jinja2 import Template
+import os
 
 resource_listing_endpoint = None
 
@@ -36,11 +36,13 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
   return api
 
+rootPath = os.path.dirname(__file__)
 
 def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, endpoint):
   global registered
   global api_spec_endpoint
+  global api_spec_static
   global resource_listing_endpoint
   if not registered:
     registered = True
@@ -56,7 +58,55 @@ def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
     add_resource_func(SwaggerRegistry, ep, endpoint=ep)
     resource_listing_endpoint = endpoint + '/_/resource_list.json'
     add_resource_func(ResourceLister, resource_listing_endpoint, endpoint=resource_listing_endpoint)
+    api_spec_static = endpoint + '/_/static/'
+    add_resource_func(StaticFiles, api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>', api_spec_static + '<string:dir1>/<string:dir2>', api_spec_static + '<string:dir1>')
 
+templates = {}
+
+def render_endpoint(endpoint):
+  return render_page("endpoint.html", endpoint.__dict__)
+
+def render_homepage(resource_list_url):
+  conf = {'resource_list_url': resource_list_url}
+  return render_page("index.html", conf)
+
+def render_page(page, info):
+  conf = {'base_url': api_spec_static}
+  if info != None:
+    conf.update(info)
+  global templates
+  if templates.has_key(page):
+    template = templates[page]
+  else:
+    fs = open(os.path.join(rootPath, 'static', page), "r")
+    template = Template(fs.read())
+    templates[page] = template
+  return Response(template.render(conf), mimetype='text/html')
+
+class StaticFiles(Resource):
+  def get(self, dir1 = None, dir2 = None, dir3 = None):
+    if dir1 == None:
+      filePath = "index.html"
+    else:
+      filePath = dir1
+      if dir2 != None:
+        filePath = "%s/%s" % (filePath, dir2)
+        if dir3 != None:
+          filePath = "%s/%s" % (filePath, dir3)
+    if filePath == "index.html" or filePath == "o2c.html":
+      conf = {'resource_list_url': api_spec_endpoint}
+      return render_page(filePath, conf)
+    if filePath.endswith(".png"):
+      mime = 'image/png'
+    elif filePath.endswith(".js"):
+      mime = 'text/javascript'
+    elif filePath.endswith(".css"):
+      mime = 'text/css'
+    filePath = os.path.join(rootPath, 'static', filePath)
+    if os.path.exists(filePath):
+      fs = open(filePath, "r")
+      return Response(fs, mimetype=mime)
+    abort(404)
 
 class ResourceLister(Resource):
   def get(self):
@@ -81,7 +131,7 @@ def swagger_endpoint(resource, path):
       if request.path.endswith('.help.json'):
         return endpoint.__dict__
       if request.path.endswith('.help.html'):
-        return html.render_endpoint(endpoint)
+        return render_endpoint(endpoint)
   return SwaggerResource
 
 
@@ -132,7 +182,7 @@ def merge_parameter_list(base, override):
 class SwaggerRegistry(Resource):
   def get(self):
     if request.path.endswith('.html'):
-      return html.render_homepage(resource_listing_endpoint)
+      return render_homepage(resource_listing_endpoint)
     return registry
 
 
