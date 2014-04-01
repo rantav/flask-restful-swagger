@@ -81,7 +81,10 @@ def render_page(page, info):
     fs = open(os.path.join(rootPath, 'static', page), "r")
     template = Template(fs.read())
     templates[page] = template
-  return Response(template.render(conf), mimetype='text/html')
+  mime = 'text/html'
+  if page.endswith('.js'):
+    mime = 'text/javascript'
+  return Response(template.render(conf), mimetype=mime)
 
 class StaticFiles(Resource):
   def get(self, dir1 = None, dir2 = None, dir3 = None):
@@ -93,10 +96,13 @@ class StaticFiles(Resource):
         filePath = "%s/%s" % (filePath, dir2)
         if dir3 != None:
           filePath = "%s/%s" % (filePath, dir3)
-    if filePath == "index.html" or filePath == "o2c.html":
+    if filePath in ["index.html", "o2c.html", "swagger-ui.js", "swagger-ui.min"]:
       conf = {'resource_list_url': api_spec_endpoint}
       return render_page(filePath, conf)
-    if filePath.endswith(".png"):
+    mime = 'text/plain'
+    if filePath.endswith(".gif"):
+      mime = 'image/gif'
+    elif filePath.endswith(".png"):
       mime = 'image/png'
     elif filePath.endswith(".js"):
       mime = 'text/javascript'
