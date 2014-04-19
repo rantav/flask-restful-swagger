@@ -68,26 +68,31 @@ class Todo(Resource):
     # This goes into the summary
     "Get a todo task"
     abort_if_todo_doesnt_exist(todo_id)
-    return TODOS[todo_id]
+    return TODOS[todo_id], 200, {'Access-Control-Allow-Origin': '*'}
 
   def delete(self, todo_id):
     abort_if_todo_doesnt_exist(todo_id)
     del TODOS[todo_id]
-    return '', 204
+    return '', 204, {'Access-Control-Allow-Origin': '*'}
 
   def put(self, todo_id):
     args = parser.parse_args()
     task = {'task': args['task']}
     TODOS[todo_id] = task
-    return task, 201
+    return task, 201, {'Access-Control-Allow-Origin': '*'}
 
+  def options (self, **args):
+    return {'Allow' : 'GET,PUT,POST,DELETE' }, 200, \
+    { 'Access-Control-Allow-Origin': '*', \
+      'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', \
+      'Access-Control-Allow-Headers': 'Content-Type' }
 
 # TodoList
 #   shows a list of all todos, and lets you POST to add new tasks
 class TodoList(Resource):
 
   def get(self):
-    return TODOS
+    return TODOS, 200, {'Access-Control-Allow-Origin': '*'}
 
   @swagger.operation(
       notes='Creates a new TODO item',
@@ -118,7 +123,7 @@ class TodoList(Resource):
     args = parser.parse_args()
     todo_id = 'todo%d' % (len(TODOS) + 1)
     TODOS[todo_id] = {'task': args['task']}
-    return TODOS[todo_id], 201
+    return TODOS[todo_id], 201, {'Access-Control-Allow-Origin': '*'}
 
 @swagger.model
 class ModelWithResourceFields:
@@ -158,8 +163,9 @@ class MarshalWithExample(Resource):
       responseClass=TodoItemWithResourceFields,
       nickname='get')
   @marshal_with(TodoItemWithResourceFields.resource_fields)
-  def get(self):
-    return {}
+  def get(self, **kwargs):
+    return {}, 200,  {'Access-Control-Allow-Origin': '*'}
+
 
 ##
 ## Actually setup the Api resource routing here
