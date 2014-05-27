@@ -3,7 +3,6 @@ from flask import request
 import inspect
 import functools
 import re
-import flask_restful
 from flask_restful_swagger import registry, registered, api_spec_endpoint
 from flask_restful_swagger import html
 
@@ -106,8 +105,8 @@ class SwaggerEndpoint(object):
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
-        for att_name, att_value in decorators.items():
-          if isinstance(att_value, (basestring, int, list)):
+        for att_name, att_value in list(decorators.items()):
+          if isinstance(att_value, (str, int, list)):
             if att_name == 'parameters':
               op['parameters'] = merge_parameter_list(op['parameters'], att_value)
             else:
@@ -119,7 +118,7 @@ class SwaggerEndpoint(object):
 
 def merge_parameter_list(base, override):
   base = list(base)
-  names = map(lambda x: x['name'], base)
+  names = [x['name'] for x in base]
   for o in override:
     if o['name'] in names:
       for n, i in enumerate(base):
@@ -192,7 +191,7 @@ def add_model(model_class):
     # of this attribute
     properties = model['properties'] = {}
     nested = model_class.nested() if isinstance(model_class, _Nested) else {}
-    for field_name, field_type in model_class.resource_fields.iteritems():
+    for field_name, field_type in list(model_class.resource_fields.items()):
       nested_type = nested[field_name] if field_name in nested else None
       properties[field_name] = deduce_swagger_type(field_type, nested_type)
   elif '__init__' in dir(model_class):
@@ -206,7 +205,7 @@ def add_model(model_class):
     defaults = {}
     required = model['required'] = []
     if argspec.defaults:
-      defaults = zip(argspec.args[-len(argspec.defaults):], argspec.defaults)
+      defaults = list(zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
     properties = model['properties'] = {}
     for arg in argspec.args[:-len(defaults)]:
       required.append(arg)
@@ -223,7 +222,7 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (basestring,
+    if predicate(python_type_or_object, (str,
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url,
@@ -258,7 +257,7 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (basestring,
+    if predicate(python_type_or_object, (str,
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url)):
@@ -312,4 +311,4 @@ def extract_path_arguments(path):
               'dataType': spl[0],
               'paramType': 'path'}
 
-  return map(split_arg, args)
+  return list(map(split_arg, args))
