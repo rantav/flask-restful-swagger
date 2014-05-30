@@ -7739,7 +7739,7 @@ templates['status_code'] = template(function (Handlebars,depth0,helpers,partials
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           o = _ref[_i];
           if ((o.value != null) && jQuery.trim(o.value).length > 0) {
-            map[o.name] = encodeURI(o.value);
+            map[o.name] = o.value;
           }
         }
         opts.responseContentType = $("div select[name=responseContentType]", $(this.el)).val();
