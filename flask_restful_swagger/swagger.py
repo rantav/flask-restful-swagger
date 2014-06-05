@@ -189,6 +189,10 @@ def add_model(model_class):
     # resource_fields.
     # If that attribute exists then we deduce the swagger model by the content
     # of this attribute
+
+    if hasattr(model_class, 'required'):
+      required = model['required'] = model_class.required
+
     properties = model['properties'] = {}
     nested = model_class.nested() if isinstance(model_class, _Nested) else {}
     for field_name, field_type in list(model_class.resource_fields.items()):
