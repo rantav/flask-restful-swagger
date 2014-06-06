@@ -157,6 +157,9 @@ class TodoItemWithResourceFields:
       'a_list_of_nested_types': fields.List(fields.Nested(ModelWithResourceFields.resource_fields)),
   }
 
+  # Specify which of the resource fields are required
+  required = ['a_string']
+
 class MarshalWithExample(Resource):
   @swagger.operation(
       notes='get something',
