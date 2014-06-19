@@ -94,8 +94,13 @@ class SwaggerEndpoint(object):
   @staticmethod
   def extract_operations(resource, path_arguments=[]):
     operations = []
-    for method in resource.methods:
-      method_impl = resource.__dict__[method.lower()]
+    for method in [m.lower() for m in resource.methods]:
+      method_impl = resource.__dict__.get(method, None)
+      if method_impl is None:
+        for cls in resource.__mro__:
+          for item_key in cls.__dict__.keys():
+            if item_key == method:
+              method_impl = cls.__dict__[item_key]
       op = {
           'method': method,
           'parameters': path_arguments,
