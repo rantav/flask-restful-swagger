@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 ###################################
 # Wrap the Api with swagger.docs. It is a thin wrapper around the Api class that adds some swagger smarts
-api = swagger.docs(Api(app), version='0.1')
+api = swagger.docs(Api(app), apiVersion='0.1')
 ###################################
 
 
