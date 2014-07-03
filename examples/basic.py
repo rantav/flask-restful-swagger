@@ -1,3 +1,11 @@
+'''
+Running:
+
+  PYTHONPATH=. python examples/basic.py
+
+'''
+
+
 from flask import Flask, redirect
 from flask.ext.restful import reqparse, abort, Api, Resource, fields,\
     marshal_with
