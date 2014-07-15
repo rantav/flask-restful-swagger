@@ -8,7 +8,7 @@ from flask import Flask
 from flask.ext.restful import Api, Resource
 from flask_restful_swagger import swagger
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../static')
 
 ###################################
 # This is important:
@@ -29,6 +29,7 @@ class Base(Resource):
 
   def delete(self):
     pass
+
 
 class Inherited(Base):
   @swagger.operation(
