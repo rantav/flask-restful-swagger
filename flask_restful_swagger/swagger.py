@@ -6,6 +6,7 @@ import re
 from flask_restful_swagger import registry, registered, api_spec_endpoint
 from jinja2 import Template
 import os
+import inspect
 
 resource_listing_endpoint = None
 
@@ -18,6 +19,7 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
   api_add_resource = api.add_resource
 
   def add_resource(resource, path, *args, **kvargs):
+    resource = make_class(resource)
     endpoint = swagger_endpoint(resource, path)
     # Add a .help.json help url
     swagger_path = extract_swagger_path(path)
@@ -37,6 +39,13 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
   return api
 
 rootPath = os.path.dirname(__file__)
+
+
+def make_class(class_or_instance):
+  if inspect.isclass(class_or_instance):
+    return class_or_instance
+  return class_or_instance.__class__
+
 
 def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, endpoint):
