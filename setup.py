@@ -11,7 +11,7 @@ setup(name='flask-restful-swagger',
       url='https://github.com/rantav/flask-restful-swagger',
       zip_safe=False,
       packages=['flask_restful_swagger'],
-      package_data= {
+      package_data={
         'flask_restful_swagger': [
           'static/*.*',
           'static/css/*.*',
