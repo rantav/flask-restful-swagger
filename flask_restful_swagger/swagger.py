@@ -171,11 +171,30 @@ def swagger_endpoint(resource, path):
   return SwaggerResource
 
 
+def _sanitize_doc(comment):
+  return comment.replace('\n', '<br/>') if comment else comment
+
+
+def _parse_doc(obj):
+  first_line, other_lines = None, None
+
+  full_doc = inspect.getdoc(obj)
+  if full_doc:
+    line_feed = full_doc.find('\n')
+    if line_feed != -1:
+      first_line = _sanitize_doc(full_doc[:line_feed])
+      other_lines = _sanitize_doc(full_doc[line_feed+1:])
+    else:
+      first_line = full_doc
+
+  return first_line, other_lines
+
+
 class SwaggerEndpoint(object):
   def __init__(self, resource, path):
     self.path = extract_swagger_path(path)
     path_arguments = extract_path_arguments(path)
-    self.description = inspect.getdoc(resource)
+    self.description, self.notes = _parse_doc(resource)
     self.operations = self.extract_operations(resource, path_arguments)
 
   @staticmethod
@@ -193,7 +212,8 @@ class SwaggerEndpoint(object):
           'parameters': path_arguments,
           'nickname': 'nickname'
       }
-      op['summary'] = inspect.getdoc(method_impl)
+      op['summary'], op['notes'] = _parse_doc(method_impl)
+
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
@@ -203,6 +223,8 @@ class SwaggerEndpoint(object):
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
+              if att_name in op:
+                att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
@@ -278,7 +300,7 @@ def add_model(model_class):
   models = registry['models']
   name = model_class.__name__
   model = models[name] = {'id': name}
-  model['description'] = inspect.getdoc(model_class)
+  model['description'], model['notes'] = _parse_doc(model_class)
   if 'resource_fields' in dir(model_class):
     # We take special care when the model class has a field resource_fields.
     # By convension this field specifies what flask-restful would return when

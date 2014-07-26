@@ -74,7 +74,19 @@ class Todo(Resource):
       ])
   def get(self, todo_id):
     # This goes into the summary
-    "Get a todo task"
+    """Get a todo task
+
+    This will be added to the <strong>Implementation Notes</strong>.
+    It lets you put very long text in your api.
+
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+    veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+    commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+    velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+    cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+    est laborum.
+    """
     abort_if_todo_doesnt_exist(todo_id)
     return TODOS[todo_id], 200, {'Access-Control-Allow-Origin': '*'}
 
