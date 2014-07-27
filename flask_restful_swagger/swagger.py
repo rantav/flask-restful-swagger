@@ -1,14 +1,16 @@
-from flask.ext.restful import Resource, fields
-from flask import request, abort, Response
-import inspect
 import functools
-import re
-from flask_restful_swagger import registry, registered, api_spec_endpoint
-from jinja2 import Template
-import os
 import inspect
+import os
+import re
+
+from flask import request, abort, Response
+from flask.ext.restful import Resource, fields
+from flask_restful_swagger import (
+  registry, registered, api_spec_endpoint, api_spec_static)
+from jinja2 import Template
 
 resource_listing_endpoint = None
+
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
          basePath='http://localhost:5000',
@@ -62,32 +64,42 @@ def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
     registry['produces'] = produces
     add_resource_func(SwaggerRegistry, endpoint, endpoint=endpoint)
     api_spec_endpoint = endpoint + '.json'
-    add_resource_func(SwaggerRegistry, api_spec_endpoint, endpoint=api_spec_endpoint)
+    add_resource_func(
+      SwaggerRegistry, api_spec_endpoint, endpoint=api_spec_endpoint)
     ep = endpoint + '.html'
     add_resource_func(SwaggerRegistry, ep, endpoint=ep)
     resource_listing_endpoint = endpoint + '/_/resource_list.json'
-    add_resource_func(ResourceLister, resource_listing_endpoint, endpoint=resource_listing_endpoint)
+    add_resource_func(
+      ResourceLister, resource_listing_endpoint,
+      endpoint=resource_listing_endpoint)
     api_spec_static = endpoint + '/_/static/'
-    add_resource_func(StaticFiles, api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>', api_spec_static + '<string:dir1>/<string:dir2>', api_spec_static + '<string:dir1>')
+    add_resource_func(
+      StaticFiles,
+      api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+      api_spec_static + '<string:dir1>/<string:dir2>',
+      api_spec_static + '<string:dir1>')
 
 templates = {}
+
 
 def render_endpoint(endpoint):
   return render_page("endpoint.html", endpoint.__dict__)
 
+
 def render_homepage(resource_list_url):
   conf = {'resource_list_url': resource_list_url}
   return render_page("index.html", conf)
+
 
 def render_page(page, info):
   url = registry['basePath']
   if url.endswith('/'):
     url = url.rtrim('/')
   conf = {'base_url': api_spec_static, 'full_base_url': url + api_spec_static}
-  if info != None:
+  if info is not None:
     conf.update(info)
   global templates
-  if templates.has_key(page):
+  if page in templates:
     template = templates[page]
   else:
     fs = open(os.path.join(rootPath, 'static', page), "r")
@@ -98,17 +110,21 @@ def render_page(page, info):
     mime = 'text/javascript'
   return Response(template.render(conf), mimetype=mime)
 
+
 class StaticFiles(Resource):
-  def get(self, dir1 = None, dir2 = None, dir3 = None):
-    if dir1 == None:
+
+  def get(self, dir1=None, dir2=None, dir3=None):
+    if dir1 is None:
       filePath = "index.html"
     else:
       filePath = dir1
-      if dir2 != None:
+      if dir2 is not None:
         filePath = "%s/%s" % (filePath, dir2)
-        if dir3 != None:
+        if dir3 is not None:
           filePath = "%s/%s" % (filePath, dir3)
-    if filePath in ["index.html", "o2c.html", "swagger-ui.js", "swagger-ui.min", "lib/swagger-oauth.js"]:
+    if filePath in [
+      "index.html", "o2c.html", "swagger-ui.js"
+       "swagger-ui.min", "lib/swagger-oauth.js"]:
       conf = {'resource_list_url': api_spec_endpoint}
       return render_page(filePath, conf)
     mime = 'text/plain'
@@ -126,6 +142,7 @@ class StaticFiles(Resource):
       return Response(fs, mimetype=mime)
     abort(404)
 
+
 class ResourceLister(Resource):
   def get(self):
     return {
@@ -133,7 +150,8 @@ class ResourceLister(Resource):
       "swaggerVersion": registry['swaggerVersion'],
       "apis": [
         {
-          "path": '/..' * (len(api_spec_endpoint.split('/')) + 1)  + api_spec_endpoint,
+          "path": '/..' * (
+            len(api_spec_endpoint.split('/')) + 1) + api_spec_endpoint,
           "description": "Auto generated API docs by flask-restful-swagger"
         }
       ]
@@ -153,11 +171,30 @@ def swagger_endpoint(resource, path):
   return SwaggerResource
 
 
+def _sanitize_doc(comment):
+  return comment.replace('\n', '<br/>') if comment else comment
+
+
+def _parse_doc(obj):
+  first_line, other_lines = None, None
+
+  full_doc = inspect.getdoc(obj)
+  if full_doc:
+    line_feed = full_doc.find('\n')
+    if line_feed != -1:
+      first_line = _sanitize_doc(full_doc[:line_feed])
+      other_lines = _sanitize_doc(full_doc[line_feed+1:])
+    else:
+      first_line = full_doc
+
+  return first_line, other_lines
+
+
 class SwaggerEndpoint(object):
   def __init__(self, resource, path):
     self.path = extract_swagger_path(path)
     path_arguments = extract_path_arguments(path)
-    self.description = inspect.getdoc(resource)
+    self.description, self.notes = _parse_doc(resource)
     self.operations = self.extract_operations(resource, path_arguments)
 
   @staticmethod
@@ -175,20 +212,25 @@ class SwaggerEndpoint(object):
           'parameters': path_arguments,
           'nickname': 'nickname'
       }
-      op['summary'] = inspect.getdoc(method_impl)
+      op['summary'], op['notes'] = _parse_doc(method_impl)
+
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
         for att_name, att_value in list(decorators.items()):
           if isinstance(att_value, (str, int, list)):
             if att_name == 'parameters':
-              op['parameters'] = merge_parameter_list(op['parameters'], att_value)
+              op['parameters'] = merge_parameter_list(
+                op['parameters'], att_value)
             else:
+              if att_name in op:
+                att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
       operations.append(op)
     return operations
+
 
 def merge_parameter_list(base, override):
   base = list(base)
@@ -201,6 +243,7 @@ def merge_parameter_list(base, override):
     else:
       base.append(o)
   return base
+
 
 class SwaggerRegistry(Resource):
   def get(self):
@@ -226,6 +269,7 @@ def model(c=None, *args, **kwargs):
   add_model(c)
   return c
 
+
 class _Nested(object):
   def __init__(self, klass, **kwargs):
     self._nested = kwargs
@@ -236,6 +280,7 @@ class _Nested(object):
 
   def nested(self):
     return self._nested
+
 
 # wrap _Cache to allow for deferred calling
 def nested(klass=None, **kwargs):
@@ -250,11 +295,12 @@ def nested(klass=None, **kwargs):
     ret = wrapper
   return ret
 
+
 def add_model(model_class):
   models = registry['models']
   name = model_class.__name__
   model = models[name] = {'id': name}
-  model['description'] = inspect.getdoc(model_class)
+  model['description'], model['notes'] = _parse_doc(model_class)
   if 'resource_fields' in dir(model_class):
     # We take special care when the model class has a field resource_fields.
     # By convension this field specifies what flask-restful would return when
@@ -283,7 +329,8 @@ def add_model(model_class):
     defaults = {}
     required = model['required'] = []
     if argspec.defaults:
-      defaults = list(zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
+      defaults = list(
+        zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
     properties = model['properties'] = {}
     for arg in argspec.args[:-len(defaults)]:
       required.append(arg)
@@ -320,11 +367,13 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
         else:
           return {'type': 'array',
                   'items': {
-                    '$ref': deduce_swagger_type_flat(python_type_or_object.container, nested_type)}}
+                    '$ref': deduce_swagger_type_flat(
+                      python_type_or_object.container, nested_type)}}
     if predicate(python_type_or_object, (fields.Nested)):
         return {'type': nested_type}
 
     return {'type': 'null'}
+
 
 def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
     if nested_type:
