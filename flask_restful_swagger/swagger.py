@@ -305,6 +305,15 @@ class SwaggerEndpoint(object):
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
+        if 'parser' in method_impl.__dict__:
+          arglist = method_impl.__dict__['parser'].__dict__['args']
+          temp_op = []
+          for argobj in arglist:
+            arg = argobj.__dict__
+            #push parameters from reqparse onto our swagger parameters list
+            new_param = {'name': arg['name'], 'required': arg['required'], 'description': arg['help'], 'dataType': arg['type'].__name__}
+            temp_op.append(new_param)
+          op['parameters'] = merge_parameter_list(op['parameters'], temp_op)
       operations.append(op)
     return operations
 
