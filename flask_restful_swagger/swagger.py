@@ -6,7 +6,7 @@ import re
 from flask import request, abort, Response
 from flask.ext.restful import Resource, fields
 from flask_restful_swagger import (
-  registry, registered, api_spec_endpoint, api_spec_static)
+  registry, api_spec_static)
 from jinja2 import Template
 
 resource_listing_endpoint = None
@@ -21,19 +21,23 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
   api_add_resource = api.add_resource
 
   def add_resource(resource, path, *args, **kvargs):
+    register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
+                  resourcePath, produces, api_spec_url)
+
     resource = make_class(resource)
-    endpoint = swagger_endpoint(resource, path)
+    endpoint = swagger_endpoint(api, resource, path)
+
     # Add a .help.json help url
     swagger_path = extract_swagger_path(path)
-    endpoint_path = "%s_help_json" % resource.__name__
-    api_add_resource(endpoint, "%s.help.json" % swagger_path,
-                     endpoint=endpoint_path)
+
     # Add a .help.html help url
-    endpoint_path = "%s_help_html" % resource.__name__
-    api_add_resource(endpoint, "%s.help.html" % swagger_path,
-                     endpoint=endpoint_path)
-    register_once(api_add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, api_spec_url)
+    endpoint_html_str = '{0}/help'.format(swagger_path)
+    api_add_resource(
+      endpoint,
+      "{0}.help.json".format(swagger_path),
+      "{0}.help.html".format(swagger_path),
+      endpoint=endpoint_html_str)
+
     return api_add_resource(resource, path, *args, **kvargs)
 
   api.add_resource = add_resource
@@ -49,35 +53,76 @@ def make_class(class_or_instance):
   return class_or_instance.__class__
 
 
-def register_once(add_resource_func, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, endpoint):
-  global registered
-  global api_spec_endpoint
+def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
+                  resourcePath, produces, endpoint_path):
   global api_spec_static
   global resource_listing_endpoint
-  if not registered:
-    registered = True
-    registry['apiVersion'] = apiVersion
-    registry['swaggerVersion'] = swaggerVersion
-    registry['basePath'] = basePath
-    registry['resourcePath'] = resourcePath
-    registry['produces'] = produces
-    add_resource_func(SwaggerRegistry, endpoint, endpoint=endpoint)
-    api_spec_endpoint = endpoint + '.json'
+
+  if api.blueprint and not registry.get(api.blueprint.name):
+    # Most of all this can be taken from the blueprint/app
+    registry[api.blueprint.name] = {
+      'apiVersion': apiVersion,
+      'swaggerVersion': swaggerVersion,
+      'basePath': basePath,
+      'spec_endpoint_path': endpoint_path,
+      'resourcePath': resourcePath,
+      'produces': produces,
+      'x-api-prefix': '',
+      'apis': []
+    }
+
+    def registering_blueprint(setup_state):
+      reg = registry[setup_state.blueprint.name]
+      reg['x-api-prefix'] = setup_state.url_prefix
+
+    api.blueprint.record(registering_blueprint)
+
     add_resource_func(
-      SwaggerRegistry, api_spec_endpoint, endpoint=api_spec_endpoint)
-    ep = endpoint + '.html'
-    add_resource_func(SwaggerRegistry, ep, endpoint=ep)
-    resource_listing_endpoint = endpoint + '/_/resource_list.json'
-    add_resource_func(
-      ResourceLister, resource_listing_endpoint,
-      endpoint=resource_listing_endpoint)
-    api_spec_static = endpoint + '/_/static/'
+      SwaggerRegistry,
+      endpoint_path,
+      endpoint_path + '.json',
+      endpoint_path + '.html'
+    )
+
+    resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
+    add_resource_func(ResourceLister, resource_listing_endpoint)
+
+    api_spec_static = endpoint_path + '/_/static/'
     add_resource_func(
       StaticFiles,
       api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
       api_spec_static + '<string:dir1>/<string:dir2>',
       api_spec_static + '<string:dir1>')
+  elif not 'app' in registry:
+    registry['app'] = {
+      'apiVersion': apiVersion,
+      'swaggerVersion': swaggerVersion,
+      'basePath': basePath,
+      'spec_endpoint_path': endpoint_path,
+      'resourcePath': resourcePath,
+      'produces': produces,
+    }
+
+    add_resource_func(
+      SwaggerRegistry,
+      endpoint_path,
+      endpoint_path + '.json',
+      endpoint_path + '.html',
+      endpoint='app/registry'
+    )
+
+    resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
+    add_resource_func(
+      ResourceLister, resource_listing_endpoint,
+      endpoint='app/resourcelister')
+
+    api_spec_static = endpoint_path + '/_/static/'
+    add_resource_func(
+      StaticFiles,
+      api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+      api_spec_static + '<string:dir1>/<string:dir2>',
+      api_spec_static + '<string:dir1>',
+      endpoint='app/staticfiles')
 
 templates = {}
 
@@ -91,20 +136,48 @@ def render_homepage(resource_list_url):
   return render_page("index.html", conf)
 
 
+def _get_current_registry(api=None):
+  # import ipdb;ipdb.set_trace()
+  global registry
+  app_name = None
+  overrides = {}
+  if api:
+    app_name = api.blueprint.name if api.blueprint else None
+  else:
+    app_name = request.blueprint
+    overrides = {'basePath': request.url_root.rstrip('/')}
+
+  if not app_name:
+    app_name = 'app'
+
+  overrides['models'] = registry.get('models', {})
+
+  reg = registry.setdefault(app_name, {})
+  reg.update(overrides)
+
+  reg['basePath'] = reg['basePath'] + reg.get('x-api-prefix', '')
+
+  return reg
+
+
 def render_page(page, info):
-  url = registry['basePath']
+  req_registry = _get_current_registry()
+  url = req_registry['basePath']
   if url.endswith('/'):
-    url = url.rtrim('/')
-  conf = {'base_url': api_spec_static, 'full_base_url': url + api_spec_static}
+    url = url.rstrip('/')
+  conf = {
+    'base_url': url + api_spec_static,
+    'full_base_url': url + api_spec_static
+  }
   if info is not None:
     conf.update(info)
   global templates
   if page in templates:
     template = templates[page]
   else:
-    fs = open(os.path.join(rootPath, 'static', page), "r")
-    template = Template(fs.read())
-    templates[page] = template
+    with open(os.path.join(rootPath, 'static', page), "r") as fs:
+      template = Template(fs.read())
+      templates[page] = template
   mime = 'text/html'
   if page.endswith('.js'):
     mime = 'text/javascript'
@@ -114,6 +187,8 @@ def render_page(page, info):
 class StaticFiles(Resource):
 
   def get(self, dir1=None, dir2=None, dir3=None):
+    req_registry = _get_current_registry()
+
     if dir1 is None:
       filePath = "index.html"
     else:
@@ -125,7 +200,7 @@ class StaticFiles(Resource):
     if filePath in [
       "index.html", "o2c.html", "swagger-ui.js"
        "swagger-ui.min", "lib/swagger-oauth.js"]:
-      conf = {'resource_list_url': api_spec_endpoint}
+      conf = {'resource_list_url': req_registry['spec_endpoint_path']}
       return render_page(filePath, conf)
     mime = 'text/plain'
     if filePath.endswith(".gif"):
@@ -145,22 +220,24 @@ class StaticFiles(Resource):
 
 class ResourceLister(Resource):
   def get(self):
+    req_registry = _get_current_registry()
     return {
-      "apiVersion": registry['apiVersion'],
-      "swaggerVersion": registry['swaggerVersion'],
+      "apiVersion": req_registry['apiVersion'],
+      "swaggerVersion": req_registry['swaggerVersion'],
       "apis": [
         {
-          "path": '/..' * (
-            len(api_spec_endpoint.split('/')) + 1) + api_spec_endpoint,
+          "path": (
+            req_registry['basePath'] + req_registry['spec_endpoint_path']),
           "description": "Auto generated API docs by flask-restful-swagger"
         }
       ]
     }
 
 
-def swagger_endpoint(resource, path):
+def swagger_endpoint(api, resource, path):
   endpoint = SwaggerEndpoint(resource, path)
-  registry['apis'].append(endpoint.__dict__)
+  req_registry = _get_current_registry(api=api)
+  req_registry.setdefault('apis', []).append(endpoint.__dict__)
 
   class SwaggerResource(Resource):
     def get(self):
@@ -247,9 +324,11 @@ def merge_parameter_list(base, override):
 
 class SwaggerRegistry(Resource):
   def get(self):
+    req_registry = _get_current_registry()
     if request.path.endswith('.html'):
-      return render_homepage(resource_listing_endpoint)
-    return registry
+      return render_homepage(
+        req_registry['basePath'] + req_registry['spec_endpoint_path'] + '/_/resource_list.json')
+    return req_registry
 
 
 def operation(**kwargs):
@@ -432,6 +511,7 @@ def extract_path_arguments(path):
     spl = arg.split(':')
     if len(spl) == 1:
       return {'name': spl[0],
+              'dataType': 'string',
               'paramType': 'path'}
     else:
       return {'name': spl[1],
