@@ -213,7 +213,7 @@ class StaticFiles(Resource):
       mime = 'text/css'
     filePath = os.path.join(rootPath, 'static', filePath)
     if os.path.exists(filePath):
-      fs = open(filePath, "r")
+      fs = open(filePath, "rb")
       return Response(fs, mimetype=mime)
     abort(404)
 
