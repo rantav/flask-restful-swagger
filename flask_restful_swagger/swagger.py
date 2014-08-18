@@ -300,7 +300,7 @@ class SwaggerEndpoint(object):
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
-              if att_name in op:
+              if att_name in op and att_name is not 'nickname':
                 att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
