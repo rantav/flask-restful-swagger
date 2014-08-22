@@ -7,7 +7,7 @@ with open('README') as file:
     long_description = file.read()
 
 setup(name='flask-restful-swagger',
-      version='0.13',
+      version='0.14',
       url='https://github.com/rantav/flask-restful-swagger',
       zip_safe=False,
       packages=['flask_restful_swagger'],
