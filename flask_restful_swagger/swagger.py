@@ -198,8 +198,8 @@ class StaticFiles(Resource):
         if dir3 is not None:
           filePath = "%s/%s" % (filePath, dir3)
     if filePath in [
-      "index.html", "o2c.html", "swagger-ui.js"
-       "swagger-ui.min", "lib/swagger-oauth.js"]:
+      "index.html", "o2c.html", "swagger-ui.js",
+       "swagger-ui.min.js", "lib/swagger-oauth.js"]:
       conf = {'resource_list_url': req_registry['spec_endpoint_path']}
       return render_page(filePath, conf)
     mime = 'text/plain'
