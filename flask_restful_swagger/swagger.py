@@ -325,7 +325,7 @@ def merge_parameter_list(base, override):
     if o['name'] in names:
       for n, i in enumerate(base):
         if i['name'] == o['name']:
-          base[n] = o
+          base[n] = dict(base[n].items() + o.items())
     else:
       base.append(o)
   return base
