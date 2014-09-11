@@ -1,1 +1,2 @@
 include README*
+recursive-include flask_restful_swagger/static *
