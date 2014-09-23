@@ -188,6 +188,8 @@ resourcePath - same as before. default: '/'
 produces - same as before, passed directly to swagger. The default is ["application/json"]
 
 swaggerVersion - passed directly to swagger. Default: 1.2
+
+description - description of this API endpoint. Defaults to 'Auto generated API docs by flask-restful-swagger'
 ```
 
 # Accessing the result json spec and an Interactive HTML interface

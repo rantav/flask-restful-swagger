@@ -23,12 +23,14 @@ api1 = swagger.docs(Api(my_blueprint1), apiVersion='0.1',
                    basePath='http://localhost:5000',
                    resourcePath='/',
                    produces=["application/json", "text/html"],
-                   api_spec_url='/api/spec')
+                   api_spec_url='/api/spec',
+                   description='Blueprint1 Description')
 api2 = swagger.docs(Api(my_blueprint2), apiVersion='0.1',
                    basePath='http://localhost:5000',
                    resourcePath='/',
                    produces=["application/json", "text/html"],
-                   api_spec_url='/api/spec')
+                   api_spec_url='/api/spec',
+                   description='Blueprint2 Description')
 ###################################
 
 TODOS = {
