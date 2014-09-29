@@ -308,7 +308,7 @@ class SwaggerEndpoint(object):
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
-      operations.append(op)
+        operations.append(op)
     return operations
 
 
