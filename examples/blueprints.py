@@ -101,11 +101,17 @@ class Todo(Resource):
     abort_if_todo_doesnt_exist(todo_id)
     return TODOS[todo_id], 200, {'Access-Control-Allow-Origin': '*'}
 
+  @swagger.operation(
+      notes='delete a todo item by ID',
+  )
   def delete(self, todo_id):
     abort_if_todo_doesnt_exist(todo_id)
     del TODOS[todo_id]
     return '', 204, {'Access-Control-Allow-Origin': '*'}
 
+  @swagger.operation(
+      notes='edit a todo item by ID',
+  )
   def put(self, todo_id):
     args = parser.parse_args()
     task = {'task': args['task']}
@@ -113,6 +119,8 @@ class Todo(Resource):
     return task, 201, {'Access-Control-Allow-Origin': '*'}
 
   def options (self, **args):
+    # since this method is not decorated with @swagger.operation it does not
+    # get added to the swagger docs
     return {'Allow' : 'GET,PUT,POST,DELETE' }, 200, \
     { 'Access-Control-Allow-Origin': '*', \
       'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', \

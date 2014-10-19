@@ -50,6 +50,7 @@ class Inherited(Base):
     return "hello"
 
   def post(self):
+    # wont be visible in the swagger docs
     return "world"
 
 ##

@@ -57,6 +57,16 @@ class Todo(Resource):
           ]
         )
     def get(self, todo_id):
+    
+# Operations not decorated with @swagger.operation do not get added to the swagger docs
+
+class Todo(Resource):
+    def options(self, todo_id):
+        """
+        I'm not visible in the swagger docs
+        """
+        pass
+
 
 # Then you add_resource as you usually would
 
