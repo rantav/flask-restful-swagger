@@ -174,6 +174,7 @@ class TodoItemWithResourceFields:
   resource_fields = {
       'a_string': fields.String(attribute='a_string_field_name'),
       'a_formatted_string': fields.FormattedString,
+      'an_enum': (fields.String, {'enum': ['one', 'two', 'three']}),
       'an_int': fields.Integer,
       'a_bool': fields.Boolean,
       'a_url': fields.Url,
