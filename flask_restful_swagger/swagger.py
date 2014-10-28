@@ -426,10 +426,16 @@ def add_model(model_class):
 def deduce_swagger_type(python_type_or_object, nested_type=None):
     import inspect
 
+    override = None
+    if isinstance(python_type_or_object, tuple):
+        #field definition is a tuple, second element have to be an override
+        (python_type_or_object, override) = python_type_or_object
+
     if inspect.isclass(python_type_or_object):
         predicate = issubclass
     else:
         predicate = isinstance
+    result = None
     if predicate(python_type_or_object, (str,
                                          fields.String,
                                          fields.FormattedString,
@@ -443,19 +449,24 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
                                          bool,
                                          fields.Boolean,
                                          fields.DateTime)):
-        return {'type': deduce_swagger_type_flat(python_type_or_object)}
-    if predicate(python_type_or_object, (fields.List)):
+        result = {'type': deduce_swagger_type_flat(python_type_or_object)}
+    if not result and predicate(python_type_or_object, (fields.List)):
         if inspect.isclass(python_type_or_object):
-          return {'type': 'array'}
+            result = {'type': 'array'}
         else:
-          return {'type': 'array',
-                  'items': {
-                    '$ref': deduce_swagger_type_flat(
-                      python_type_or_object.container, nested_type)}}
-    if predicate(python_type_or_object, (fields.Nested)):
-        return {'type': nested_type}
+            result = {'type': 'array',
+                      'items': {
+                          '$ref': deduce_swagger_type_flat(
+                          python_type_or_object.container, nested_type)}}
+    if not result and predicate(python_type_or_object, (fields.Nested)):
+        result = {'type': nested_type}
+    elif not result:
+        result = {'type': 'null'}
 
-    return {'type': 'null'}
+    if override:
+        #an override was specified, use it to alter output type definition
+        result = dict(result.items() + override.items())
+    return result
 
 
 def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
