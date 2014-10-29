@@ -422,6 +422,10 @@ def add_model(model_class):
     for k, v in defaults:
       properties[k] = {'type': 'string', "default": v}
 
+  if 'swagger_metadata' in dir(model_class):
+    for field_name, field_metadata in model_class.swagger_metadata.items():
+        if field_name in properties:
+            properties[field_name] = dict(properties[field_name].items() + field_metadata.items())
 
 def deduce_swagger_type(python_type_or_object, nested_type=None):
     import inspect

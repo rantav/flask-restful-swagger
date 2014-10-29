@@ -174,6 +174,7 @@ class TodoItemWithResourceFields:
   resource_fields = {
       'a_string': fields.String(attribute='a_string_field_name'),
       'a_formatted_string': fields.FormattedString,
+      'an_enum': fields.String,
       'an_int': fields.Integer,
       'a_bool': fields.Boolean,
       'a_url': fields.Url,
@@ -188,6 +189,12 @@ class TodoItemWithResourceFields:
 
   # Specify which of the resource fields are required
   required = ['a_string']
+
+  swagger_metadata = {
+      'an_enum': {
+          'enum': ['one', 'two', 'three']
+      }
+  }
 
 class MarshalWithExample(Resource):
   @swagger.operation(
