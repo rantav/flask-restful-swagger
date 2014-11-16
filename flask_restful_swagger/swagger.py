@@ -256,7 +256,7 @@ def _sanitize_doc(comment):
 
 
 def _parse_doc(obj):
-  first_line, other_lines = None, None
+  first_line, other_lines = "", ""
 
   full_doc = inspect.getdoc(obj)
   if full_doc:
