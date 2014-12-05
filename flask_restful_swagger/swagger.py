@@ -6,10 +6,11 @@ import re
 from flask import request, abort, Response
 from flask.ext.restful import Resource, fields
 from flask_restful_swagger import (
-  registry, api_spec_static)
+  registry)
 from jinja2 import Template
 
 resource_listing_endpoint = None
+api_spec_static_suffix = '/_/static/'
 
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
@@ -56,8 +57,8 @@ def make_class(class_or_instance):
 
 def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, endpoint_path, description):
-  global api_spec_static
   global resource_listing_endpoint
+  api_spec_static = endpoint_path + api_spec_static_suffix
 
   if api.blueprint and not registry.get(api.blueprint.name):
     # Most of all this can be taken from the blueprint/app
@@ -89,7 +90,6 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
     resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
     add_resource_func(ResourceLister, resource_listing_endpoint)
 
-    api_spec_static = endpoint_path + '/_/static/'
     add_resource_func(
       StaticFiles,
       api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
@@ -119,7 +119,6 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       ResourceLister, resource_listing_endpoint,
       endpoint='app/resourcelister')
 
-    api_spec_static = endpoint_path + '/_/static/'
     add_resource_func(
       StaticFiles,
       api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
@@ -169,8 +168,8 @@ def render_page(page, info):
   if url.endswith('/'):
     url = url.rstrip('/')
   conf = {
-    'base_url': url + api_spec_static,
-    'full_base_url': url + api_spec_static
+    'base_url': url + req_registry['spec_endpoint_path'] + api_spec_static_suffix,
+    'full_base_url': url + req_registry['spec_endpoint_path'] + api_spec_static_suffix
   }
   if info is not None:
     conf.update(info)
