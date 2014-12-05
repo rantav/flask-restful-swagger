@@ -103,6 +103,7 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       'spec_endpoint_path': endpoint_path,
       'resourcePath': resourcePath,
       'produces': produces,
+      'x-api-prefix': api.prefix,
       'description': description
     }
 
