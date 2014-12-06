@@ -292,7 +292,6 @@ class SwaggerEndpoint(object):
           'parameters': path_arguments,
           'nickname': 'nickname'
       }
-      op['summary'], op['notes'] = _parse_doc(method_impl)
 
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
@@ -309,6 +308,14 @@ class SwaggerEndpoint(object):
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
         operations.append(op)
+
+      # Only use method_impl summary/notes if not defined in swagger.operation decorator
+      default_summary, default_notes = _parse_doc(method_impl)
+      if not 'summary' in op:
+          op['summary'] = default_summary
+      if not 'notes' in op:
+          op['notes'] = default_notes
+
     return operations
 
 
