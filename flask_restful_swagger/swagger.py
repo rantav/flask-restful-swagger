@@ -18,13 +18,24 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
          resourcePath='/',
          produces=["application/json"],
          api_spec_url='/api/spec',
-         description='Auto generated API docs by flask-restful-swagger'):
-
+         description='Auto generated API docs by flask-restful-swagger',
+         info={}):
+  """
+    Main entry point to provide a swagger doc to your REST API.
+    optional info dictionary will appear on the swagger html page as a informative header.
+    info dict sample is below:
+    info = {"title": "Here is the title of the whole API",
+        "description": "Here is the general description of the whole API, based on the official swagger.wordnik.com sample.  You can find out more about Swagger \n    at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample,\n    you can use the api key \"special-key\" to test the authorization filters",
+        "termsOfServiceUrl": "http://termsOfServiceUrl.example.com",
+        "contact": "contact@example.com",
+        "license": "MIT",
+        "licenseUrl": "http://opensource.org/licenses/MIT"}
+  """
   api_add_resource = api.add_resource
 
   def add_resource(resource, path, *args, **kvargs):
     register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, api_spec_url, description)
+                  resourcePath, produces, api_spec_url, description, info)
 
     resource = make_class(resource)
     endpoint = swagger_endpoint(api, resource, path)
@@ -56,7 +67,7 @@ def make_class(class_or_instance):
 
 
 def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, endpoint_path, description):
+                  resourcePath, produces, endpoint_path, description, info):
   global resource_listing_endpoint
   api_spec_static = endpoint_path + api_spec_static_suffix
 
@@ -71,7 +82,8 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       'produces': produces,
       'x-api-prefix': '',
       'apis': [],
-      'description': description
+      'description': description,
+      'info': info
     }
 
     def registering_blueprint(setup_state):
@@ -104,7 +116,8 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       'resourcePath': resourcePath,
       'produces': produces,
       'x-api-prefix': api.prefix,
-      'description': description
+      'description': description,
+      'info': info
     }
 
     add_resource_func(
@@ -233,7 +246,8 @@ class ResourceLister(Resource):
             req_registry['basePath'] + req_registry['spec_endpoint_path']),
           "description": req_registry['description']
         }
-      ]
+      ],
+      "info": req_registry['info']
     }
 
 
@@ -302,7 +316,7 @@ class SwaggerEndpoint(object):
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
-              if att_name in op and att_name is not 'nickname':
+              if att_name in op and att_name is not 'nickname' and op[att_name]:
                 att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
