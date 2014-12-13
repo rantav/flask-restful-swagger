@@ -290,7 +290,7 @@ class SwaggerEndpoint(object):
       op = {
           'method': method,
           'parameters': path_arguments,
-          'nickname': 'nickname'
+          'nickname': resource.__name__ + method_impl.__name__
       }
       op['summary'], op['notes'] = _parse_doc(method_impl)
 
@@ -298,7 +298,13 @@ class SwaggerEndpoint(object):
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
         for att_name, att_value in list(decorators.items()):
-          if isinstance(att_value, (str, int, list)):
+          if att_name == 'reqparser':
+            # ensure a unique name if we need to create a model
+            model_name = decorators.get('nickname', op['nickname']) + 'Params'
+            op['parameters'] = merge_reqparse_args(op['parameters'],
+                                                   att_value,
+                                                   model_name)
+          elif isinstance(att_value, (str, int, list)):
             if att_name == 'parameters':
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
@@ -312,6 +318,43 @@ class SwaggerEndpoint(object):
     return operations
 
 
+def merge_reqparse_args(base, reqparser, model_name):
+  """Translate a flask-restful RequestParser into swagger params.
+  If any of the reqparser args are location=json (which is the default)
+  then a model (named model_name) will be created with all json args.
+  """
+  model = {'id': model_name, 'properties': {}, 'required': []}
+  register_model = False
+  params = []
+  for arg in reqparser.args:
+    if 'json' in arg.location:
+      register_model = True
+      if arg.required:
+        model['required'].append(arg.name)
+      model['properties'][arg.name] = reqparse_arg_to_swagger_param(arg)
+    else:
+      param = reqparse_arg_to_swagger_param(arg)
+      # note: "cookies" location not supported by swagger
+      if arg.location == 'args':
+        param['paramType'] = 'query'
+      elif arg.location == 'headers':
+        param['paramType'] = 'header'
+      elif arg.location == 'view_args':
+        param['paramType'] = 'path'
+      else:
+        param['paramType'] = arg.location
+      params.append(param)
+
+  if register_model:
+    registry['models'][model_name] = model
+    params.append({'name': 'body',
+                   'paramType': 'body',
+                   'dataType': model_name,
+                   'required': len(model['required']) > 0
+                   })
+  return merge_parameter_list(base, params)
+
+
 def merge_parameter_list(base, override):
   base = list(base)
   names = [x['name'] for x in base]
@@ -323,6 +366,17 @@ def merge_parameter_list(base, override):
     else:
       base.append(o)
   return base
+
+
+def reqparse_arg_to_swagger_param(arg):
+  param = deduce_swagger_type(arg.type)
+  param['name'] = arg.name
+  param['description'] = arg.help
+  param['defaultValue'] = arg.default
+  param['required'] = arg.required
+  if arg.action == 'append':
+    param['allowMultiple'] = True
+  return param
 
 
 class SwaggerRegistry(Resource):
@@ -351,6 +405,14 @@ def model(c=None, *args, **kwargs):
   add_model(c)
   return c
 
+def swagger_type(type_):
+    """Decorator to add __swagger_type property to flask-restful custom input
+    type functions
+    """
+    def inner(f):
+        f.__swagger_type = type_
+        return f
+    return inner
 
 class _Nested(object):
   def __init__(self, klass, **kwargs):
@@ -430,6 +492,11 @@ def add_model(model_class):
 def deduce_swagger_type(python_type_or_object, nested_type=None):
     import inspect
 
+    if inspect.isfunction(python_type_or_object) and \
+            hasattr(python_type_or_object, '__swagger_type'):
+      # custom RequestParser type
+      return {'type': python_type_or_object.__swagger_type}
+
     if inspect.isclass(python_type_or_object):
         predicate = issubclass
     else:
@@ -476,6 +543,9 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
                                          fields.FormattedString,
                                          fields.Url)):
         return 'string'
+    if predicate(python_type_or_object, (bool,
+                                         fields.Boolean)):
+        return 'boolean'
     if predicate(python_type_or_object, (int,
                                          fields.Integer)):
         return 'integer'
@@ -484,9 +554,6 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
                                          fields.Arbitrary,
                                          fields.Fixed)):
         return 'number'
-    if predicate(python_type_or_object, (bool,
-                                         fields.Boolean)):
-        return 'boolean'
     if predicate(python_type_or_object, (fields.DateTime,)):
         return 'date-time'
 
@@ -520,10 +587,12 @@ def extract_path_arguments(path):
     if len(spl) == 1:
       return {'name': spl[0],
               'dataType': 'string',
-              'paramType': 'path'}
+              'paramType': 'path',
+              'required': True}
     else:
       return {'name': spl[1],
               'dataType': spl[0],
-              'paramType': 'path'}
+              'paramType': 'path',
+              'required': True}
 
   return list(map(split_arg, args))

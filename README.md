@@ -17,7 +17,7 @@ And in your program, where you'd usually just use flask-restful, add just a litt
 
 ```
 from flask import Flask
-from flask.ext.restful import  Api
+from flask.ext.restful import Api, Resource, reqparse
 from flask_restful_swagger import swagger
 
 app = Flask(__name__)
@@ -57,7 +57,24 @@ class Todo(Resource):
           ]
         )
     def get(self, todo_id):
+        pass
     
+    # Get swagger parameters from a flask-restful RequestParser
+    # 'title' is a required json param; 'frob' is an optional query param
+    editTodoParser = reqparse.RequestParser()
+    editTodoParser.add_argument('title', type=str, required=True,
+                                help="Edit the Todo title")
+    editTodoParser.add_argument('frob', type=bool, location='args',
+                                help="Frobnicate the Todo item")
+    @swagger.operation(
+        nickname='editTodo',
+        reqparser=editTodoParser
+    )
+    def put(self, todo_id):
+        """Edit a todo item"""
+        args = self.editTodoParser.parse_args()
+        pass
+
 # Operations not decorated with @swagger.operation do not get added to the swagger docs
 
 class Todo(Resource):
@@ -136,7 +153,21 @@ class TodoItemWithResourceFields:
             }
         }
 
-# And in order to close the loop with flask-restify you'd also need to tell flask-restify to @marshal_with the same list of fields when defining your methods.
+# If you are using custom input types with flask-restful RequestParser, then
+# you will probably want to let swagger know what type they are
+@swagger.swagger_type('boolean')
+def my_boolean(value):
+    """ "0", 0, "false", "1", 1, "true" query params are bool"""
+    value = str(value).lower()
+    if value == 'true' or value == '1':
+        return True
+    if value == 'false' or value == '0':
+        return False
+    raise ValueError("Invalid literal for my_boolean(): {}".format(value))
+
+
+# And in order to close the loop with flask-restful you'd also need to tell
+# flask-restful to @marshal_with the same list of fields when defining your methods.
 # Example:
 
 @marshal_with(TodoItemWithResourceFields.resource_fields)
