@@ -587,12 +587,12 @@ def extract_path_arguments(path):
     if len(spl) == 1:
       return {'name': spl[0],
               'dataType': 'string',
-              'paramType': 'path',
-              'required': True}
+              'paramType': 'path'}
+              # 'required': True}
     else:
       return {'name': spl[1],
               'dataType': spl[0],
-              'paramType': 'path',
-              'required': True}
+              'paramType': 'path'}
+              # 'required': True}
 
   return list(map(split_arg, args))
