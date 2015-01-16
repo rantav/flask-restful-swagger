@@ -6,10 +6,11 @@ import re
 from flask import request, abort, Response
 from flask.ext.restful import Resource, fields
 from flask_restful_swagger import (
-  registry, api_spec_static)
+  registry)
 from jinja2 import Template
 
 resource_listing_endpoint = None
+api_spec_static_suffix = '/_/static/'
 
 
 def docs(api, apiVersion='0.0', swaggerVersion='1.2',
@@ -17,15 +18,51 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
          resourcePath='/',
          produces=["application/json"],
          api_spec_url='/api/spec',
-         description='Auto generated API docs by flask-restful-swagger'):
-
+         description='Auto generated API docs by flask-restful-swagger',
+         info={}):
+  """
+    Main entry point to provide a swagger doc to your REST API.
+    optional info dictionary will appear on the swagger html page as a informative header.
+    info dict sample is below:
+    info = {"title": "Here is the title of the whole API",
+        "description": "Here is the general description of the whole API, based on the official swagger.wordnik.com sample.  You can find out more about Swagger \n    at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample,\n    you can use the api key \"special-key\" to test the authorization filters",
+        "termsOfServiceUrl": "http://termsOfServiceUrl.example.com",
+        "contact": "contact@example.com",
+        "license": "MIT",
+        "licenseUrl": "http://opensource.org/licenses/MIT"}
+  """
   api_add_resource = api.add_resource
 
   def add_resource(resource, path, *args, **kvargs):
     register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, api_spec_url, description)
+                  resourcePath, produces, api_spec_url, description, info)
 
     resource = make_class(resource)
+    req_registry = _get_current_registry(api=api)
+
+    # Retrieve hierarchy values if this class was annotated with @swagger.resource, else fall back to default one
+    hierarchy_id = resource.__dict__.get('__swagger_attr', {}).get('hierarchy_id', 'default')
+    hierarchy_description = resource.__dict__.\
+      get('__swagger_attr', {}).\
+      get('hierarchy_description', 'Operations on {0} resources'.format(hierarchy_id))
+
+    if not hierarchy_id in req_registry['resources_hierarchy'].keys():
+      current_hierarchy_endpoint = '{0}/{1}'.format(req_registry['spec_endpoint_path'] , hierarchy_id)
+      req_registry['resources_hierarchy'][hierarchy_id] = {
+        'link': {
+          'path_suffix': current_hierarchy_endpoint,
+          'description': hierarchy_description},
+        'content': []
+      }
+
+      api_add_resource(
+        SwaggerRegistry,
+        current_hierarchy_endpoint,
+        current_hierarchy_endpoint + '.json',
+        current_hierarchy_endpoint + '.html',
+        endpoint='swaggerregistry/' + hierarchy_id
+      )
+    #current_hierarchy_endpoint_str.replace('/', '.')
     endpoint = swagger_endpoint(api, resource, path)
 
     # Add a .help.json help url
@@ -55,9 +92,9 @@ def make_class(class_or_instance):
 
 
 def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, endpoint_path, description):
-  global api_spec_static
+                  resourcePath, produces, endpoint_path, description, info):
   global resource_listing_endpoint
+  api_spec_static = endpoint_path + api_spec_static_suffix
 
   if api.blueprint and not registry.get(api.blueprint.name):
     # Most of all this can be taken from the blueprint/app
@@ -70,7 +107,18 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       'produces': produces,
       'x-api-prefix': '',
       'apis': [],
-      'description': description
+      'description': description,
+      'info': info,
+      'resources_hierarchy': {
+        'default': {
+          'link': {
+            # Real 'path' will be rendered at runtime from updated basePath and path_suffix
+            'path_suffix': endpoint_path + '/default',
+            'description': description
+          },
+          'content': []
+        }
+      }
     }
 
     def registering_blueprint(setup_state):
@@ -81,6 +129,7 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
 
     add_resource_func(
       SwaggerRegistry,
+      endpoint_path + '/default',
       endpoint_path,
       endpoint_path + '.json',
       endpoint_path + '.html'
@@ -89,7 +138,6 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
     resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
     add_resource_func(ResourceLister, resource_listing_endpoint)
 
-    api_spec_static = endpoint_path + '/_/static/'
     add_resource_func(
       StaticFiles,
       api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
@@ -103,11 +151,24 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       'spec_endpoint_path': endpoint_path,
       'resourcePath': resourcePath,
       'produces': produces,
-      'description': description
+      'x-api-prefix': api.prefix,
+      'description': description,
+      'info': info,
+      'resources_hierarchy': {
+        'default': {
+          'link': {
+            # Real 'path' will be rendered at runtime from updated basePath and path_suffix
+            'path_suffix': endpoint_path + '/default',
+            'description': description
+          },
+          'content': []
+        }
+      }
     }
 
     add_resource_func(
       SwaggerRegistry,
+      endpoint_path + '/default',
       endpoint_path,
       endpoint_path + '.json',
       endpoint_path + '.html',
@@ -119,7 +180,6 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
       ResourceLister, resource_listing_endpoint,
       endpoint='app/resourcelister')
 
-    api_spec_static = endpoint_path + '/_/static/'
     add_resource_func(
       StaticFiles,
       api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
@@ -169,8 +229,8 @@ def render_page(page, info):
   if url.endswith('/'):
     url = url.rstrip('/')
   conf = {
-    'base_url': url + api_spec_static,
-    'full_base_url': url + api_spec_static
+    'base_url': url + req_registry['spec_endpoint_path'] + api_spec_static_suffix,
+    'full_base_url': url + req_registry['spec_endpoint_path'] + api_spec_static_suffix
   }
   if info is not None:
     conf.update(info)
@@ -224,23 +284,33 @@ class StaticFiles(Resource):
 class ResourceLister(Resource):
   def get(self):
     req_registry = _get_current_registry()
+    apis = []
+    if 'resources_hierarchy' in req_registry and req_registry['resources_hierarchy']:
+      apis = [{ 'path': req_registry['basePath'] + item['link']['path_suffix'],
+                'description': item['link']['description']
+              } for item in req_registry['resources_hierarchy'].values() if 'content' in item and item['content']]
+
     return {
       "apiVersion": req_registry['apiVersion'],
       "swaggerVersion": req_registry['swaggerVersion'],
-      "apis": [
-        {
-          "path": (
-            req_registry['basePath'] + req_registry['spec_endpoint_path']),
-          "description": req_registry['description']
-        }
-      ]
+      "apis": apis,
+      "info": req_registry['info']
     }
 
 
 def swagger_endpoint(api, resource, path):
   endpoint = SwaggerEndpoint(resource, path)
   req_registry = _get_current_registry(api=api)
-  req_registry.setdefault('apis', []).append(endpoint.__dict__)
+
+  # Retrieve hierarchy values if this class was annotated with @swagger.resource, else fall back to default one
+  hierarchy_id = resource.__dict__.get('__swagger_attr', {}).get('hierarchy_id', 'default')
+
+  # Only add this endpoint to the swagger registry for documentation if any swagger decorated operation
+  if endpoint.__dict__.get('operations', []):
+    req_registry['resources_hierarchy'].\
+      setdefault(hierarchy_id, {}).\
+      setdefault('content', []).\
+      append(endpoint.__dict__)
 
   class SwaggerResource(Resource):
     def get(self):
@@ -292,7 +362,6 @@ class SwaggerEndpoint(object):
           'parameters': path_arguments,
           'nickname': 'nickname'
       }
-      op['summary'], op['notes'] = _parse_doc(method_impl)
 
       if '__swagger_attr' in method_impl.__dict__:
         # This method was annotated with @swagger.operation
@@ -303,12 +372,20 @@ class SwaggerEndpoint(object):
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
-              if att_name in op and att_name is not 'nickname':
+              if att_name in op and att_name is not 'nickname' and op[att_name]:
                 att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
         operations.append(op)
+
+      # Only use method_impl summary/notes if not defined in swagger.operation decorator
+      default_summary, default_notes = _parse_doc(method_impl)
+      if not 'summary' in op:
+          op['summary'] = default_summary
+      if not 'notes' in op:
+          op['notes'] = default_notes
+
     return operations
 
 
@@ -331,7 +408,47 @@ class SwaggerRegistry(Resource):
     if request.path.endswith('.html'):
       return render_homepage(
         req_registry['basePath'] + req_registry['spec_endpoint_path'] + '/_/resource_list.json')
-    return req_registry
+
+    hierarchy_id = 'default'
+    apis = []
+    if request.path.endswith(req_registry['spec_endpoint_path']):
+      # Retrieve a unified api operations content
+      # Usefull to make a diff easily between a runtime app and a git archived state in your continuous integration
+      apis= [hierarchy_item['content'] \
+             for hierarchy_id, hierarchy_item in req_registry['resources_hierarchy'].items() \
+             if 'content' in hierarchy_item and hierarchy_item['content']
+      ]
+    else:
+      for tmp_hierarchy_id, tmp_hierarchy_item in req_registry['resources_hierarchy'].items():
+        if request.path.endswith(req_registry['spec_endpoint_path'] + '/' + tmp_hierarchy_id):
+          apis = tmp_hierarchy_item['content']
+
+    if not apis:
+      apis = req_registry['resources_hierarchy']['default']['content']
+
+    hierarchy_registry = {
+      "apiVersion": req_registry['apiVersion'],
+      "swaggerVersion": req_registry['swaggerVersion'],
+      "basePath": req_registry['basePath'],
+      "resourcePath": '{0}/{1}'.format(req_registry['resourcePath'], hierarchy_id),
+      "produces": req_registry['produces'],
+      "apis": apis,
+      "models": req_registry.get('models', {})
+    }
+    return hierarchy_registry
+
+
+def resource(**kwargs):
+  """
+  This dedorator marks a resource class as a swagger resource so that we can easily
+  add and extract attributes from it.
+  It saves the decorator's key-values at the class level so we can later
+  extract them later when add_resource is invoked.
+  """
+  def inner(k):
+    k.__swagger_attr = kwargs
+    return k
+  return inner
 
 
 def operation(**kwargs):
@@ -425,7 +542,7 @@ def add_model(model_class):
   if 'swagger_metadata' in dir(model_class):
     for field_name, field_metadata in model_class.swagger_metadata.items():
         if field_name in properties:
-            properties[field_name] = dict(properties[field_name].items() + field_metadata.items())
+            properties[field_name].update(field_metadata)
 
 def deduce_swagger_type(python_type_or_object, nested_type=None):
     import inspect
