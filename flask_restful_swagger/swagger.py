@@ -2,6 +2,7 @@ import functools
 import inspect
 import os
 import re
+import urlparse
 
 from flask import request, abort, Response
 from flask.ext.restful import Resource, fields
@@ -148,7 +149,8 @@ def _get_current_registry(api=None):
     app_name = api.blueprint.name if api.blueprint else None
   else:
     app_name = request.blueprint
-    overrides = {'basePath': request.url_root.rstrip('/')}
+    urlparts =  urlparse.urlparse(request.url_root.rstrip('/'))
+    overrides = {'basePath': urlparse.urlunparse([''] + urlparts[1:])}
 
   if not app_name:
     app_name = 'app'
