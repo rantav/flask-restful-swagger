@@ -150,7 +150,8 @@ def _get_current_registry(api=None):
   else:
     app_name = request.blueprint
     urlparts =  urlparse.urlparse(request.url_root.rstrip('/'))
-    overrides = {'basePath': urlparse.urlunparse([''] + urlparts[1:])}
+    proto = request.headers.get("x-forwarded-proto") or urlparts[0] 
+    overrides = {'basePath': urlparse.urlunparse([proto] + list(urlparts[1:]))}
 
   if not app_name:
     app_name = 'app'
