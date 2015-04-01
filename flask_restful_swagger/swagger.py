@@ -2,7 +2,13 @@ import functools
 import inspect
 import os
 import re
-import urlparse
+
+try:
+    # urlparse is renamed to urllib.parse in python 3
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
+
 
 from flask import request, abort, Response
 from flask.ext.restful import Resource, fields
@@ -150,7 +156,7 @@ def _get_current_registry(api=None):
   else:
     app_name = request.blueprint
     urlparts =  urlparse.urlparse(request.url_root.rstrip('/'))
-    proto = request.headers.get("x-forwarded-proto") or urlparts[0] 
+    proto = request.headers.get("x-forwarded-proto") or urlparts[0]
     overrides = {'basePath': urlparse.urlunparse([proto] + list(urlparts[1:]))}
 
   if not app_name:
