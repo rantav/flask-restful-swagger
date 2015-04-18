@@ -15,7 +15,7 @@ pip install flask-restful-swagger
 And in your program, where you'd usually just use flask-restful, add just a little bit of sauce and get a swagger spec out.
 
 
-```
+```python
 from flask import Flask
 from flask.ext.restful import  Api
 from flask_restful_swagger import swagger
@@ -151,7 +151,7 @@ flask-restful has a decorator `@marshal_with`. With the following setup it's pos
 
 You have to:
 
-```
+```python
 # Define your model with resource_fields
 @swagger.model
 class TodoItemWithResourceFields:
