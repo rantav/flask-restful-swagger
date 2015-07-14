@@ -1,5 +1,7 @@
 # flask-restful-swagger
 
+### We are looking for a maintainer to this package! https://github.com/rantav/flask-restful-swagger/issues/52
+
 flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which enables [swagger](https://developers.helloreverb.com/swagger/) support.
 
 In essense, you just need to wrap the Api instance and add a few python decorators to get full swagger support.
