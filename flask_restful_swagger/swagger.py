@@ -167,7 +167,7 @@ def _get_current_registry(api=None):
   reg = registry.setdefault(app_name, {})
   reg.update(overrides)
 
-  reg['basePath'] = reg['basePath'] + reg.get('x-api-prefix', '')
+  reg['basePath'] = reg['basePath'] + (reg.get('x-api-prefix', '') or '')
 
   return reg
 
