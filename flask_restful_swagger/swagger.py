@@ -1,4 +1,4 @@
-import functools
+﻿import functools
 import inspect
 import os
 import re
@@ -317,6 +317,14 @@ class SwaggerEndpoint(object):
               op[att_name] = att_value
           elif isinstance(att_value, object):
             op[att_name] = att_value.__name__
+          if att_name == 'implementationNotes':
+            new_line = '<br/>'
+            string_index = op['notes'].find(new_line)
+            if string_index != -1:
+              string_index += len(new_line)
+              op['notes'] = op['notes'][:string_index] + att_value
+            else:
+              op['notes'] += new_line + att_value
         operations.append(op)
     return operations
 
