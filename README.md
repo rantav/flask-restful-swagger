@@ -1,11 +1,17 @@
 # flask-restful-swagger
 
-### We are looking for a maintainer to this package! https://github.com/rantav/flask-restful-swagger/issues/52
+### Deprecated!
+Look, this package is very useful for many folks. It still works and it's still awesome and If you want to use it - please do. But - I can't support it anymore and I'm looking for someone to help. Looking for a maintainer to this package: https://github.com/rantav/flask-restful-swagger/issues/52
 
+So until we find a maintainer I'm forced to mark it as "deprecated" not b/c it isn't working, just b/c I beleive in providing the best support for my open source projects and if I can't provide it I want to be vocal about it. 
+
+
+## What is flask-restful-swagger?
 flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which enables [swagger](https://developers.helloreverb.com/swagger/) support.
 
 In essense, you just need to wrap the Api instance and add a few python decorators to get full swagger support.
 
+## How to:
 Install:
 
 ```
