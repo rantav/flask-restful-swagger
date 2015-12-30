@@ -1,9 +1,7 @@
 # flask-restful-swagger
 
-### Deprecated!
-Look, this package is very useful for many folks. It still works and it's still awesome and If you want to use it - please do. But - I can't support it anymore and I'm looking for someone to help. Looking for a maintainer to this package: https://github.com/rantav/flask-restful-swagger/issues/52
-
-So until we find a maintainer I'm forced to mark it as "deprecated" not b/c it isn't working, just b/c I beleive in providing the best support for my open source projects and if I can't provide it I want to be vocal about it. 
+### We have a new project lead!
+We have a new project lead, @niall-byrne (Dec 2015), thank you Niall!
 
 
 ## What is flask-restful-swagger?
