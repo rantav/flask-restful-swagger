@@ -102,6 +102,10 @@ class Schema(dict):
             if not self.properties or k not in self.properties:
                 raise ValueError('The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
             self[k] = v
+        if hasattr(self, 'required'):
+            for key in self.required:
+                if key not in kwargs:
+                    raise ValueError('The attribute "{0}" is required'.format(key))
 
     @classmethod
     def reference(cls):
