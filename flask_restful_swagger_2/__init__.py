@@ -98,10 +98,21 @@ class Schema(dict):
     properties = None
 
     def __init__(self, **kwargs):
-        for k, v in kwargs.iteritems():
-            if not self.properties or k not in self.properties:
-                raise ValueError('The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
-            self[k] = v
+        if self.properties:
+            for k, v in kwargs.iteritems():
+                if k not in self.properties:
+                    raise ValueError('The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
+                if 'type' in self.properties[k]:
+                    type_ = self.properties[k]['type']
+                    if type_ == 'integer' and not isinstance(v, int):
+                        raise ValueError('The attribute "{0}" must be an int, but was "{1}"'.format(k, type(v)))
+                    if type_ == 'number' and not isinstance(v, int) and not isinstance(v, float):
+                        raise ValueError('The attribute "{0}" must be an int or float, but was "{1}"'.format(k, type(v)))
+                    if type_ == 'string' and not isinstance(v, basestring):
+                        raise ValueError('The attribute "{0}" must be a string, but was "{1}"'.format(k, type(v)))
+                    if type_ == 'boolean' and not isinstance(v, bool):
+                        raise ValueError('The attribute "{0}" must be an int, but was "{1}"'.format(k, type(v)))
+                self[k] = v
         if hasattr(self, 'required'):
             for key in self.required:
                 if key not in kwargs:
