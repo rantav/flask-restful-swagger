@@ -184,16 +184,16 @@ python example.py
 And visit:
 
 ```
-curl http://localhost:5000/api/spec.json
+curl http://localhost:5000/api/swagger.json
 ```
 
 # Passing more metadata to swagger
 When creating the `swagger.docs` object you may pass additional arguments, such as the following:
 
 ```
-api_spec_url - where to serve the swagger spec from. Default is /api/spec. This will make the json
-available at /api/spec as well as /api/spec.json and will also present a nice interactive
-HTML interface at /api/spec.html
+api_spec_url - where to serve the swagger spec from. Default is /api/swagger. This will make the json
+available at /api/swagger as well as /api/swagger.json and will also present a nice interactive
+HTML interface at /api/swagger.html
 
 apiVersion - passed directly to swagger as the apiVersion attribute. Default: 0.0
 
@@ -209,17 +209,17 @@ description - description of this API endpoint. Defaults to 'Auto generated API 
 ```
 
 # Accessing the result json spec and an Interactive HTML interface
-Assuming you provided `swagger.docs` with a parameter `api_spec_url='/api/spec'` (or left out in which case the default is '/api/spec') you may access the resulting json at /api/spec.json.
-You may also access /api/spec.html where you'd find an interactive HTML page that lets you play with the API to some extent.  
+Assuming you provided `swagger.docs` with a parameter `api_spec_url='/api/swagger'` (or left out in which case the default is '/api/swagger') you may access the resulting json at /api/spec.json.
+You may also access /api/swagger.html where you'd find an interactive HTML page that lets you play with the API to some extent.  
 
 Here's how this HTML page would look like: 
 
-![An example /api/spec.html page](http://cl.ly/image/312Q2u091u24/Screen%20Shot%202013-12-17%20at%2012.26.02%20PM.png)
+![An example /api/swagger.html page](http://cl.ly/image/312Q2u091u24/Screen%20Shot%202013-12-17%20at%2012.26.02%20PM.png)
 
 # Accessing individual endpoints (.help.json)
 flask-restful-swagger adds some useful help pages (well, json documents) to each of your resources. This isn't part of the swagger spec, but could be useful anyhow.
 With each endpoint you register, there's also an automatically registered help endpoint which ends with a .help.json extension.
-So for example when registering the resource `api.add_resource(TodoList, '/todos')` you may access the actual api through the url `/todos` and you may also access the help page at `/todos.help.json`. This help page spits out the relevant json content only for this endpoint (as opposed to `/api/spec.json` which spits out the entire swagger document, which could be daunting)
+So for example when registering the resource `api.add_resource(TodoList, '/todos')` you may access the actual api through the url `/todos` and you may also access the help page at `/todos.help.json`. This help page spits out the relevant json content only for this endpoint (as opposed to `/api/swagger.json` which spits out the entire swagger document, which could be daunting)
 
 Example:
 

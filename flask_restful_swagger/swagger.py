@@ -19,11 +19,11 @@ from jinja2 import Template
 resource_listing_endpoint = None
 
 
-def docs(api, apiVersion='0.0', swaggerVersion='1.2',
+def docs(api, apiVersion='0.0', swaggerVersion='2.0',
          basePath='http://localhost:5000',
          resourcePath='/',
          produces=["application/json"],
-         api_spec_url='/api/spec',
+         api_spec_url='/api/swagger',
          description='Auto generated API docs by flask-restful-swagger'):
 
   api_add_resource = api.add_resource
@@ -105,7 +105,7 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
   elif not 'app' in registry:
     registry['app'] = {
       'apiVersion': apiVersion,
-      'swaggerVersion': swaggerVersion,
+      'swagger': swaggerVersion,
       'basePath': basePath,
       'spec_endpoint_path': endpoint_path,
       'resourcePath': resourcePath,
@@ -235,7 +235,7 @@ class ResourceLister(Resource):
     req_registry = _get_current_registry()
     return {
       "apiVersion": req_registry['apiVersion'],
-      "swaggerVersion": req_registry['swaggerVersion'],
+      "swagger": req_registry['swagger'],
       "apis": [
         {
           "path": (
