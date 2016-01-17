@@ -66,7 +66,7 @@ api.add_resource(Todo, '/todos/<string:todo_id>')
 ```
 
 ## Using models
-Create a model by inheriting from `flask.ext.restful_swagger_2.Model`
+Create a model by inheriting from `flask.ext.restful_swagger_2.Schema`
 
 ```python
 from flask.ext.restful_swagger_2 import Schema
