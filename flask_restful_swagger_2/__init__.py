@@ -110,3 +110,7 @@ class Schema(dict):
     @classmethod
     def definitions(cls):
         return {k: v for k, v in cls.__dict__.iteritems() if not k.startswith('_')}
+
+    @classmethod
+    def array(cls):
+        return {'type': 'array', 'items': cls}

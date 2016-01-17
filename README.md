@@ -88,6 +88,7 @@ class MyOtherModel(Schema):
             'type': 'string'
         },
         'mail': MyModel,
+        'moreMails': MyModel.array()
     }
     required = ['name']
 ```
