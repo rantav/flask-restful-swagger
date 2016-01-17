@@ -61,15 +61,15 @@ def validate_operation_object(operation_object):
         if k in ['tags', 'consumes', 'produces', 'schemes']:
             if isinstance(v, list):
                 continue
-            raise ValidationError('"{0}" must be a list but was "{1}"', k, type(v))
+            raise ValidationError('Invalid operation object. "{0}" must be a list but was "{1}"', k, type(v))
         if k in ['deprecated']:
             if isinstance(v, bool):
                 continue
-            raise ValidationError('"{0}" must be a bool but was "{1}"', k, type(v))
+            raise ValidationError('Invalid operation object. "{0}" must be a bool but was "{1}"', k, type(v))
         if k in ['summary', 'description', 'operationId']:
             if isinstance(v, basestring):
                 continue
-            raise ValidationError('"{0}" must be a string but was "{1}"', k, type(v))
+            raise ValidationError('Invalid operation object. "{0}" must be a string but was "{1}"', k, type(v))
         if k in ['externalDocs']:
             validate_external_documentation_object(v)
             continue
@@ -164,8 +164,15 @@ def validate_security_requirement_object(security_requirement_object):
     pass
 
 
+def validate_definitions_object(definition_object):
+    for k, v in definition_object.iteritems():
+        validate_schema_object(v)
+
+
 def validate_schema_object(schema_object):
-    pass
+    for k, v in schema_object.iteritems():
+        if k == 'required' and not isinstance(v, list):
+            raise ValidationError('Invalid schema object. "{0}" must a list but was {1}'.format(k, type(v)))
 
 
 def validate_headers_object(headers_object):
