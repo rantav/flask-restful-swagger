@@ -1,6 +1,6 @@
 from flask.ext.restful import Api as restful_Api
 
-from flask.ext.restful_swagger.swagger import _create_swagger_endpoint
+from flask.ext.restful_swagger.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError
 
 class Api(restful_Api):
 
@@ -33,7 +33,7 @@ class Api(restful_Api):
             '{0}.json'.format(api_spec_url),
             '{0}.html'.format(api_spec_url),
         ]
-        self.add_resource(_create_swagger_endpoint(self), *api_spec_urls, endpoint='swagger')
+        self.add_resource(create_swagger_endpoint(self), *api_spec_urls, endpoint='swagger')
 
     def add_resource(self, resource, *urls, **kwargs):
         path_item = {}
@@ -43,6 +43,9 @@ class Api(restful_Api):
             if swagger_attrs:
                 path_item[method] = swagger_attrs
         if path_item:
+            validate_path_item_object(path_item)
             for url in urls:
+                if not url.startswith('/'):
+                    raise ValidationError('paths must start with a /')
                 self._swagger_object['paths'][url] = path_item
         super(Api, self).add_resource(resource, *urls, **kwargs)
