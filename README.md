@@ -92,7 +92,7 @@ class MyOtherModel(Schema):
     required = ['name']
 ```
 
-You can build your models according to the [swagger schema object](http://swagger.io/specification/#schemaObject)
+You can build your models according to the [swagger schema object specification](http://swagger.io/specification/#schemaObject)
 
 It is recommended that you always return a model in your views. This way, you will always keep your code and your
 documentation in sync.
@@ -107,4 +107,4 @@ python example.py
 
 The swagger spec will by default be at `http://localhost:5000/api/swagger.json`. You can change the url by passing
 `api_spec_url='/my/path'` to the `Api` constructor. You can use swagger-ui to explore your api. Try it online at
-(http://petstore.swagger.io/)[http://petstore.swagger.io/?url=http://localhost:5000/api/swagger.json]
+[http://petstore.swagger.io/](http://petstore.swagger.io/?url=http://localhost:5000/api/swagger.json)
