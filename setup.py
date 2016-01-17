@@ -6,13 +6,13 @@ except ImportError:
 with open('README') as file:
     long_description = file.read()
 
-setup(name='flask-restful-swagger',
-      version='0.19',
+setup(name='flask-restful-swagger-2',
+      version='0.20',
       url='https://github.com/rantav/flask-restful-swagger',
       zip_safe=False,
-      packages=['flask_restful_swagger'],
+      packages=['flask_restful_swagger_2'],
       package_data={
-        'flask_restful_swagger': [
+        'flask_restful_swagger_2': [
           'static/*.*',
           'static/css/*.*',
           'static/images/*.*',

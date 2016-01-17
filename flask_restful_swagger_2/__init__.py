@@ -1,6 +1,6 @@
 from flask.ext.restful import Api as restful_Api
 
-from flask.ext.restful_swagger.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError
+from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError
 
 class Api(restful_Api):
 
