@@ -8,7 +8,7 @@ with open('README') as file:
 
 setup(name='flask-restful-swagger-2',
       version='0.20',
-      url='https://github.com/rantav/flask-restful-swagger',
+      url='https://github.com/swege/flask-restful-swagger-2.0',
       zip_safe=False,
       packages=['flask_restful_swagger_2'],
       package_data={
@@ -20,8 +20,8 @@ setup(name='flask-restful-swagger-2',
           'static/lib/shred/*.*',
         ]
       },
-      description='Extract swagger specs from your flask-restful project',
-      author='Ran Tavory',
+      description='Extract swagger specs from your flask-restful project. Project based on flask-restful-swagger by Ran Tavory.',
+      author='Soeren Wegener',
       license='MIT',
       long_description=long_description,
       install_requires=['Flask-RESTful>=0.2.12']
