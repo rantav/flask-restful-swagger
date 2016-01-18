@@ -24,3 +24,28 @@ class Hello(Resource):
     })
     def get(self):
         return MyOtherModel(name='hi')
+
+
+class SomeParams(Resource):
+   @swagger.doc({
+       'tags': ['Foo', 'Fa'],
+       'description': 'I take a path param',
+       'parameters': [
+           {
+               'name': 'value',
+               'description': 'I will double that',
+               'in': 'pat',
+               'type': 'int'
+           }
+       ],
+       'responses': {
+           '200': {
+               'description': 'So integer',
+               'schema': {
+                   'type': 'integer'
+               }
+           }
+       }
+   })
+   def get(self, value):
+       return value * 2
