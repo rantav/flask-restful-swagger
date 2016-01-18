@@ -114,7 +114,7 @@ api = Api(app)
 def auth(api_key, endpoint, method):
     # Space for your fancy authentication. Return True if access is granted, otherwise False
     # api_key is extracted from the url parameters (?api_key=foo)
-    # endpoint is the full swagger url (e.g. /some/{value}/endpoint)#
+    # endpoint is the full swagger url (e.g. /some/{value}/endpoint)
     # method is the HTTP method
     return True
 
