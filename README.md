@@ -98,6 +98,35 @@ You can build your models according to the [swagger schema object specification]
 It is recommended that you always return a model in your views. This way, you will always keep your code and your
 documentation in sync.
 
+# Using authentication
+
+In the example above, the View Todo was a subclass of `Resource`. `Resource` is provided by `flask_restful`. However,
+`flask_restful_swagger_2` provides a thin wrapper around `Resource` to provide authentication. By using this, you can
+not only prevent access to resources, but also hide the documentation depending on the provided `api_key`.
+
+Example:
+
+```python
+# Import Resource instead from flask_restful_swagger_2
+from flask.ext.restful_swagger_2 import Api, swagger, Resource
+
+api = Api(app)
+def auth(api_key, endpoint, method):
+    # Space for your fancy authentication. Return True if access is granted, otherwise False
+    return True
+
+swagger.auth = auth
+
+class MyView(Resource):
+    @swagger.doc({
+    # documentation...
+    })
+    def get(self):
+        return SomeModel(value=5)
+
+api.add_resource(MyView, '/some/endpoint')
+```
+
 # Running and testing
 
 Run your flask app as usual
