@@ -1,3 +1,5 @@
+import re
+
 from flask import request
 from flask.ext.restful import Resource
 
@@ -206,3 +208,13 @@ def validate_headers_object(headers_object):
 
 def validate_example_object(example_object):
     pass
+
+
+def extract_swagger_path(path):
+    """
+    Extracts a swagger type path from the given flask style path.
+    This /path/<parameter> turns into this /path/{parameter}
+    And this /<string(length=2):lang_code>/<string:id>/<float:probability>
+    to this: /{lang_code}/{id}/{probability}
+    """
+    return re.sub('<(?:[^:]+:)?([^>]+)>', '{\\1}', path)

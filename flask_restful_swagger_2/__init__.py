@@ -3,8 +3,9 @@ import inspect
 from flask.ext.restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
 from flask import request
 
-from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError, \
-    validate_operation_object, validate_definitions_object, _auth as auth
+from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, \
+    ValidationError, validate_operation_object, validate_definitions_object, extract_swagger_path, \
+    _auth as auth
 
 
 def abort(http_status_code, schema=None, **kwargs):
@@ -81,7 +82,7 @@ class Api(restful_Api):
             for url in urls:
                 if not url.startswith('/'):
                     raise ValidationError('paths must start with a /')
-                self._swagger_object['paths'][url] = path_item
+                self._swagger_object['paths'][extract_swagger_path(url)] = path_item
         super(Api, self).add_resource(resource, *urls, **kwargs)
 
     def _extract_schemas(self, obj):
