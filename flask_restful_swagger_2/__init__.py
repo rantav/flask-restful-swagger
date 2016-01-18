@@ -4,7 +4,7 @@ from flask.ext.restful import Api as restful_Api, abort as flask_abort, Resource
 from flask import request
 
 from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError, \
-    validate_operation_object, validate_definitions_object, auth
+    validate_operation_object, validate_definitions_object, _auth as auth
 
 
 def abort(http_status_code, schema=None, **kwargs):

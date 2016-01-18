@@ -14,6 +14,10 @@ def auth(api_key, endpoint, method):
     return True
 
 
+def _auth(*args, **kwargs):
+    auth(*args, **kwargs)
+
+
 def create_swagger_endpoint(api):
     """Creates a flask_restful api endpoint for the swagger spec"""
 
