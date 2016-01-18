@@ -1,13 +1,35 @@
 import inspect
 
-from flask.ext.restful import Api as restful_Api
+from flask.ext.restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
+from flask import request
 
 from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, ValidationError, \
-    validate_operation_object, validate_definitions_object
+    validate_operation_object, validate_definitions_object, auth
+
+
+def abort(http_status_code, schema=None, **kwargs):
+    if schema:
+        kwargs.update(schema)
+    flask_abort(http_status_code, **kwargs)
 
 
 class ModelError(Exception):
     pass
+
+
+def auth_required(f):
+    """Decorator which checks if the request is permitted to call the view"""
+
+    def decorator(*args, **kwargs):
+        if not auth(request.args.get('api_key'), request.endpoint, request.method):
+            abort(401)
+        return f(*args, **kwargs)
+
+    return decorator
+
+
+class Resource(flask_Resource):
+    decorators = [auth_required]
 
 
 class Api(restful_Api):
@@ -83,14 +105,6 @@ class Api(restful_Api):
             definitions[obj.__name__] = definition
             definitions.update(additional_definitions)
             obj = obj.reference()
-        # for k, v in obj.iteritems():
-        #     if 'schema' in v:
-        #         schemaModel = v['schema']
-        #         if inspect.isclass(schemaModel):
-        #             if not issubclass(schemaModel, Schema):
-        #                 raise ValueError('"{0}" is not a subclass of the scheme model'.format(schemaModel))
-        #         v['schema'] = schemaModel.reference()
-        #         definitions[schemaModel.__name__] = schemaModel.definitions()
         return obj, definitions
 
 
@@ -101,13 +115,15 @@ class Schema(dict):
         if self.properties:
             for k, v in kwargs.iteritems():
                 if k not in self.properties:
-                    raise ValueError('The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
+                    raise ValueError(
+                            'The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
                 if 'type' in self.properties[k]:
                     type_ = self.properties[k]['type']
                     if type_ == 'integer' and not isinstance(v, int):
                         raise ValueError('The attribute "{0}" must be an int, but was "{1}"'.format(k, type(v)))
                     if type_ == 'number' and not isinstance(v, int) and not isinstance(v, float):
-                        raise ValueError('The attribute "{0}" must be an int or float, but was "{1}"'.format(k, type(v)))
+                        raise ValueError(
+                                'The attribute "{0}" must be an int or float, but was "{1}"'.format(k, type(v)))
                     if type_ == 'string' and not isinstance(v, basestring):
                         raise ValueError('The attribute "{0}" must be a string, but was "{1}"'.format(k, type(v)))
                     if type_ == 'boolean' and not isinstance(v, bool):

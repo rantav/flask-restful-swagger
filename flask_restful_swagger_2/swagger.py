@@ -1,8 +1,17 @@
+from flask import request
 from flask.ext.restful import Resource
 
 
 class ValidationError(ValueError):
     pass
+
+
+def auth(api_key, endpoint, method):
+    """Override this function in your application.
+
+    If this function returns False, 401 forbidden is raised and the documentation is not visible.
+    """
+    return True
 
 
 def create_swagger_endpoint(api):
@@ -14,7 +23,19 @@ def create_swagger_endpoint(api):
             # filter keys with empty values
             for k, v in api._swagger_object.iteritems():
                 if v or k == 'paths':
-                    swagger_object[k] = v
+                    if k == 'paths':
+                        paths = {}
+                        for endpoint, view in v.iteritems():
+                            views = {}
+                            for method, docs in view.iteritems():
+                                # check permissions. If a user has not access to an api, do not show the docs of it
+                                if auth(request.args.get('api_key'), endpoint, method):
+                                    views[method] = docs
+                            if views:
+                                paths[endpoint] = views
+                        swagger_object['paths'] = paths
+                    else:
+                        swagger_object[k] = v
             return swagger_object
 
     return SwaggerEndpoint
