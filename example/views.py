@@ -34,7 +34,7 @@ class SomeParams(Resource):
            {
                'name': 'value',
                'description': 'I will double that',
-               'in': 'pat',
+               'in': 'path',
                'type': 'int'
            }
        ],

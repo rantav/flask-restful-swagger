@@ -135,6 +135,10 @@ def validate_parameter_object(parameter_object):
     if not parameter_object.has_key('in'):
         raise ValidationError('Invalid parameter object. Missing field "in"')
     else:
+        if parameter_object['in'] not in ['path', 'query', 'header', 'body', 'form']:
+            raise ValidationError(
+                    'Invalid parameter object. Value of field "in" must be path, query, header, body or form, was "{0}"'.format(
+                            parameter_object['in']))
         if parameter_object['in'] == 'body':
             if not parameter_object.has_key('schema'):
                 raise ValidationError('Invalid parameter object. Missing field "schema"')
