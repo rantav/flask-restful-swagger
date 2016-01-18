@@ -22,7 +22,7 @@ def auth_required(f):
     """Decorator which checks if the request is permitted to call the view"""
 
     def decorator(*args, **kwargs):
-        if not auth(request.args.get('api_key'), request.endpoint, request.method):
+        if not auth(request.args.get('api_key'), extract_swagger_path(request.url_rule.rule), request.method):
             abort(401)
         return f(*args, **kwargs)
 
