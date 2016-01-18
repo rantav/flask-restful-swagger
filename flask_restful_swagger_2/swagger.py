@@ -15,7 +15,7 @@ def auth(api_key, endpoint, method):
 
 
 def _auth(*args, **kwargs):
-    auth(*args, **kwargs)
+    return auth(*args, **kwargs)
 
 
 def create_swagger_endpoint(api):
