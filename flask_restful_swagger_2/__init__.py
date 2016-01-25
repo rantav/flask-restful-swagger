@@ -7,6 +7,11 @@ from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validat
     ValidationError, validate_operation_object, validate_definitions_object, extract_swagger_path, \
     _auth as auth
 
+# python3 compatibility
+try:
+  basestring
+except NameError:
+  basestring = str
 
 def abort(http_status_code, schema=None, **kwargs):
     if schema:
