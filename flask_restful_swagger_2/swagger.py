@@ -3,6 +3,11 @@ import re
 from flask import request
 from flask.ext.restful import Resource
 
+# python3 compatibility
+try:
+  basestring
+except NameError:
+  basestring = str
 
 class ValidationError(ValueError):
     pass
@@ -27,13 +32,13 @@ def create_swagger_endpoint(api):
         def get(self):
             swagger_object = {}
             # filter keys with empty values
-            for k, v in api._swagger_object.iteritems():
+            for k, v in api._swagger_object.items():
                 if v or k == 'paths':
                     if k == 'paths':
                         paths = {}
-                        for endpoint, view in v.iteritems():
+                        for endpoint, view in v.items():
                             views = {}
-                            for method, docs in view.iteritems():
+                            for method, docs in view.items():
                                 # check permissions. If a user has not access to an api, do not show the docs of it
                                 if auth(request.args.get('api_key'), endpoint, method):
                                     views[method] = docs
@@ -63,7 +68,7 @@ def doc(operation_object):
 def validate_path_item_object(path_item_object):
     """Checks if the passed object is valid according to http://swagger.io/specification/#pathItemObject"""
 
-    for k, v in path_item_object.iteritems():
+    for k, v in path_item_object.items():
         if k in ['$ref']:
             continue
         if k in ['get', 'put', 'post', 'delete', 'options', 'head', 'patch']:
@@ -84,7 +89,7 @@ def validate_path_item_object(path_item_object):
 
 
 def validate_operation_object(operation_object):
-    for k, v in operation_object.iteritems():
+    for k, v in operation_object.items():
         if k in ['tags', 'consumes', 'produces', 'schemes']:
             if isinstance(v, list):
                 continue
@@ -118,21 +123,21 @@ def validate_operation_object(operation_object):
         raise ValidationError('Invalid operation object. Unknown field "{field}". See {url}'.format(
                 field=k,
                 url='http://swagger.io/specification/#pathItemObject'))
-    if not operation_object.has_key('responses'):
+    if 'responses' not in operation_object:
         raise ValidationError('Invalid operation object. Missing field "responses"')
 
 
 def validate_parameter_object(parameter_object):
-    for k, v in parameter_object.iteritems():
+    for k, v in parameter_object.items():
         if k not in ['name', 'in', 'description', 'required', 'schema', 'type', 'format', 'allowEmptyValue', 'items',
                      'collectionFormat', 'default', 'maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum',
                      'maxLength', 'minLength', 'pattern', 'maxItems', 'minItems', 'uniqueItems', 'enum', 'multipleOf']:
             raise ValidationError('Invalid parameter object. Unknown field "{field}". See {url}'.format(
                     field=k,
                     url='http://swagger.io/specification/#parameterObject'))
-    if not parameter_object.has_key('name'):
+    if 'name' not in parameter_object:
         raise ValidationError('Invalid parameter object. Missing field "name"')
-    if not parameter_object.has_key('in'):
+    if 'in' not in parameter_object:
         raise ValidationError('Invalid parameter object. Missing field "in"')
     else:
         if parameter_object['in'] not in ['path', 'query', 'header', 'body', 'form']:
@@ -140,18 +145,18 @@ def validate_parameter_object(parameter_object):
                     'Invalid parameter object. Value of field "in" must be path, query, header, body or form, was "{0}"'.format(
                             parameter_object['in']))
         if parameter_object['in'] == 'body':
-            if not parameter_object.has_key('schema'):
+            if 'schema' not in parameter_object:
                 raise ValidationError('Invalid parameter object. Missing field "schema"')
         else:
-            if not parameter_object.has_key('type'):
+            if 'type' not in parameter_object:
                 raise ValidationError('Invalid parameter object. Missing field "type"')
             if parameter_object['type'] == 'array':
-                if not parameter_object.has_key('items'):
+                if 'items' not in parameter_object:
                     raise ValidationError('Invalid parameter object. Missing field "items"')
 
 
 def validate_reference_object(parameter_object):
-    if len(parameter_object.keys()) > 1 or not parameter_object.has_key('$ref'):
+    if len(parameter_object.keys()) > 1 or '$ref' not in parameter_object:
         raise ValidationError('Invalid reference object. It may only contain key "$ref"')
 
 
@@ -160,7 +165,7 @@ def validate_external_documentation_object(external_documentation_object):
 
 
 def validate_responses_object(responses_object):
-    for k, v in responses_object.iteritems():
+    for k, v in responses_object.items():
         if k.startswith('x-'):
             continue
         try:
@@ -170,7 +175,7 @@ def validate_responses_object(responses_object):
 
 
 def validate_response_object(response_object):
-    for k, v in response_object.iteritems():
+    for k, v in response_object.items():
         if k == 'description':
             continue
         if k == 'schema':
@@ -187,7 +192,7 @@ def validate_response_object(response_object):
         raise ValidationError('Invalid response object. Unknown field "{field}". See {url}'.format(
                 field=k,
                 url='http://swagger.io/specification/#responseObject'))
-    if not response_object.has_key('description'):
+    if 'description' not in response_object:
         raise ValidationError('Invalid response object. Missing field "description"')
 
 
@@ -196,12 +201,12 @@ def validate_security_requirement_object(security_requirement_object):
 
 
 def validate_definitions_object(definition_object):
-    for k, v in definition_object.iteritems():
+    for k, v in definition_object.items():
         validate_schema_object(v)
 
 
 def validate_schema_object(schema_object):
-    for k, v in schema_object.iteritems():
+    for k, v in schema_object.items():
         if k == 'required' and not isinstance(v, list):
             raise ValidationError('Invalid schema object. "{0}" must a list but was {1}'.format(k, type(v)))
 

@@ -93,7 +93,7 @@ class Api(restful_Api):
                 obj[i], definitions_ = self._extract_schemas(o)
                 definitions.update(definitions_)
         if isinstance(obj, dict):
-            for k, v in obj.iteritems():
+            for k, v in obj.items():
                 obj[k], definitions_ = self._extract_schemas(v)
                 definitions.update(definitions_)
         if inspect.isclass(obj):
@@ -114,7 +114,7 @@ class Schema(dict):
 
     def __init__(self, **kwargs):
         if self.properties:
-            for k, v in kwargs.iteritems():
+            for k, v in kwargs.items():
                 if k not in self.properties:
                     raise ValueError(
                             'The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
@@ -141,7 +141,7 @@ class Schema(dict):
 
     @classmethod
     def definitions(cls):
-        return {k: v for k, v in cls.__dict__.iteritems() if not k.startswith('_')}
+        return {k: v for k, v in cls.__dict__.items() if not k.startswith('_')}
 
     @classmethod
     def array(cls):
