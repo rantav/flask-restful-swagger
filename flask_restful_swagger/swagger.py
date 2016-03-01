@@ -28,25 +28,26 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
   api_add_resource = api.add_resource
 
-  def add_resource(resource, path, *args, **kvargs):
+  def add_resource(resource, *urls, **kvargs):
     register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, api_spec_url, description)
 
     resource = make_class(resource)
-    endpoint = swagger_endpoint(api, resource, path)
+    for url in urls:
+      endpoint = swagger_endpoint(api, resource, url)
 
-    # Add a .help.json help url
-    swagger_path = extract_swagger_path(path)
+      # Add a .help.json help url
+      swagger_path = extract_swagger_path(url)
 
-    # Add a .help.html help url
-    endpoint_html_str = '{0}/help'.format(swagger_path)
-    api_add_resource(
-      endpoint,
-      "{0}.help.json".format(swagger_path),
-      "{0}.help.html".format(swagger_path),
-      endpoint=endpoint_html_str)
+      # Add a .help.html help url
+      endpoint_html_str = '{0}/help'.format(swagger_path)
+      api_add_resource(
+        endpoint,
+        "{0}.help.json".format(swagger_path),
+        "{0}.help.html".format(swagger_path),
+        endpoint=endpoint_html_str)
 
-    return api_add_resource(resource, path, *args, **kvargs)
+    return api_add_resource(resource, *urls, **kvargs)
 
   api.add_resource = add_resource
 
