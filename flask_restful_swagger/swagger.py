@@ -18,7 +18,9 @@ from jinja2 import Template
 resource_listing_endpoint = None
 
 
-def docs(api, apiVersion='0.0', swaggerVersion='1.2',
+def docs(api,
+         apiVersion='0.0',
+         swaggerVersion='1.2',
          basePath='http://localhost:5000',
          resourcePath='/',
          produces="application/json",
@@ -76,7 +78,7 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
             'produces': produces,
             'x-api-prefix': '',
             'apis': [],
-            'description': description
+            'description': description,
         }
 
         def registering_blueprint(setup_state):
@@ -86,10 +88,10 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
         api.blueprint.record(registering_blueprint)
 
         add_resource_func(
-                SwaggerRegistry,
-                endpoint_path,
-                endpoint_path + '.json',
-                endpoint_path + '.html'
+            SwaggerRegistry,
+            endpoint_path,
+            endpoint_path + '.json',
+            endpoint_path + '.html',
         )
 
         resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
@@ -97,11 +99,12 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
 
         api_spec_static = endpoint_path + '/_/static/'
         add_resource_func(
-                StaticFiles,
-                api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
-                api_spec_static + '<string:dir1>/<string:dir2>',
-                api_spec_static + '<string:dir1>')
-    elif not 'app' in registry:
+            StaticFiles,
+            api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+            api_spec_static + '<string:dir1>/<string:dir2>',
+            api_spec_static + '<string:dir1>',
+        )
+    elif not 'app' in registry:  # TODO: reuse previous code?
         registry['app'] = {
             'apiVersion': apiVersion,
             'swaggerVersion': swaggerVersion,
@@ -109,29 +112,31 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
             'spec_endpoint_path': endpoint_path,
             'resourcePath': resourcePath,
             'produces': produces,
-            'description': description
+            'description': description,
         }
 
         add_resource_func(
-                SwaggerRegistry,
-                endpoint_path,
-                endpoint_path + '.json',
-                endpoint_path + '.html',
-                endpoint='app/registry'
+            SwaggerRegistry,
+            endpoint_path,
+            endpoint_path + '.json',
+            endpoint_path + '.html',
+            endpoint='app/registry',
         )
 
         resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
         add_resource_func(
-                ResourceLister, resource_listing_endpoint,
-                endpoint='app/resourcelister')
+            ResourceLister, resource_listing_endpoint,
+            endpoint='app/resourcelister',
+        )
 
         api_spec_static = endpoint_path + '/_/static/'
-        add_resource_func(
-                StaticFiles,
-                api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
-                api_spec_static + '<string:dir1>/<string:dir2>',
-                api_spec_static + '<string:dir1>',
-                endpoint='app/staticfiles')
+        add_resource_func(  # TODO: why static path is like this?
+            StaticFiles,
+            api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+            api_spec_static + '<string:dir1>/<string:dir2>',
+            api_spec_static + '<string:dir1>',
+            endpoint='app/staticfiles',
+        )
 
 
 templates = {}
@@ -147,9 +152,8 @@ def render_homepage(resource_list_url):
 
 
 def _get_current_registry(api=None):
-    # import ipdb;ipdb.set_trace()
     global registry
-    app_name = None
+
     overrides = {}
     if api:
         app_name = api.blueprint.name if api.blueprint else None
@@ -173,6 +177,8 @@ def _get_current_registry(api=None):
 
 
 def render_page(page, info):
+    global templates
+
     req_registry = _get_current_registry()
     url = req_registry['basePath']
     if url.endswith('/'):
@@ -183,7 +189,7 @@ def render_page(page, info):
     }
     if info is not None:
         conf.update(info)
-    global templates
+
     if page in templates:
         template = templates[page]
     else:
@@ -191,18 +197,20 @@ def render_page(page, info):
             template = Template(fs.read())
             templates[page] = template
     mime = 'text/html'
-    if page.endswith('.js'):
+    if page.endswith('.js'):  # TODO: change
         mime = 'text/javascript'
     return Response(template.render(conf), mimetype=mime)
 
 
 class StaticFiles(Resource):
     def get(self, dir1=None, dir2=None, dir3=None):
+        # TODO: is it possible to change this signature?
         req_registry = _get_current_registry()
 
         if dir1 is None:
             filePath = "index.html"
-        else:
+        else:  # TODO: this can be improved
+            # Try something like:
             # '/'.join(v.strip('/') for k, v in kwargs.items() if v is not None)
             filePath = dir1
             if dir2 is not None:
@@ -244,13 +252,13 @@ class ResourceLister(Resource):
         return {
             "apiVersion": req_registry['apiVersion'],
             "swaggerVersion": req_registry['swaggerVersion'],
-            "apis": [
-                {
-                    "path": (
-                        req_registry['basePath'] + req_registry['spec_endpoint_path']),
-                    "description": req_registry['description']
-                }
-            ]
+            "apis": [{
+                "path": (
+                    req_registry['basePath'] +
+                    req_registry['spec_endpoint_path']
+                ),
+                "description": req_registry['description']
+            }]
         }
 
 
@@ -295,9 +303,9 @@ class SwaggerEndpoint(object):
         self.description, self.notes = _parse_doc(resource)
         self.operations = self.extract_operations(resource, path_arguments)
 
-    @staticmethod
+    @staticmethod  # TODO: mutable in argument:
     def extract_operations(resource, path_arguments=[]):
-        operations = []
+        operations = []  # TODO: 4 `for` loops nested? This can be improved.
         for method in [m.lower() for m in resource.methods]:
             method_impl = resource.__dict__.get(method, None)
             if method_impl is None:
@@ -314,7 +322,7 @@ class SwaggerEndpoint(object):
                 'summary': summary,
                 'notes': notes,
             }
-            
+
             if '__swagger_attr' in method_impl.__dict__:
                 # This method was annotated with @swagger.operation
                 decorators = method_impl.__dict__['__swagger_attr']
@@ -322,10 +330,13 @@ class SwaggerEndpoint(object):
                     if isinstance(att_value, (str, int, list)):
                         if att_name == 'parameters':
                             op['parameters'] = merge_parameter_list(
-                                    op['parameters'], att_value)
+                                op['parameters'], att_value
+                            )
                         else:
                             if op.get(att_name) and att_name is not 'nickname':
-                                att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
+                                att_value = '{0}<br/>{1}'.format(
+                                    att_value, op[att_name]
+                                )
                             op[att_name] = att_value
                     elif isinstance(att_value, object):
                         op[att_name] = att_value.__name__
@@ -335,7 +346,7 @@ class SwaggerEndpoint(object):
 
 def merge_parameter_list(base, override):
     base = list(base)
-    names = [x['name'] for x in base]
+    names = [x['name'] for x in base]  # TODO: is this required?
     for o in override:
         if o['name'] in names:
             for n, i in enumerate(base):
@@ -351,13 +362,16 @@ class SwaggerRegistry(Resource):
         req_registry = _get_current_registry()
         if request.path.endswith('.html'):
             return render_homepage(
-                    req_registry['basePath'] + req_registry['spec_endpoint_path'] + '/_/resource_list.json')
+                req_registry['basePath'] +
+                req_registry['spec_endpoint_path'] +
+                '/_/resource_list.json'
+            )
         return req_registry
 
 
 def operation(**kwargs):
     """
-    This dedorator marks a function as a swagger operation so that we can easily
+    This decorator marks a function as a swagger operation so that we can easily
     extract attributes from it.
     It saves the decorator's key-values at the function level so we can later
     extract them later when add_resource is invoked.
@@ -448,9 +462,12 @@ def add_model(model_class):
 
     if 'swagger_metadata' in dir(model_class):
         for field_name, field_metadata in model_class.swagger_metadata.items():
+            # does not work for Python 3.x; see: SO
+            # how-can-i-merge-two-python-dictionaries-in-a-single-expression
+            # properties[field_name] = dict(
+            #   properties[field_name].items() + field_metadata.items()
+            # )
             if field_name in properties:
-                # does not work for Python 3.x; see: http://stackoverflow.com/questions/38987/how-can-i-merge-two-python-dictionaries-in-a-single-expression
-                # properties[field_name] = dict(properties[field_name].items() + field_metadata.items())
                 properties[field_name].update(field_metadata)
 
 
@@ -461,29 +478,36 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (str,
-                                         fields.String,
-                                         fields.FormattedString,
-                                         fields.Url,
-                                         int,
-                                         fields.Integer,
-                                         float,
-                                         fields.Float,
-                                         fields.Arbitrary,
-                                         fields.Fixed,
-                                         bool,
-                                         fields.Boolean,
-                                         fields.DateTime)):
+    if predicate(python_type_or_object, (
+            str,
+            fields.String,
+            fields.FormattedString,
+            fields.Url,
+            int,
+            fields.Integer,
+            float,
+            fields.Float,
+            fields.Arbitrary,
+            fields.Fixed,
+            bool,
+            fields.Boolean,
+            fields.DateTime,
+    )):
         return {'type': deduce_swagger_type_flat(python_type_or_object)}
-    if predicate(python_type_or_object, (fields.List)):
+
+    if predicate(python_type_or_object, fields.List):
         if inspect.isclass(python_type_or_object):
             return {'type': 'array'}
         else:
-            return {'type': 'array',
-                    'items': {
-                        '$ref': deduce_swagger_type_flat(
-                                python_type_or_object.container, nested_type)}}
-    if predicate(python_type_or_object, (fields.Nested)):
+            return {
+                'type': 'array',
+                'items': {
+                    '$ref': deduce_swagger_type_flat(
+                        python_type_or_object.container, nested_type
+                    )
+                }
+            }
+    if predicate(python_type_or_object, fields.Nested):
         return {'type': nested_type}
 
     return {'type': 'null'}
@@ -538,19 +562,23 @@ def extract_path_arguments(path):
     {name: 'id', dataType: 'string'}
     {name: 'probability', dataType: 'float'}]
     """
-    # Remove all paranteses
+    # Remove all parentheses
     path = re.sub('\([^\)]*\)', '', path)
     args = re.findall('<([^>]+)>', path)
 
     def split_arg(arg):
         spl = arg.split(':')
         if len(spl) == 1:
-            return {'name': spl[0],
-                    'dataType': 'string',
-                    'paramType': 'path'}
+            return {
+                'name': spl[0],
+                'dataType': 'string',
+                'paramType': 'path',
+            }
         else:
-            return {'name': spl[1],
-                    'dataType': spl[0],
-                    'paramType': 'path'}
+            return {
+                'name': spl[1],
+                'dataType': spl[0],
+                'paramType': 'path',
+            }
 
     return list(map(split_arg, args))

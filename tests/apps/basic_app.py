@@ -58,18 +58,18 @@ class Todo(Resource):
 app = Flask(__name__, static_folder='../static')
 app.config.from_object(config)
 
-api = swagger.docs(
-    Api(app),
-    apiVersion='0.1',
-    basePath='http://localhost:5000',
-    resourcePath='/',
-    produces=[
-       "application/json",
-       "text/html",
+api_meta = {
+    'apiVersion': '0.1',
+    'resourcePath': '/',
+    'produces': [
+        'application/json',
+        'text/html',
     ],
-    api_spec_url='/api/spec',
-    description='A Basic API',
-)
+    'api_spec_url': '/api/spec',
+    'description': 'A Basic API',
+}
+
+api = swagger.docs(Api(app), **api_meta)
 
 api.add_resource(Todo, '/todo/<string:todo_id>')
 

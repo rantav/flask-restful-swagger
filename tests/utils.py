@@ -35,6 +35,7 @@ class BaseIntegrationTest(unittest.TestCase):
                 method = getattr(c, method)
                 return method(url, **kwargs)
 
+    # TODO: refactor to accept both endpoints and urls
     def get(self, endpoint, endpoint_kwargs=None,
             headers=None, user=None):
         return self.__execute_request(
@@ -55,6 +56,7 @@ class BaseIntegrationTest(unittest.TestCase):
             follow_redirects=(user is None),
         )
 
+    # TODO: remove this method in favor to `get()`
     def get_raw_link(self, link, *args, **kwargs):
         with self.app.app_context():
             with self.app.test_client() as c:
