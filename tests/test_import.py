@@ -18,7 +18,7 @@ class TestImports(object):
             swagger.model,
             swagger.operation,
             swagger.nested,
-            swagger.nested
+            swagger.nested,
         )
 
     def test_import_docs(self):
