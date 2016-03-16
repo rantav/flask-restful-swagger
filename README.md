@@ -1,9 +1,5 @@
 # flask-restful-swagger
 
-### We have a new project lead!
-We have a new project lead, @niall-byrne (Dec 2015), thank you Niall!
-
-
 ## What is flask-restful-swagger?
 flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which enables [swagger](https://developers.helloreverb.com/swagger/) support.
 
