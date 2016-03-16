@@ -11,29 +11,34 @@ TODO_ITEM = 'test-item'
 
 
 @swagger.model
-class TodoItem:
+class TodoItem(object):
     def __init__(self, arg1, arg2, arg3='123'):
         pass
 
 
 class Todo(Resource):
+    """
+    Todo-Description
+    Todo-Notes
+    """
+
     @swagger.operation(
         notes='get a todo item by ID',
         nickname='get',
         parameters=[{
-            "name": "todo_id_x",
-            "description": "The ID of the TODO item",
-            "required": True,
-            "allowMultiple": False,
-            "dataType": 'string',
-            "paramType": "path",
+            'name': 'todo_id_x',
+            'description': 'The ID of the TODO item',
+            'required': True,
+            'allowMultiple': False,
+            'dataType': 'string',
+            'paramType': 'path',
         },{
-            "name": "a_bool",
-            "description": "The ID of the TODO item",
-            "required": True,
-            "allowMultiple": False,
-            "dataType": 'boolean',
-            "paramType": "path",
+            'name': 'a_bool',
+            'description': 'The ID of the TODO item',
+            'required': True,
+            'allowMultiple': False,
+            'dataType': 'boolean',
+            'paramType': 'path',
         }, ]
     )
     def get(self, todo_id):
@@ -55,9 +60,6 @@ class Todo(Resource):
         }
 
 
-app = Flask(__name__, static_folder='../static')
-app.config.from_object(config)
-
 api_meta = {
     'apiVersion': '0.1',
     'resourcePath': '/',
@@ -69,8 +71,10 @@ api_meta = {
     'description': 'A Basic API',
 }
 
-api = swagger.docs(Api(app), **api_meta)
+app = Flask(__name__, static_folder='../static')
+app.config.from_object(config)
 
+api = swagger.docs(Api(app), **api_meta)
 api.add_resource(Todo, '/todo/<string:todo_id>')
 
 if __name__ == '__main__':
