@@ -64,48 +64,12 @@ def make_class(class_or_instance):
 
 def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, endpoint_path, description):
-    global api_spec_static
-    global resource_listing_endpoint
 
-    if api.blueprint and not registry.get(api.blueprint.name):
-        # Most of all this can be taken from the blueprint/app
-        registry[api.blueprint.name] = {
-            'apiVersion': apiVersion,
-            'swaggerVersion': swaggerVersion,
-            'basePath': basePath,
-            'spec_endpoint_path': endpoint_path,
-            'resourcePath': resourcePath,
-            'produces': produces,
-            'x-api-prefix': '',
-            'apis': [],
-            'description': description,
-        }
+    def register_action(name, is_blueprint=True):
+        global api_spec_static
+        global resource_listing_endpoint
 
-        def registering_blueprint(setup_state):
-            reg = registry[setup_state.blueprint.name]
-            reg['x-api-prefix'] = setup_state.url_prefix
-
-        api.blueprint.record(registering_blueprint)
-
-        add_resource_func(
-            SwaggerRegistry,
-            endpoint_path,
-            endpoint_path + '.json',
-            endpoint_path + '.html',
-        )
-
-        resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
-        add_resource_func(ResourceLister, resource_listing_endpoint)
-
-        api_spec_static = endpoint_path + '/_/static/'
-        add_resource_func(
-            StaticFiles,
-            api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
-            api_spec_static + '<string:dir1>/<string:dir2>',
-            api_spec_static + '<string:dir1>',
-        )
-    elif not 'app' in registry:  # TODO: reuse previous code?
-        registry['app'] = {
+        registry[name] = {
             'apiVersion': apiVersion,
             'swaggerVersion': swaggerVersion,
             'basePath': basePath,
@@ -114,29 +78,46 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
             'produces': produces,
             'description': description,
         }
+        if is_blueprint:
+            registry[name].update({
+                'x-api-prefix': '',
+                'apis': [],
+            })
+
+            def registering_blueprint(setup_state):
+                reg = registry[setup_state.blueprint.name]
+                reg['x-api-prefix'] = setup_state.url_prefix
+
+            api.blueprint.record(registering_blueprint)
 
         add_resource_func(
             SwaggerRegistry,
             endpoint_path,
             endpoint_path + '.json',
             endpoint_path + '.html',
-            endpoint='app/registry',
+            endpoint= 'app/registry' if not is_blueprint else None,
         )
 
         resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
         add_resource_func(
             ResourceLister, resource_listing_endpoint,
-            endpoint='app/resourcelister',
+            endpoint='app/resourcelister' if not is_blueprint else None,
         )
 
         api_spec_static = endpoint_path + '/_/static/'
-        add_resource_func(  # TODO: why static path is like this?
+        add_resource_func( # TODO: why static path is like this?
             StaticFiles,
             api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
             api_spec_static + '<string:dir1>/<string:dir2>',
             api_spec_static + '<string:dir1>',
-            endpoint='app/staticfiles',
+            endpoint='app/staticfiles' if not is_blueprint else None,
         )
+
+    if api.blueprint and not registry.get(api.blueprint.name):
+        # Most of all this can be taken from the blueprint/app
+        register_action(api.blueprint.name, True)
+    elif not 'app' in registry:  # review: reuse previous code?
+        register_action('app', False)
 
 
 templates = {}
@@ -305,18 +286,19 @@ class SwaggerEndpoint(object):
 
     @staticmethod  # TODO: mutable in argument:
     def extract_operations(resource, path_arguments=[]):
-        operations = []  # TODO: 4 `for` loops nested? This can be improved.
-        for method in [m.lower() for m in resource.methods]:
-            method_impl = resource.__dict__.get(method, None)
+        operations = []  # review: 4 `for` loops nested? This can be improved.
+        for method in resource.methods:
+            method_impl = resource.__dict__.get(method.lower(), None)
             if method_impl is None:
                 for cls in resource.__mro__:
-                    for item_key in cls.__dict__.keys():
-                        if item_key == method:
-                            method_impl = cls.__dict__[item_key]
+                    try:
+                        method_impl = cls.__dict__[method.lower()]
+                    except IndexError:
+                        pass
 
             summary, notes = _parse_doc(method_impl)
             op = {
-                'method': method,
+                'method': method.lower(),
                 'parameters': path_arguments,
                 'nickname': 'nickname',
                 'summary': summary,
