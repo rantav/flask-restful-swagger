@@ -29,7 +29,7 @@ setup(
         ]
     },
     description='Extract swagger specs from your flask-restful project',
-    author='Ran Tavory, Niall Byrne, Nikita Sobolev, Kirill Malev',
+    author='Ran Tavory, Niall Byrne, Nikita Sobolev',
     license='MIT',
     long_description=long_description,
     install_requires=[

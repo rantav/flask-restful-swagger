@@ -1,0 +1,17 @@
+language: python
+
+sudo: false
+
+python:
+  - "2.7"
+
+cache:
+  directories:
+    - $HOME/.pip-cache/
+
+install:
+  - pip install --upgrade pip
+  - pip install -e . --cache-dir $HOME/.pip-cache
+
+script:
+  - py.test

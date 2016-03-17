@@ -17,12 +17,14 @@ import json
 import os
 
 from tests.utils import BaseIntegrationTest
-from tests.apps.basic_app import api_meta
+from tests.apps.basic_app import api_meta, app
 
 __author__ = 'sobolevn'
 
 
 class TestSpecJson(BaseIntegrationTest):
+    app = app
+
     def _load_spec_json(self):
         response = self.get_raw_link('/api/spec.json')
         return json.loads(response.data)

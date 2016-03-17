@@ -1,5 +1,6 @@
 {
-   "description":"A Basic API",
+   "x-api-prefix":"/api-marshal",
+   "description":"A Basic Marshal API",
    "swaggerVersion":"1.2",
    "produces":[
       "application/json",
@@ -90,44 +91,8 @@
          "description":null
       }
    },
-   "basePath":"http://127.0.0.1:5000",
+   "basePath":"http://127.0.0.1:5000/api-marshal",
    "apis":[
-      {
-         "operations":[
-            {
-               "notes":"get a todo item by ID",
-               "nickname":"get",
-               "method":"get",
-               "parameters":[
-                  {
-                     "dataType":"string",
-                     "paramType":"path",
-                     "name":"todo_id"
-                  },
-                  {
-                     "name":"todo_id_x",
-                     "dataType":"string",
-                     "allowMultiple":false,
-                     "required":true,
-                     "paramType":"path",
-                     "description":"The ID of the TODO item"
-                  },
-                  {
-                     "name":"a_bool",
-                     "dataType":"boolean",
-                     "allowMultiple":false,
-                     "required":true,
-                     "paramType":"path",
-                     "description":"The ID of the TODO item"
-                  }
-               ],
-               "summary":"Summary"
-            }
-         ],
-         "path":"/todo/{todo_id}",
-         "notes":"Todo-Notes",
-         "description":"Todo-Description"
-      },
       {
          "operations":[
             {
@@ -147,6 +112,6 @@
       }
    ],
    "resourcePath":"/",
-   "apiVersion":"0.1",
+   "apiVersion":"0.1.2",
    "spec_endpoint_path":"/api/spec"
 }

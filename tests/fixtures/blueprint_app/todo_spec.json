@@ -1,5 +1,6 @@
 {
-   "description":"A Basic API",
+   "x-api-prefix":"/api-todo",
+   "description":"A Basic Todo API",
    "swaggerVersion":"1.2",
    "produces":[
       "application/json",
@@ -90,7 +91,7 @@
          "description":null
       }
    },
-   "basePath":"http://127.0.0.1:5000",
+   "basePath":"http://127.0.0.1:5000/api-todo",
    "apis":[
       {
          "operations":[
@@ -127,23 +128,6 @@
          "path":"/todo/{todo_id}",
          "notes":"Todo-Notes",
          "description":"Todo-Description"
-      },
-      {
-         "operations":[
-            {
-               "parameters":[
-
-               ],
-               "responseClass":"TodoItemWithResourceFields",
-               "notes":"get something",
-               "summary":null,
-               "nickname":"get",
-               "method":"get"
-            }
-         ],
-         "path":"/marshal",
-         "notes":null,
-         "description":null
       }
    ],
    "resourcePath":"/",

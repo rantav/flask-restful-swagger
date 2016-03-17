@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from tests.utils import BaseIntegrationTest
+from tests.apps.basic_app import app
 
 __author__ = 'sobolevn'
 
 
 class TestIntegration(BaseIntegrationTest):
+    app = app
     base_static_path = '/api/spec/_/static'
 
     def _assert_request_success(self, response, code=200,

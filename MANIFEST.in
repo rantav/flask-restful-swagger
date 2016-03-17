@@ -1,2 +1,6 @@
-include README*
-recursive-include flask_restful_swagger/static *
+global-include *.py
+global-exclude *.pyc
+
+recursive-exclude tests *
+
+exclude .gitignore .travis.yml .editorconfig Makefile
