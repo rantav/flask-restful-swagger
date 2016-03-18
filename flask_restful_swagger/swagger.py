@@ -1,7 +1,10 @@
+from __future__ import absolute_import
+
 import functools
 import inspect
 import os
 import re
+import six
 
 try:
     # urlparse is renamed to urllib.parse in python 3
@@ -15,66 +18,111 @@ from flask_restful_swagger import (
     registry, api_spec_static)
 from jinja2 import Template
 
+from .utils import return_class, convert_from_camel_case
+
 resource_listing_endpoint = None
 
 
-def docs(api,
-         apiVersion='0.0',
-         swaggerVersion='1.2',
-         basePath='http://localhost:5000',
-         resourcePath='/',
-         produces="application/json",
-         api_spec_url='/api/spec',
-         description='Auto generated API docs by flask-restful-swagger'):
+# TODO: add pydoc.
+def _docs(api,
+          api_version='0.0',
+          swagger_version='1.2',
+          base_path='http://localhost:5000',
+          resource_path='/',
+          produces="application/json",
+          api_spec_url='/api/spec',
+          description='Auto generated API docs by flask-restful-swagger'):
+    """
+
+    :param api:
+    :param api_version:
+    :param swagger_version:
+    :param base_path:
+    :param resource_path:
+    :param produces:
+    :param api_spec_url:
+    :param description:
+    :return:
+    """
     api_add_resource = api.add_resource
 
-    def add_resource(resource, path, *args, **kvargs):
-        register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
-                      resourcePath, produces, api_spec_url, description)
+    def add_resource(resource, *urls, **kwargs):
+        register_once(
+            api, api_add_resource, api_version,
+            swagger_version, base_path, resource_path,
+            produces, api_spec_url, description,
+        )
 
-        resource = make_class(resource)
-        endpoint = swagger_endpoint(api, resource, path)
+        resource = return_class(resource)
+        # Changed in #pull/92
+        for path in urls:
+            endpoint = swagger_endpoint(api, resource, path)
 
-        # Add a .help.json help url
-        swagger_path = extract_swagger_path(path)
-
-        # Add a .help.html help url
-        endpoint_html_str = '{0}/help'.format(swagger_path)
-        api_add_resource(
+            # Add '.help.json' and '.help.html' help urls:
+            swagger_path = extract_swagger_path(path)
+            endpoint_html_str = '{0}/help'.format(swagger_path)
+            # TODO: help.html probably should have a separate endpoint
+            # with a unique name, to be accessible within the code.
+            api_add_resource(
                 endpoint,
                 "{0}.help.json".format(swagger_path),
                 "{0}.help.html".format(swagger_path),
-                endpoint=endpoint_html_str)
+                endpoint=endpoint_html_str,
+            )
 
-        return api_add_resource(resource, path, *args, **kvargs)
+        return api_add_resource(resource, *urls, **kwargs)
 
     api.add_resource = add_resource
-
     return api
+
+
+def docs(api, **kwargs):
+    """
+    This function adds endpoints for the swagger.
+    It also handles all the model loading by replacing original `add_resource`
+    with the patched one.
+
+        :version changed 1.0.0
+        The old docs() function before version 1.0.0 had 'camelCase' kwargs,
+        which was not-PEP8, and now it is recommended to use 'snake_case'.
+        But for backward compatibility 'cameCase' is also accepted.
+
+    :param api: flask-resful's Api object
+    :param kwargs: key-word arguments described in `_docs` function.
+    :return: flask-resful's Api object passed as `api`.
+    """
+    new_kwargs = {convert_from_camel_case(k): v
+                  for k, v in six.iteritems(kwargs)}
+    return _docs(api, **new_kwargs)
 
 
 rootPath = os.path.dirname(__file__)
 
 
-def make_class(class_or_instance):
-    if inspect.isclass(class_or_instance):
-        return class_or_instance
-    return class_or_instance.__class__
-
-
-def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
-                  resourcePath, produces, endpoint_path, description):
+def register_once(api,
+                  add_resource_func,
+                  api_version,
+                  swagger_version,
+                  base_path,
+                  resource_path,
+                  produces,
+                  endpoint_path,
+                  description):
+    def registering_blueprint(setup_state):
+        reg = registry[setup_state.blueprint.name]
+        reg['x-api-prefix'] = setup_state.url_prefix
 
     def register_action(name, is_blueprint=True):
+        # TODO: remove global variables, create new class for it.
         global api_spec_static
         global resource_listing_endpoint
 
         registry[name] = {
-            'apiVersion': apiVersion,
-            'swaggerVersion': swaggerVersion,
-            'basePath': basePath,
+            'apiVersion': api_version,
+            'swaggerVersion': swagger_version,
+            'basePath': base_path,
             'spec_endpoint_path': endpoint_path,
-            'resourcePath': resourcePath,
+            'resourcePath': resource_path,
             'produces': produces,
             'description': description,
         }
@@ -84,39 +132,35 @@ def register_once(api, add_resource_func, apiVersion, swaggerVersion, basePath,
                 'apis': [],
             })
 
-            def registering_blueprint(setup_state):
-                reg = registry[setup_state.blueprint.name]
-                reg['x-api-prefix'] = setup_state.url_prefix
-
             api.blueprint.record(registering_blueprint)
 
         add_resource_func(
-            SwaggerRegistry,
-            endpoint_path,
-            endpoint_path + '.json',
-            endpoint_path + '.html',
-            endpoint= 'app/registry' if not is_blueprint else None,
+                SwaggerRegistry,
+                endpoint_path,
+                endpoint_path + '.json',
+                endpoint_path + '.html',
+                endpoint='app/registry' if not is_blueprint else None,
         )
 
         resource_listing_endpoint = endpoint_path + '/_/resource_list.json'
         add_resource_func(
-            ResourceLister, resource_listing_endpoint,
-            endpoint='app/resourcelister' if not is_blueprint else None,
+                ResourceLister, resource_listing_endpoint,
+                endpoint='app/resourcelister' if not is_blueprint else None,
         )
 
         api_spec_static = endpoint_path + '/_/static/'
-        add_resource_func( # TODO: why static path is like this?
-            StaticFiles,
-            api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
-            api_spec_static + '<string:dir1>/<string:dir2>',
-            api_spec_static + '<string:dir1>',
-            endpoint='app/staticfiles' if not is_blueprint else None,
+        add_resource_func(  # TODO: why static path is like this?
+                StaticFiles,
+                api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+                api_spec_static + '<string:dir1>/<string:dir2>',
+                api_spec_static + '<string:dir1>',
+                endpoint='app/staticfiles' if not is_blueprint else None,
         )
 
     if api.blueprint and not registry.get(api.blueprint.name):
         # Most of all this can be taken from the blueprint/app
         register_action(api.blueprint.name, True)
-    elif not 'app' in registry:  # review: reuse previous code?
+    elif 'app' not in registry:  # review: reuse previous code?
         register_action('app', False)
 
 
@@ -133,7 +177,7 @@ def render_homepage(resource_list_url):
 
 
 def _get_current_registry(api=None):
-    global registry
+    global registry  # TODO: remove globals
 
     overrides = {}
     if api:
@@ -184,8 +228,8 @@ def render_page(page, info):
 
 
 class StaticFiles(Resource):
+    # TODO: is it possible to change this signature?
     def get(self, dir1=None, dir2=None, dir3=None):
-        # TODO: is it possible to change this signature?
         req_registry = _get_current_registry()
 
         if dir1 is None:
@@ -243,19 +287,33 @@ class ResourceLister(Resource):
         }
 
 
+class SwaggerResourceMeta(type):
+    def __new__(mcs, name, bases, attributes):
+        return type(name, bases, attributes)
+
+
+class SwaggerResource(six.with_metaclass(SwaggerResourceMeta, Resource)):
+    swagger_endpoint = None
+
+    def get(self):
+        if request.path.endswith('.help.json'):
+            return self.__class__.swagger_endpoint.__dict__
+        if request.path.endswith('.help.html'):
+            return render_endpoint(self.__class__.swagger_endpoint)
+
+
 def swagger_endpoint(api, resource, path):
     endpoint = SwaggerEndpoint(resource, path)
     req_registry = _get_current_registry(api=api)
     req_registry.setdefault('apis', []).append(endpoint.__dict__)
+    resource_dict = dict(SwaggerResource.__dict__)
+    resource_dict.update({'swagger_endpoint': endpoint})
 
-    class SwaggerResource(Resource):
-        def get(self):
-            if request.path.endswith('.help.json'):
-                return endpoint.__dict__
-            if request.path.endswith('.help.html'):
-                return render_endpoint(endpoint)
-
-    return SwaggerResource
+    return SwaggerResourceMeta(
+        SwaggerResource.__name__,
+        SwaggerResource.__bases__,
+        resource_dict,
+    )
 
 
 def _sanitize_doc(comment):
@@ -312,12 +370,12 @@ class SwaggerEndpoint(object):
                     if isinstance(att_value, (str, int, list)):
                         if att_name == 'parameters':
                             op['parameters'] = merge_parameter_list(
-                                op['parameters'], att_value
+                                    op['parameters'], att_value
                             )
                         else:
                             if op.get(att_name) and att_name is not 'nickname':
                                 att_value = '{0}<br/>{1}'.format(
-                                    att_value, op[att_name]
+                                        att_value, op[att_name]
                                 )
                             op[att_name] = att_value
                     elif isinstance(att_value, object):
@@ -344,9 +402,9 @@ class SwaggerRegistry(Resource):
         req_registry = _get_current_registry()
         if request.path.endswith('.html'):
             return render_homepage(
-                req_registry['basePath'] +
-                req_registry['spec_endpoint_path'] +
-                '/_/resource_list.json'
+                    req_registry['basePath'] +
+                    req_registry['spec_endpoint_path'] +
+                    '/_/resource_list.json'
             )
         return req_registry
 
@@ -454,12 +512,12 @@ def add_model(model_class):
 
 
 def deduce_swagger_type(python_type_or_object, nested_type=None):
-    import inspect
-
     if inspect.isclass(python_type_or_object):
         predicate = issubclass
     else:
         predicate = isinstance
+
+    # TODO: refactor this
     if predicate(python_type_or_object, (
             str,
             fields.String,
@@ -485,7 +543,7 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
                 'type': 'array',
                 'items': {
                     '$ref': deduce_swagger_type_flat(
-                        python_type_or_object.container, nested_type
+                            python_type_or_object.container, nested_type
                     )
                 }
             }
@@ -498,7 +556,6 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
 def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
     if nested_type:
         return nested_type
-    import inspect
 
     if inspect.isclass(python_type_or_object):
         predicate = issubclass

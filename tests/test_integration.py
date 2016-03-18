@@ -10,27 +10,22 @@ class TestIntegration(BaseIntegrationTest):
     app = app
     base_static_path = '/api/spec/_/static'
 
-    def _assert_request_success(self, response, code=200,
-                                content_type='application/json'):
-        assert response.status_code == code
-        assert response.headers['Content-Type'] == content_type
-
     def test_basic_integration(self):
         response = self.get('app/registry')
-        self._assert_request_success(response)
+        self.assert_request_success(response)
 
     def test_basic_integration_json(self):
         response = self.get_raw_link('/api/spec.json')
-        self._assert_request_success(response)
+        self.assert_request_success(response)
 
     def test_basic_integration_html(self):
         response = self.get_raw_link('/api/spec.html')
-        self._assert_request_success(
+        self.assert_request_success(
                 response, content_type='text/html; charset=utf-8')
 
     def test_basic_integration_resource_lister(self):
         response = self.get_raw_link('/api/spec/_/resource_list.json')
-        self._assert_request_success(response)
+        self.assert_request_success(response)
 
     def test_static_integration_js(self):
         js_files = [
@@ -54,9 +49,9 @@ class TestIntegration(BaseIntegrationTest):
 
         for js in js_files:
             response = self.get_raw_link('{}/{}'.format(
-                    self.base_static_path, js))
-            self._assert_request_success(
-                    response, content_type='text/javascript; charset=utf-8')
+                self.base_static_path, js))
+            self.assert_request_success(
+                response, content_type='text/javascript; charset=utf-8')
 
     def test_static_integration_css(self):
         css_files = [
@@ -67,6 +62,6 @@ class TestIntegration(BaseIntegrationTest):
         for css in css_files:
             response = self.get_raw_link('{}/css/{}'.format(
                     self.base_static_path, css))
-            self._assert_request_success(
-                    response, content_type='text/css; charset=utf-8')
+            self.assert_request_success(
+                response, content_type='text/css; charset=utf-8')
 

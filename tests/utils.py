@@ -58,3 +58,10 @@ class BaseIntegrationTest(unittest.TestCase):
         with self.__class__.app.app_context():
             with self.__class__.app.test_client() as c:
                 return c.get(link, *args, **kwargs)
+
+    # assertions:
+
+    def assert_request_success(self, response, code=200,
+                               content_type='application/json'):
+        assert response.status_code == code
+        assert response.headers['Content-Type'] == content_type

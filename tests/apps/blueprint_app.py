@@ -47,10 +47,5 @@ api_marshal.add_resource(MarshalWithExample, '/marshal')
 app.register_blueprint(todo_blueprint, url_prefix='/api-todo')
 app.register_blueprint(marshal_blueprint, url_prefix='/api-marshal')
 
-@app.route('/test')
-def s():
-    a = app
-    return 'done'
-
 if __name__ == '__main__':
     app.run()
