@@ -20,7 +20,7 @@ class TestHelpPages(BaseIntegrationTest):
         for endpoint in endpoints:
             response = self.get_raw_link(endpoint + self.html_prefix)
             self.assert_request_success(
-                    response, content_type='text/html; charset=utf-8')
+                response, content_type='text/html; charset=utf-8')
 
             response = self.get_raw_link(endpoint + self.json_prefix)
             self.assert_request_success(response)

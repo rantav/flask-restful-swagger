@@ -288,7 +288,9 @@ class ResourceLister(Resource):
 
 
 class SwaggerResourceMeta(type):
-    def __new__(mcs, name, bases, attributes):
+    # noinspection PyInitNewSignature
+    def __new__(mcs, name, bases, attributes, _swagger_endpoint=None):
+        attributes.update({'swagger_endpoint': _swagger_endpoint})
         return type(name, bases, attributes)
 
 
@@ -306,13 +308,12 @@ def swagger_endpoint(api, resource, path):
     endpoint = SwaggerEndpoint(resource, path)
     req_registry = _get_current_registry(api=api)
     req_registry.setdefault('apis', []).append(endpoint.__dict__)
-    resource_dict = dict(SwaggerResource.__dict__)
-    resource_dict.update({'swagger_endpoint': endpoint})
 
     return SwaggerResourceMeta(
         SwaggerResource.__name__,
         SwaggerResource.__bases__,
-        resource_dict,
+        dict(SwaggerResource.__dict__),
+        _swagger_endpoint=endpoint,
     )
 
 
