@@ -10,7 +10,10 @@ import mimetypes
 from flask import Response
 from jinja2 import Template
 
-from flask_restful_swagger import api_spec_static, root_path, templates
+from flask_restful_swagger import (
+    root_path,
+    StorageSingleton,
+)
 
 __author__ = 'sobolevn'
 
@@ -53,15 +56,17 @@ def render_homepage(resource_list_url):
 def render_page(page, info):
     from flask_restful_swagger.registry import get_current_registry
 
-    global templates
-
     req_registry = get_current_registry()
     url = req_registry['basePath']
     if url.endswith('/'):
         url = url.rstrip('/')
+
+    st = StorageSingleton()
+    templates = st.templates
+
     conf = {
-        'base_url': url + api_spec_static,
-        'full_base_url': url + api_spec_static
+        'base_url': url + st.api_spec_static,
+        'full_base_url': url + st.api_spec_static
     }
     if info is not None:
         conf.update(info)

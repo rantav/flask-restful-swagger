@@ -14,7 +14,7 @@ except ImportError:
     from urllib import parse as urlparse
 
 from flask.ext.restful import fields
-from flask_restful_swagger import registry
+from flask_restful_swagger import StorageSingleton
 
 from flask_restful_swagger.registry import get_current_registry
 from flask_restful_swagger.resources import (
@@ -30,8 +30,6 @@ from flask_restful_swagger.utils import (
     convert_from_camel_case,
     predicate,
 )
-
-resource_listing_endpoint = None
 
 
 # TODO: add pydoc.
@@ -121,9 +119,7 @@ def register_once(api,
         reg['x-api-prefix'] = setup_state.url_prefix
 
     def register_action(name, is_blueprint=True):
-        # TODO: remove global variables, create new class for it.
-        global api_spec_static
-        global resource_listing_endpoint
+        resource_listing_endpoint = StorageSingleton().resource_listing_endpoint
 
         registry[name] = {
             'apiVersion': api_version,
@@ -156,14 +152,17 @@ def register_once(api,
             endpoint='app/resourcelister' if not is_blueprint else None,
         )
 
-        api_spec_static = endpoint_path + '/_/static/'
+        st = StorageSingleton()
+        st.api_spec_static = endpoint_path + '/_/static/'
         add_resource_func(  # TODO: why static path is like this?
             StaticFiles,
-            api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
-            api_spec_static + '<string:dir1>/<string:dir2>',
-            api_spec_static + '<string:dir1>',
+            st.api_spec_static + '<string:dir1>/<string:dir2>/<string:dir3>',
+            st.api_spec_static + '<string:dir1>/<string:dir2>',
+            st.api_spec_static + '<string:dir1>',
             endpoint='app/staticfiles' if not is_blueprint else None,
         )
+
+    registry = StorageSingleton().registry
 
     if api.blueprint and not registry.get(api.blueprint.name):
         # Most of all this can be taken from the blueprint/app
@@ -325,7 +324,7 @@ def nested(klass=None, **kwargs):
 
 
 def add_model(model_class):
-    models = registry['models']
+    models = StorageSingleton().registry['models']
 
     name = model_class.__name__
     model = models[name] = {'id': name}

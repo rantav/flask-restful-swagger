@@ -3,7 +3,7 @@
 import os
 import mimetypes
 
-from flask import abort, Response
+from flask import abort, send_file
 from flask.ext.restful import Resource
 from flask_restful_swagger import root_path
 
@@ -15,21 +15,18 @@ __author__ = 'sobolevn'
 
 class StaticFiles(Resource):
     # TODO: is it possible to change this signature?
-    def get(self, dir1=None, dir2=None, dir3=None):
+    def get(self, **kwargs):
         req_registry = get_current_registry()
 
-        if dir1 is None:
-            filePath = "index.html"
-        else:  # TODO: this can be improved
-            # Try something like:
-            # '/'.join(v.strip('/') for k, v in kwargs.items() if v is not None)
-            filePath = dir1
-            if dir2 is not None:
-                filePath = "%s/%s" % (filePath, dir2)
-                if dir3 is not None:
-                    filePath = "%s/%s" % (filePath, dir3)
+        if not kwargs:
+            file_path = "index.html"
+        else:
+            keys = sorted(kwargs.keys())
+            file_path = '/'.join(
+                kwargs[k].strip('/') for k in keys if kwargs[k] is not None
+            )
 
-        if filePath in [
+        if file_path in [  # TODO: refactor to TemplateResource
             "index.html",
             "o2c.html",
             "swagger-ui.js",
@@ -37,12 +34,11 @@ class StaticFiles(Resource):
             "lib/swagger-oauth.js",
         ]:
             conf = {'resource_list_url': req_registry['spec_endpoint_path']}
-            return render_page(filePath, conf)
+            return render_page(file_path, conf)
 
-        mime = mimetypes.guess_type(filePath)[0]
+        mime = mimetypes.guess_type(file_path)[0]
 
-        file_path = os.path.join(root_path, 'static', filePath)
+        file_path = os.path.join(root_path, 'static', file_path)
         if os.path.exists(file_path):
-            with open(file_path, 'rb') as fs:
-                return Response(fs, mimetype=mime)
+            return send_file(file_path, mimetype=mime)
         abort(404)

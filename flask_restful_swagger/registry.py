@@ -7,13 +7,13 @@ except ImportError:
 
 from flask import request
 
-from flask_restful_swagger import registry  # this line is temporary required.
+from flask_restful_swagger import StorageSingleton
 
 __author__ = 'sobolevn'
 
 
 def get_current_registry(api=None):
-    global registry  # TODO: remove globals
+    registry = StorageSingleton().registry
 
     overrides = {}
     if api:
