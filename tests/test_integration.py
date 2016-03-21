@@ -51,7 +51,7 @@ class TestIntegration(BaseIntegrationTest):
             response = self.get_raw_link('{}/{}'.format(
                 self.base_static_path, js))
             self.assert_request_success(
-                response, content_type='text/javascript; charset=utf-8')
+                response, content_type='application/javascript')
 
     def test_static_integration_css(self):
         css_files = [

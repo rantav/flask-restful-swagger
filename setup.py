@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 try:
@@ -34,6 +35,7 @@ setup(
     long_description=long_description,
     install_requires=[
         'Flask-RESTful>=0.2.12',
+        'six>=1.10.0',
     ],
     tests_require=[
         'pytest>=2.9.0'
@@ -43,6 +45,7 @@ setup(
         'Framework :: Flask',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Topic :: Internet :: WWW/HTTP',
         'License :: OSI Approved :: MIT License',

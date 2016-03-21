@@ -89,7 +89,7 @@ class Todo(Resource):
         }
 
     def options(self, **args):
-        # We do not expect this method to be inside specs.
+        # We do not expect this method to be inside json-specs.
         return {
             'Allow': 'GET',
         }, 200, {
@@ -101,9 +101,9 @@ class Todo(Resource):
 
 class MarshalWithExample(Resource):
     @swagger.operation(
-        notes='get something',
+        notes=u'get something',
         responseClass=TodoItemWithResourceFields,
-        nickname='get',
+        nickname=u'get',
     )
     @marshal_with(ModelWithResourceFields.resource_fields)
     def get(self, **kwargs):
