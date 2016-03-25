@@ -222,7 +222,7 @@ class SwaggerEndpoint(object):
                 for cls in resource.__mro__:
                     try:
                         method_impl = cls.__dict__[method.lower()]
-                    except IndexError:
+                    except KeyError:
                         pass
 
             summary, notes = _parse_doc(method_impl)
