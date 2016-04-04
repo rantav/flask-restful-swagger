@@ -1,7 +1,6 @@
 # flask-restful-swagger
 
-### We have a new project lead!
-We have a new project lead, @niall-byrne (Dec 2015), thank you Niall!
+[![Build Status](https://secure.travis-ci.org/flask-restful-swagger/flask-restful-swagger.png?branch=master)](https://travis-ci.org/flask-restful-swagger/flask-restful-swagger)
 
 
 ## What is flask-restful-swagger?
