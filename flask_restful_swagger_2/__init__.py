@@ -155,7 +155,7 @@ class Api(restful_Api):
             full_doc = inspect.getdoc(cls)
 
             # Avoid returning the docstring of the base dict class
-            if full_doc != inspect.getdoc(dict):
+            if full_doc and full_doc != inspect.getdoc(dict):
                 lines = full_doc.split('\n')
                 if lines:
                     # Use the first line of the class docstring as the description
