@@ -43,14 +43,18 @@ class Api(restful_Api):
         self._swagger_object = {
             'swagger': '2.0',
             'info': {
-                'title': 'Unnamed',
+                'title': kwargs.pop('title', ''),
+                'description': kwargs.pop('description', ''),
+                'termsOfService': kwargs.pop('terms', ''),
+                'contact': kwargs.pop('contact', {}),
+                'license': kwargs.pop('license', {}),
                 'version': kwargs.pop('api_version', '0.0')
             },
-            'host': '',
-            'basePath': '',
-            'schemes': [],
-            'consumes': [],
-            'produces': [],
+            'host': kwargs.pop('host', ''),
+            'basePath': kwargs.pop('base_path', ''),
+            'schemes': kwargs.pop('schemes', []),
+            'consumes': kwargs.pop('consumes', []),
+            'produces': kwargs.pop('produces', []),
             'paths': {},
             'definitions': {},
             'parameters': {},
@@ -62,7 +66,7 @@ class Api(restful_Api):
         }
         api_spec_url = kwargs.pop('api_spec_url', '/api/swagger')
         super(Api, self).__init__(*args, **kwargs)
-        if self.app:
+        if self.app and not self._swagger_object['info']['title']:
             self._swagger_object['info']['title'] = self.app.name
         api_spec_urls = [
             '{0}.json'.format(api_spec_url),
@@ -80,6 +84,9 @@ class Api(restful_Api):
                 operation, definitions_ = self._extract_schemas(operation)
                 path_item[method] = operation
                 definitions.update(definitions_)
+                summary = self._parse_method_doc(f, operation)
+                if summary:
+                    operation['summary'] = summary
         validate_definitions_object(definitions)
         self._swagger_object['definitions'].update(definitions)
         if path_item:
@@ -106,12 +113,51 @@ class Api(restful_Api):
             if not issubclass(obj, Schema):
                 raise ValueError('"{0}" is not a subclass of the scheme model'.format(obj))
             definition = obj.definitions()
+            description = self._parse_schema_doc(obj, definition)
+            if description:
+                definition['description'] = description
             # The definition itself might contain models, so extract them again
             definition, additional_definitions = self._extract_schemas(definition)
             definitions[obj.__name__] = definition
             definitions.update(additional_definitions)
             obj = obj.reference()
         return obj, definitions
+
+    def _sanitize_doc(self, comment):
+        if isinstance(comment, list):
+            return self._sanitize_doc('\n'.join(filter(None, comment)))
+        else:
+            return comment.replace('\n', '<br/>') if comment else comment
+
+    def _parse_method_doc(self, method, operation):
+        summary = None
+
+        full_doc = inspect.getdoc(method)
+        if full_doc:
+            lines = full_doc.split('\n')
+            if lines:
+                # Append the first line of the docstring to any summary specified
+                # in the operation document
+                summary = self._sanitize_doc([operation.get('summary', None), lines[0]])
+
+        return summary
+
+    def _parse_schema_doc(self, cls, definition):
+        description = None
+
+        # Skip processing the docstring of the schema class if the schema
+        # definition already contains a description
+        if 'description' not in definition:
+            full_doc = inspect.getdoc(cls)
+
+            # Avoid returning the docstring of the base dict class
+            if full_doc != inspect.getdoc(dict):
+                lines = full_doc.split('\n')
+                if lines:
+                    # Use the first line of the class docstring as the description
+                    description = self._sanitize_doc(lines[0])
+
+        return description
 
 
 class Schema(dict):
