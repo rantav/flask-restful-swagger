@@ -46,8 +46,6 @@ class Api(restful_Api):
                 'title': kwargs.pop('title', ''),
                 'description': kwargs.pop('description', ''),
                 'termsOfService': kwargs.pop('terms', ''),
-                'contact': kwargs.pop('contact', {}),
-                'license': kwargs.pop('license', {}),
                 'version': kwargs.pop('api_version', '0.0')
             },
             'host': kwargs.pop('host', ''),
@@ -64,6 +62,12 @@ class Api(restful_Api):
             'tags': [],
             'externalDocs': {}
         }
+        contact = kwargs.pop('contact', {})
+        if contact:
+            self._swagger_object['info']['contact'] = contact
+        license = kwargs.pop('license', {})
+        if license:
+            self._swagger_object['info']['license'] = license
         api_spec_url = kwargs.pop('api_spec_url', '/api/swagger')
         super(Api, self).__init__(*args, **kwargs)
         if self.app and not self._swagger_object['info']['title']:
