@@ -25,45 +25,75 @@ from flask.ext.restful_swagger_2 import Api
 app = Flask(__name__)
 
 # Use the swagger Api class as you would use the flask restful class.
-# It takes just two more (optional) parameters, these are the defaults:
+# It supports several (optional) parameters, these are the defaults:
 api = Api(app, api_version='0.0', api_spec_url='/api/swagger')
 ```
+
+Parameters of the Api class include:
+
+| parameter | description |
+| --------- | ----------- |
+| api_version | The API version string (defaults to '0.0'). Maps to the `version` field of the [info object](http://swagger.io/specification/#infoObject). |
+| api_spec_url | The URL path that serves the swagger specification document (defaults to '/api/swagger'). |
+| base_path | The base path on which the API is served. Maps to the `basePath` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| consumes | A list of MIME types the API can consume. Maps to the `consumes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| contact | The contact information for the API. Maps to the `contact` field of the [info object](http://swagger.io/specification/#infoObject). |
+| description | A short description of the application. Maps to the `description` field of the [info object](http://swagger.io/specification/#infoObject). |
+| host | The host serving the API. Maps to the `host` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| license | The license information for the API. Maps to the `license` field of the [info object](http://swagger.io/specification/#infoObject). |
+| produces | A list of MIME types the API can produce. Maps to the `produces` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| schemes | The transfer protocol of the API. Maps the the `schemes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| terms | The terms of service for the API. Maps to the `termsOfService` field of the [info object](http://swagger.io/specification/#infoObject). |
+| title | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
 
 ## Documenting API endpoints
 Decorate your API endpoints with `@swagger.doc`. It takes a dictionary in the format of a [swagger operation object](http://swagger.io/specification/#operationObject).
 
 ```python
-class Todo(Resource):
+class UserItemResource(Resource):
     @swagger.doc({
-        'tags': ['Some', 'Tags'],
-        'description': 'My description',
-        'summary': 'does things',
+        'tags': ['user'],
+        'description': 'Returns a user',
         'parameters': [
             {
-                'name': 'foo',
-                'description': 'awesome stuff',
-                'in': 'query',
-                'type': 'string',
+                'name': 'user_id',
+                'description': 'User identifier',
+                'in': 'path',
+                'type': 'int'
             }
         ],
         'responses': {
             '200': {
-                'description': 'supergeil',
-                'schema': MyModel # Take a look at the models sections
+                'description': 'User',
+                'schema': UserModel,
+                'examples': {
+                    'application/json': {
+                        'id': 1,
+                        'name': 'somebody'
+                    }
+                }
             }
         }
-    })
-    def get(self, todo_id):
-        # do some stuff
-        return MyModel(foo=5, bar='batz') # generates json response {"foo": 5, "bar": "batz"}
+     })
+    def get(self, user_id):
+        user = next((u for u in known_users if u['id'] == user_id), None)
+
+        if user is None:
+            return ErrorModel(**{'message': "User id {} not found".format(user_id)}), 404
+
+        # Return data through schema model
+        return UserModel(**user), 200
+
 ```
 
-Use add_resource as usually.
+Use add_resource as usual.
 
 ```python
-api.add_resource(TodoList, '/todos')
-api.add_resource(Todo, '/todos/<string:todo_id>')
+api.add_resource(UserItemResource, '/api/users/<int:user_id')
 ```
+
+If a resource function contains the special argument `_query`, any `query` type parameters in the
+documentation will be automatically parsed by reqparse and available as attributes of `_query`.
 
 ## Using models
 Create a model by inheriting from `flask.ext.restful_swagger_2.Schema`
@@ -72,12 +102,21 @@ Create a model by inheriting from `flask.ext.restful_swagger_2.Schema`
 from flask.ext.restful_swagger_2 import Schema
 
 
-class MyModel(Schema):
+class EmailModel(Schema):
     type = 'string'
     format = 'email'
 
 
-class MyOtherModel(Schema):
+class KeysModel(Schema):
+    type = 'object'
+    properties = {
+        'name': {
+            'type': 'string'
+        }
+    }
+
+
+class UserModel(Schema):
     type = 'object'
     properties = {
         'id': {
@@ -87,20 +126,19 @@ class MyOtherModel(Schema):
         'name': {
             'type': 'string'
         },
-        'mail': MyModel,
-        'moreMails': MyModel.array()
+        'mail': EmailModel,
+        'keys': KeysModel.array()
     }
     required = ['name']
 ```
 
 You can build your models according to the [swagger schema object specification](http://swagger.io/specification/#schemaObject)
 
-It is recommended that you always return a model in your views. This way, you will always keep your code and your
-documentation in sync.
+It is recommended that you always return a model in your views. This way, you will always keep your code and your documentation in sync.
 
 # Using authentication
 
-In the example above, the view `Todo` was a subclass of `Resource`. `Resource` is provided by `flask_restful`. However,
+In the example above, the view `UserItemResource` is a subclass of `Resource`, which is provided by `flask_restful`. However,
 `flask_restful_swagger_2` provides a thin wrapper around `Resource` to provide authentication. By using this, you can
 not only prevent access to resources, but also hide the documentation depending on the provided `api_key`.
 
@@ -132,12 +170,20 @@ api.add_resource(MyView, '/some/endpoint')
 
 # Running and testing
 
-Run your flask app as usual
+To run the example project in the `example` folder:
 
 ```
-python example.py
+pip install flask-restful-swagger-2
+pip install flask-cors    # needed to access spec from swagger-ui
+python app.py
 ```
 
 The swagger spec will by default be at `http://localhost:5000/api/swagger.json`. You can change the url by passing
-`api_spec_url='/my/path'` to the `Api` constructor. You can use swagger-ui to explore your api. Try it online at
-[http://petstore.swagger.io/](http://petstore.swagger.io/?url=http://localhost:5000/api/swagger.json)
+`api_spec_url='/my/path'` to the `Api` constructor. You can use [swagger-ui](https://github.com/swagger-api/swagger-ui)
+to explore your api. Try it online at [http://petstore.swagger.io/](http://petstore.swagger.io/?url=http://localhost:5000/api/swagger.json)
+
+To run tests:
+
+```
+python setup.py test
+```

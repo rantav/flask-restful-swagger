@@ -1,13 +1,18 @@
+import collections
 import re
+import inspect
+from functools import wraps
 
 from flask import request
-from flask.ext.restful import Resource
+from flask.ext.restful import Resource, reqparse
+
 
 # python3 compatibility
 try:
-  basestring
+    basestring
 except NameError:
-  basestring = str
+    basestring = str
+
 
 class ValidationError(ValueError):
     pass
@@ -44,7 +49,7 @@ def create_swagger_endpoint(api):
                                     views[method] = docs
                             if views:
                                 paths[endpoint] = views
-                        swagger_object['paths'] = paths
+                        swagger_object['paths'] = collections.OrderedDict(sorted(paths.items()))
                     else:
                         swagger_object[k] = v
             return swagger_object
@@ -52,17 +57,102 @@ def create_swagger_endpoint(api):
     return SwaggerEndpoint
 
 
+def get_data_type(param):
+    """
+    Maps swagger data types to Python types.
+    :param param: swagger parameter
+    :return: Python type
+    """
+    param_type = param.get('type', None)
+
+    if param_type:
+        if param_type == 'string':
+            return str
+
+        elif param_type == 'integer':
+            return int
+
+        elif param_type == 'boolean':
+            return bool
+
+        elif param_type == 'array':
+            return list
+
+        elif param_type == 'number':
+            param_format = param.get('format', None)
+
+            if param_format == 'float' or param_format == 'double':
+                return float
+
+    return None
+
+
+def get_parser_arg(param):
+    """
+    Return an argument for the request parser.
+    :param param: Swagger document parameter
+    :return: Request parser argument
+    """
+    return (
+        param['name'],
+        {
+            'dest': param['name'],
+            'type': get_data_type(param),
+            'location': 'args',
+            'help': param.get('description', None),
+            'required': param.get('required', False),
+            'default': param.get('default', None)
+        })
+
+
+def get_parser_args(params):
+    """
+    Return a list of arguments for the request parser.
+    :param params: Swagger document parameters
+    :return: Request parser arguments
+    """
+    return [get_parser_arg(p) for p in params if p['in'] == 'query']
+
+
+def parse_args(params):
+    """
+    Parse query parameters from swagger document parameters.
+    :param params: swagger doc parameters
+    :return: Query parameters
+    """
+    parser = reqparse.RequestParser()
+
+    for arg in get_parser_args(params):
+        parser.add_argument(arg[0], **arg[1])
+
+    return parser.parse_args()
+
+
 def doc(operation_object):
     """Decorator to save the documentation of an api endpoint.
 
     Saves the passed arguments as an attribute to use them later when generating the swagger spec.
     """
-
-    def inner(f):
+    def decorated(f):
         f.__swagger_operation_object = operation_object
-        return f
 
-    return inner
+        @wraps(f)
+        def inner(self, *args, **kwargs):
+            # Get names of resource function arguments
+
+            if hasattr(inspect, 'signature'):
+                func_args = list(inspect.signature(f).parameters.keys())
+            else:
+                func_args = inspect.getargspec(f)[0]
+
+            # Parse query arguments if the special argument '_query' is present
+            if 'parameters' in f.__swagger_operation_object and '_query' in func_args:
+                kwargs.update({'_query': parse_args(f.__swagger_operation_object['parameters'])})
+
+            return f(self, *args, **kwargs)
+
+        return inner
+    return decorated
 
 
 def validate_path_item_object(path_item_object):
@@ -208,7 +298,7 @@ def validate_definitions_object(definition_object):
 def validate_schema_object(schema_object):
     for k, v in schema_object.items():
         if k == 'required' and not isinstance(v, list):
-            raise ValidationError('Invalid schema object. "{0}" must a list but was {1}'.format(k, type(v)))
+            raise ValidationError('Invalid schema object. "{0}" must be a list but was {1}'.format(k, type(v)))
 
 
 def validate_headers_object(headers_object):
@@ -227,3 +317,42 @@ def extract_swagger_path(path):
     to this: /{lang_code}/{id}/{probability}
     """
     return re.sub('<(?:[^:]+:)?([^>]+)>', '{\\1}', path)
+
+
+def sanitize_doc(comment):
+    if isinstance(comment, list):
+        return sanitize_doc('\n'.join(filter(None, comment)))
+    else:
+        return comment.replace('\n', '<br/>') if comment else comment
+
+
+def parse_method_doc(method, operation):
+    summary = None
+
+    full_doc = inspect.getdoc(method)
+    if full_doc:
+        lines = full_doc.split('\n')
+        if lines:
+            # Append the first line of the docstring to any summary specified
+            # in the operation document
+            summary = sanitize_doc([operation.get('summary', None), lines[0]])
+
+    return summary
+
+
+def parse_schema_doc(cls, definition):
+    description = None
+
+    # Skip processing the docstring of the schema class if the schema
+    # definition already contains a description
+    if 'description' not in definition:
+        full_doc = inspect.getdoc(cls)
+
+        # Avoid returning the docstring of the base dict class
+        if full_doc and full_doc != inspect.getdoc(dict):
+            lines = full_doc.split('\n')
+            if lines:
+                # Use the first line of the class docstring as the description
+                description = sanitize_doc(lines[0])
+
+    return description

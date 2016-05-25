@@ -1,6 +1,6 @@
-from views import Hello, SomeParams
+from views import UserResource, UserItemResource
 
 routes = [
-    [Hello, '/api/hello'],
-    [SomeParams, '/api/double/<int:value>']
+    [UserResource, '/api/users'],
+    [UserItemResource, '/api/users/<int:user_id>']
 ]

@@ -5,13 +5,15 @@ from flask import request
 
 from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, \
     ValidationError, validate_operation_object, validate_definitions_object, extract_swagger_path, \
-    _auth as auth
+    parse_method_doc, parse_schema_doc, _auth as auth
+
 
 # python3 compatibility
 try:
-  basestring
+    basestring
 except NameError:
-  basestring = str
+    basestring = str
+
 
 def abort(http_status_code, schema=None, **kwargs):
     if schema:
@@ -88,7 +90,7 @@ class Api(restful_Api):
                 operation, definitions_ = self._extract_schemas(operation)
                 path_item[method] = operation
                 definitions.update(definitions_)
-                summary = self._parse_method_doc(f, operation)
+                summary = parse_method_doc(f, operation)
                 if summary:
                     operation['summary'] = summary
         validate_definitions_object(definitions)
@@ -115,9 +117,9 @@ class Api(restful_Api):
         if inspect.isclass(obj):
             # Object is a model. Convert it to valid json and get a definition object
             if not issubclass(obj, Schema):
-                raise ValueError('"{0}" is not a subclass of the scheme model'.format(obj))
+                raise ValueError('"{0}" is not a subclass of the schema model'.format(obj))
             definition = obj.definitions()
-            description = self._parse_schema_doc(obj, definition)
+            description = parse_schema_doc(obj, definition)
             if description:
                 definition['description'] = description
             # The definition itself might contain models, so extract them again
@@ -126,42 +128,6 @@ class Api(restful_Api):
             definitions.update(additional_definitions)
             obj = obj.reference()
         return obj, definitions
-
-    def _sanitize_doc(self, comment):
-        if isinstance(comment, list):
-            return self._sanitize_doc('\n'.join(filter(None, comment)))
-        else:
-            return comment.replace('\n', '<br/>') if comment else comment
-
-    def _parse_method_doc(self, method, operation):
-        summary = None
-
-        full_doc = inspect.getdoc(method)
-        if full_doc:
-            lines = full_doc.split('\n')
-            if lines:
-                # Append the first line of the docstring to any summary specified
-                # in the operation document
-                summary = self._sanitize_doc([operation.get('summary', None), lines[0]])
-
-        return summary
-
-    def _parse_schema_doc(self, cls, definition):
-        description = None
-
-        # Skip processing the docstring of the schema class if the schema
-        # definition already contains a description
-        if 'description' not in definition:
-            full_doc = inspect.getdoc(cls)
-
-            # Avoid returning the docstring of the base dict class
-            if full_doc and full_doc != inspect.getdoc(dict):
-                lines = full_doc.split('\n')
-                if lines:
-                    # Use the first line of the class docstring as the description
-                    description = self._sanitize_doc(lines[0])
-
-        return description
 
 
 class Schema(dict):
