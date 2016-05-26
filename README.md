@@ -59,7 +59,7 @@ class UserItemResource(Resource):
                 'name': 'user_id',
                 'description': 'User identifier',
                 'in': 'path',
-                'type': 'int'
+                'type': 'integer'
             }
         ],
         'responses': {
@@ -76,13 +76,8 @@ class UserItemResource(Resource):
         }
      })
     def get(self, user_id):
-        user = next((u for u in known_users if u['id'] == user_id), None)
-
-        if user is None:
-            return ErrorModel(**{'message': "User id {} not found".format(user_id)}), 404
-
-        # Return data through schema model
-        return UserModel(**user), 200
+        # Do some processing
+        return UserModel(id=1, name='somebody'}), 200  # generates json response {"id": 1, "name": "somebody"}
 
 ```
 
