@@ -1,5 +1,7 @@
 # flask-restful-swagger-2.0
 
+[![Build Status](https://travis-ci.org/swege/flask-restful-swagger-2.0.svg?branch=vsu-master)](https://travis-ci.org/swege/flask-restful-swagger-2.0)
+
 ## What is flask-restful-swagger-2?
 flask-restful-swagger-2 is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which
 enables [swagger](http://swagger.io/) support according to the [swagger 2.0 specification](http://swagger.io/specification/).

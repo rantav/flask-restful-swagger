@@ -1,9 +1,14 @@
 language: python
 python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-install:
-#  - pip install -r requirements.txt
-# command to run tests
+- '2.7'
+- '3.3'
+- '3.4'
+install: 
 script: python setup.py test
+deploy:
+  provider: pypi
+  user: swegener
+  on:
+    tags: true
+  password:
+    secure: EUgpl84Jo/DVyGzbRQcVhvMTPFZO8i1m2USDPLPYS98QEAksU33/O7sW1vXXBzjjuT7Tia35Q1uLbF430zMhq+4YSCTATV9Ax2BktipPNOyz639NjWyEdvnGdiyIQcukpLVpRwt+NU6E+Gc6VWCpdaDMwmBDVkcZIxYMAgLNYgNqvCV44e0u3z0Dt1v5tXCYO/0fpp9h3yf1aiVirVgqEBCg6eHqB74+WW6OCcdZpkPWzlH7tP80azslCsBDTuuYdI5/9HKV81V27EoXrGYoNqAOZIgOOShUI9uNz4MS40m4N+nGACdaS5vE+191fDN/wbZua13h8XlSx3m9hIooIuSauicHMCpYwv9KqdDSTWMTtnjGmo9k+cbDsOemlnWdyj8X/xzj0/tzuirxvp5/j4YrkHPc9qzHBnkd2m/KFMx4dCUkNr6C57yJZl3h+xB0wsQhUSi4SwRdFP+hKwmLI2npeUGLYSkw3mX/D31MQe5m9FAAuwKjWT/LufcSx7TVBTmgPQNvk/4GMjBhKovl7rAV6JJQfyz+FWXjNy3Mxe0Z2VVQn0ceShIVPcv8b8AovjnWnE+c7enTTK4bFFCxJkHsrD8VLVkstm5SfQLuCHfBF5U8UeTICae+9poJXXVqwu6zwgYV+E/BmBWXPNXOTvqpyGVXISFTpLKvOPrdgSg=
