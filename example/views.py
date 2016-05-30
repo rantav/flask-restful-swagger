@@ -80,15 +80,17 @@ class UserResource(Resource):
             }
         }
     })
-    def get(self, _query):
+    def get(self, _parser):
         """
         Returns all users.
-        :param _query: Parsed query parameters
+        :param _parser: Query parameter parser
         """
-        # swagger.doc decorator automatically parses query parameters into
-        # the special '_query' function argument if it is present
-        users = ([u for u in known_users if u['name'] == _query.name]
-                 if _query.name else known_users)
+        # swagger.doc decorator returns a query parameter parser in the special
+        # '_parser' function argument if it is present
+        args = _parser.parse_args()
+
+        users = ([u for u in known_users if u['name'] == args['name']]
+                 if 'name' in args else known_users)
 
         # Return data through schema model
         return map(lambda user: UserModel(**user), users), 200

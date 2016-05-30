@@ -50,13 +50,15 @@ class TestResource(Resource):
             }
         }
      })
-    def get(self, user_id, _query):
+    def get(self, user_id, _parser):
         """
         Returns a specific user.
         :param user_id: The user identifier
-        :param _query: Parsed query parameters
+        :param _parser: Query parameter parser
         """
-        name = getattr(_query, 'name', 'somebody')
+        args = _parser.parse_args()
+
+        name = args.get('name', 'somebody')
         return UserModel(**{'id': user_id, 'name': name}), 200
 
 

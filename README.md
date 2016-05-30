@@ -87,8 +87,8 @@ Use add_resource as usual.
 api.add_resource(UserItemResource, '/api/users/<int:user_id')
 ```
 
-If a resource function contains the special argument `_query`, any `query` type parameters in the
-documentation will be automatically parsed by reqparse and available as attributes of `_query`.
+If a resource function contains the special argument `_parser`, any `query` type parameters in the
+documentation will be automatically added to a reqparse parser and assigned to the `_parser` argument.
 
 ## Using models
 Create a model by inheriting from `flask.ext.restful_swagger_2.Schema`

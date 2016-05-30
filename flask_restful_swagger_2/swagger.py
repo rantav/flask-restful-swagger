@@ -114,9 +114,9 @@ def get_parser_args(params):
     return [get_parser_arg(p) for p in params if p['in'] == 'query']
 
 
-def parse_args(params):
+def get_parser(params):
     """
-    Parse query parameters from swagger document parameters.
+    Returns a parser for query parameters from swagger document parameters.
     :param params: swagger doc parameters
     :return: Query parameters
     """
@@ -125,7 +125,7 @@ def parse_args(params):
     for arg in get_parser_args(params):
         parser.add_argument(arg[0], **arg[1])
 
-    return parser.parse_args()
+    return parser
 
 
 def doc(operation_object):
@@ -145,9 +145,9 @@ def doc(operation_object):
             else:
                 func_args = inspect.getargspec(f)[0]
 
-            # Parse query arguments if the special argument '_query' is present
-            if 'parameters' in f.__swagger_operation_object and '_query' in func_args:
-                kwargs.update({'_query': parse_args(f.__swagger_operation_object['parameters'])})
+            # Add a parser for query arguments if the special argument '_parser' is present
+            if 'parameters' in f.__swagger_operation_object and '_parser' in func_args:
+                kwargs.update({'_parser': get_parser(f.__swagger_operation_object['parameters'])})
 
             return f(self, *args, **kwargs)
 
