@@ -33,20 +33,20 @@ api = Api(app, api_version='0.0', api_spec_url='/api/swagger')
 
 Parameters of the Api class include:
 
-| parameter | description |
+| Parameter | Description |
 | --------- | ----------- |
-| api_version | The API version string (defaults to '0.0'). Maps to the `version` field of the [info object](http://swagger.io/specification/#infoObject). |
-| api_spec_url | The URL path that serves the swagger specification document (defaults to '/api/swagger'). |
-| base_path | The base path on which the API is served. Maps to the `basePath` field of the [schema object](http://swagger.io/specification/#schemaObject). |
-| consumes | A list of MIME types the API can consume. Maps to the `consumes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
-| contact | The contact information for the API. Maps to the `contact` field of the [info object](http://swagger.io/specification/#infoObject). |
-| description | A short description of the application. Maps to the `description` field of the [info object](http://swagger.io/specification/#infoObject). |
-| host | The host serving the API. Maps to the `host` field of the [schema object](http://swagger.io/specification/#schemaObject). |
-| license | The license information for the API. Maps to the `license` field of the [info object](http://swagger.io/specification/#infoObject). |
-| produces | A list of MIME types the API can produce. Maps to the `produces` field of the [schema object](http://swagger.io/specification/#schemaObject). |
-| schemes | The transfer protocol of the API. Maps the the `schemes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
-| terms | The terms of service for the API. Maps to the `termsOfService` field of the [info object](http://swagger.io/specification/#infoObject). |
-| title | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `api_version` | The API version string (defaults to '0.0'). Maps to the `version` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `api_spec_url` | The URL path that serves the swagger specification document (defaults to `/api/swagger`). |
+| `base_path` | The base path on which the API is served. Maps to the `basePath` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `consumes` | A list of MIME types the API can consume. Maps to the `consumes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `contact` | The contact information for the API. Maps to the `contact` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `description` | A short description of the application. Maps to the `description` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `host` | The host serving the API. Maps to the `host` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `license` | The license information for the API. Maps to the `license` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `produces` | A list of MIME types the API can produce. Maps to the `produces` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `schemes` | The transfer protocol of the API. Maps the the `schemes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `terms` | The terms of service for the API. Maps to the `termsOfService` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `title` | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
 
 ## Documenting API endpoints
 Decorate your API endpoints with `@swagger.doc`. It takes a dictionary in the format of a [swagger operation object](http://swagger.io/specification/#operationObject).
