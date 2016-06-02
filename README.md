@@ -63,7 +63,7 @@ class Todo(Resource):
           ]
         )
     def get(self, todo_id):
-    
+
 # Operations not decorated with @swagger.operation do not get added to the swagger docs
 
 class Todo(Resource):
@@ -199,6 +199,8 @@ apiVersion - passed directly to swagger as the apiVersion attribute. Default: 0.
 
 basePath - passed directly to swagger as the basePath attribute. Default: 'http://localhost:5000' (do not include a slash at the end)
 
+authTokenType - by default, swagger-ui allows a user to input an api key, which will format all outgoing requests with a query string parameter (i.e., `?api_key=<your secret token>`). By passing a a string such as 'Client' or 'Bearer', swagger-ui will add an auth header in the following format: `Authorization: Client <your secret token>`
+
 resourcePath - same as before. default: '/'
 
 produces - same as before, passed directly to swagger. The default is ["application/json"]
@@ -210,9 +212,9 @@ description - description of this API endpoint. Defaults to 'Auto generated API 
 
 # Accessing the result json spec and an Interactive HTML interface
 Assuming you provided `swagger.docs` with a parameter `api_spec_url='/api/spec'` (or left out in which case the default is '/api/spec') you may access the resulting json at /api/spec.json.
-You may also access /api/spec.html where you'd find an interactive HTML page that lets you play with the API to some extent.  
+You may also access /api/spec.html where you'd find an interactive HTML page that lets you play with the API to some extent.
 
-Here's how this HTML page would look like: 
+Here's how this HTML page would look like:
 
 ![An example /api/spec.html page](http://cl.ly/image/312Q2u091u24/Screen%20Shot%202013-12-17%20at%2012.26.02%20PM.png)
 
