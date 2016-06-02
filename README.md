@@ -199,7 +199,10 @@ apiVersion - passed directly to swagger as the apiVersion attribute. Default: 0.
 
 basePath - passed directly to swagger as the basePath attribute. Default: 'http://localhost:5000' (do not include a slash at the end)
 
-authTokenType - by default, swagger-ui allows a user to input an api key, which will format all outgoing requests with a query string parameter (i.e., `?api_key=<your secret token>`). By passing a a string such as 'Client' or 'Bearer', swagger-ui will add an auth header in the following format: `Authorization: Client <your secret token>`
+authTokenType - by default, swagger-ui allows a user to input an api key, which will format all
+outgoing requests with a query string parameter (i.e., ?api_key=<your secret token>). By passing a
+string such as 'Client' or 'Bearer', swagger-ui will add an auth header in the following format:
+Authorization: Client <your secret token>
 
 resourcePath - same as before. default: '/'
 
