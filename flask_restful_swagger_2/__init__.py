@@ -103,6 +103,10 @@ class Api(restful_Api):
                 self._swagger_object['paths'][extract_swagger_path(url)] = path_item
         super(Api, self).add_resource(resource, *urls, **kwargs)
 
+    def get_swagger_doc(self):
+        """Returns the swagger document object."""
+        return self._swagger_object
+
     def _extract_schemas(self, obj):
         """Converts all schemes in a given object to its proper swagger representation."""
         definitions = {}

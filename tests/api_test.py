@@ -65,14 +65,30 @@ class TestResource(Resource):
 class ApiTestCase(unittest.TestCase):
     def setUp(self):
         app = Flask(__name__)
-        api = Api(app)
-        api.add_resource(TestResource, '/users/<int:user_id>')
+        self.api = Api(app)
+        self.api.add_resource(TestResource, '/users/<int:user_id>')
         self.app = app.test_client()
+        self.context = app.test_request_context()
+
+    def test_get_spec_object(self):
+        # Retrieve spec object
+        with self.context:
+            spec = self.api.get_swagger_doc()
+            self.assertTrue('info' in spec)
+            self.assertTrue('paths' in spec)
+            self.assertTrue('definitions' in spec)
+            self.assertEqual(spec['swagger'], '2.0')
 
     def test_get_spec(self):
         # Retrieve spec
         r = self.app.get('/api/swagger.json')
         self.assertEqual(r.status_code, 200)
+
+        data = json.loads(r.data.decode('utf-8'))
+        self.assertTrue('info' in data)
+        self.assertTrue('paths' in data)
+        self.assertTrue('definitions' in data)
+        self.assertEqual(data['swagger'], '2.0')
 
     def test_get_user(self):
         # Retrieve user

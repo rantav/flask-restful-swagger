@@ -118,7 +118,7 @@ def get_parser(params):
     """
     Returns a parser for query parameters from swagger document parameters.
     :param params: swagger doc parameters
-    :return: Query parameters
+    :return: Query parameter parser
     """
     parser = reqparse.RequestParser()
 
@@ -320,6 +320,11 @@ def extract_swagger_path(path):
 
 
 def sanitize_doc(comment):
+    """
+    Substitute HTML breaks for new lines in comment text.
+    :param comment: The comment text
+    :return: Sanitized comment text
+    """
     if isinstance(comment, list):
         return sanitize_doc('\n'.join(filter(None, comment)))
     else:
@@ -327,6 +332,12 @@ def sanitize_doc(comment):
 
 
 def parse_method_doc(method, operation):
+    """
+    Parse documentation from a resource method.
+    :param method: The resource method
+    :param operation: The operation document
+    :return: The operation summary
+    """
     summary = None
 
     full_doc = inspect.getdoc(method)
@@ -341,6 +352,12 @@ def parse_method_doc(method, operation):
 
 
 def parse_schema_doc(cls, definition):
+    """
+    Parse documentation from a schema class.
+    :param cls: The schema class
+    :param definition: The schema definition
+    :return: The schema description
+    """
     description = None
 
     # Skip processing the docstring of the schema class if the schema

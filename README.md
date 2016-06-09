@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/swege/flask-restful-swagger-2.0.svg?branch=vsu-master)](https://travis-ci.org/swege/flask-restful-swagger-2.0)
 
 ## What is flask-restful-swagger-2?
+
 flask-restful-swagger-2 is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which
 enables [swagger](http://swagger.io/) support according to the [swagger 2.0 specification](http://swagger.io/specification/).
 
@@ -10,6 +11,7 @@ This project is based on [flask-restful-swagger](https://github.com/rantav/flask
 supported swagger 1.2.
 
 ## Getting started
+
 Install:
 
 ```
@@ -31,7 +33,7 @@ app = Flask(__name__)
 api = Api(app, api_version='0.0', api_spec_url='/api/swagger')
 ```
 
-Parameters of the Api class include:
+The Api class supports the following parameters:
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -49,6 +51,7 @@ Parameters of the Api class include:
 | `title` | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
 
 ## Documenting API endpoints
+
 Decorate your API endpoints with `@swagger.doc`. It takes a dictionary in the format of a [swagger operation object](http://swagger.io/specification/#operationObject).
 
 ```python
@@ -89,10 +92,13 @@ Use add_resource as usual.
 api.add_resource(UserItemResource, '/api/users/<int:user_id')
 ```
 
+## Parsing query parameters
+
 If a resource function contains the special argument `_parser`, any `query` type parameters in the
 documentation will be automatically added to a reqparse parser and assigned to the `_parser` argument.
 
 ## Using models
+
 Create a model by inheriting from `flask.ext.restful_swagger_2.Schema`
 
 ```python
@@ -133,7 +139,12 @@ You can build your models according to the [swagger schema object specification]
 
 It is recommended that you always return a model in your views. This way, you will always keep your code and your documentation in sync.
 
-# Using authentication
+## Specification document
+
+The `get_swagger_doc` method of the Api instance returns the specification document object,
+which may be useful for integration with other tools for generating formatted output or client code.
+
+## Using authentication
 
 In the example above, the view `UserItemResource` is a subclass of `Resource`, which is provided by `flask_restful`. However,
 `flask_restful_swagger_2` provides a thin wrapper around `Resource` to provide authentication. By using this, you can
@@ -165,7 +176,7 @@ class MyView(Resource):
 api.add_resource(MyView, '/some/endpoint')
 ```
 
-# Running and testing
+## Running and testing
 
 To run the example project in the `example` folder:
 
