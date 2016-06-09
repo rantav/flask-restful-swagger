@@ -1,6 +1,6 @@
 # flask-restful-swagger-2.0
 
-[![Build Status](https://travis-ci.org/swege/flask-restful-swagger-2.0.svg?branch=vsu-master)](https://travis-ci.org/swege/flask-restful-swagger-2.0)
+[![Build Status](https://travis-ci.org/swege/flask-restful-swagger-2.0.svg?branch=master)](https://travis-ci.org/swege/flask-restful-swagger-2.0)
 
 ## What is flask-restful-swagger-2?
 
