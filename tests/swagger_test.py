@@ -1,5 +1,7 @@
 import unittest
 
+from flask_restful import inputs
+
 import flask_restful_swagger_2.swagger as swagger
 from flask_restful_swagger_2 import Schema
 
@@ -20,14 +22,19 @@ class SwaggerTestCase(unittest.TestCase):
     def test_should_get_data_type_str(self):
         self.assertEqual(swagger.get_data_type({'type': 'string'}), str)
 
+    def test_should_get_data_type_str_date(self):
+        self.assertEqual(swagger.get_data_type({'type': 'string', 'format': 'date'}),
+                         inputs.date)
+
+    def test_should_get_data_type_str_date_time(self):
+        self.assertEqual(swagger.get_data_type({'type': 'string', 'format': 'date-time'}),
+                         inputs.datetime_from_iso8601)
+
     def test_should_get_data_type_int(self):
         self.assertEqual(swagger.get_data_type({'type': 'integer'}), int)
 
     def test_should_get_data_type_bool(self):
-        self.assertEqual(swagger.get_data_type({'type': 'boolean'}), bool)
-
-    def test_should_get_data_type_list(self):
-        self.assertEqual(swagger.get_data_type({'type': 'array'}), list)
+        self.assertEqual(swagger.get_data_type({'type': 'boolean'}), inputs.boolean)
 
     def test_should_get_data_type_float(self):
         self.assertEqual(swagger.get_data_type({'type': 'number', 'format': 'float'}), float)

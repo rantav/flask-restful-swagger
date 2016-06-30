@@ -4,7 +4,7 @@ import inspect
 from functools import wraps
 
 from flask import request
-from flask.ext.restful import Resource, reqparse
+from flask_restful import Resource, reqparse, inputs
 
 
 # python3 compatibility
@@ -67,16 +67,21 @@ def get_data_type(param):
 
     if param_type:
         if param_type == 'string':
+            param_format = param.get('format', None)
+
+            if param_format == 'date':
+                return inputs.date
+
+            elif param_format == 'date-time':
+                return inputs.datetime_from_iso8601
+
             return str
 
         elif param_type == 'integer':
             return int
 
         elif param_type == 'boolean':
-            return bool
-
-        elif param_type == 'array':
-            return list
+            return inputs.boolean
 
         elif param_type == 'number':
             param_format = param.get('format', None)

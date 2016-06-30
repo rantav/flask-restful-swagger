@@ -1,9 +1,9 @@
 import inspect
 
-from flask.ext.restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
+from flask_restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
 from flask import request
 
-from flask.ext.restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, \
+from flask_restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, \
     ValidationError, validate_operation_object, validate_definitions_object, extract_swagger_path, \
     parse_method_doc, parse_schema_doc, _auth as auth
 

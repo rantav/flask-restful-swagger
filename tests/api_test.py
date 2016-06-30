@@ -19,7 +19,75 @@ class UserModel(Schema):
     required = ['name']
 
 
-class TestResource(Resource):
+class ParseResource(Resource):
+    @swagger.doc({
+        'tags': ['user'],
+        'description': 'Tests query parameter parser',
+        'parameters': [
+            {
+                'name': 'str',
+                'description': 'String value',
+                'in': 'query',
+                'type': 'string'
+            },
+            {
+                'name': 'date',
+                'description': 'Date value',
+                'in': 'query',
+                'type': 'string',
+                'format': 'date'
+            },
+            {
+                'name': 'datetime',
+                'description': 'Date-time value',
+                'in': 'query',
+                'type': 'string',
+                'format': 'date-time'
+            },
+            {
+                'name': 'bool',
+                'description': 'Boolean value',
+                'in': 'query',
+                'type': 'boolean'
+            },
+            {
+                'name': 'int',
+                'description': 'Integer value',
+                'in': 'query',
+                'type': 'integer'
+            },
+            {
+                'name': 'float',
+                'description': 'Float value',
+                'in': 'query',
+                'type': 'number',
+                'format': 'float'
+            }
+        ],
+        'responses': {
+            '200': {
+                'description': 'Parsed values'
+            }
+        }
+     })
+    def get(self, _parser):
+        """
+        Returns parsed query parameters.
+        :param _parser: Query parameter parser
+        """
+        args = _parser.parse_args()
+
+        return {
+            'str': args.str,
+            'date': args.date.isoformat(),
+            'datetime': args.datetime.isoformat(),
+            'bool': args.bool,
+            'int': args.int,
+            'float': args.float
+        }, 200
+
+
+class UserResource(Resource):
     @swagger.doc({
         'tags': ['user'],
         'description': 'Returns a user',
@@ -66,7 +134,8 @@ class ApiTestCase(unittest.TestCase):
     def setUp(self):
         app = Flask(__name__)
         self.api = Api(app)
-        self.api.add_resource(TestResource, '/users/<int:user_id>')
+        self.api.add_resource(ParseResource, '/parse')
+        self.api.add_resource(UserResource, '/users/<int:user_id>')
         self.app = app.test_client()
         self.context = app.test_request_context()
 
@@ -89,6 +158,24 @@ class ApiTestCase(unittest.TestCase):
         self.assertTrue('paths' in data)
         self.assertTrue('definitions' in data)
         self.assertEqual(data['swagger'], '2.0')
+
+    def test_parse_query_parameters(self):
+        r = self.app.get('/parse?str=Test' +
+                         '&date=2016-01-01' +
+                         '&datetime=2016-01-01T12:00:00%2B00:00' +
+                         '&bool=False' +
+                         '&int=123' +
+                         '&float=1.23')
+
+        self.assertEqual(r.status_code, 200)
+
+        data = json.loads(r.data.decode('utf-8'))
+        self.assertEqual(data['str'], 'Test')
+        self.assertEqual(data['date'], '2016-01-01T00:00:00')
+        self.assertEqual(data['datetime'], '2016-01-01T12:00:00+00:00')
+        self.assertEqual(data['bool'], False)
+        self.assertEqual(data['int'], 123)
+        self.assertEqual(data['float'], 1.23)
 
     def test_get_user(self):
         # Retrieve user
