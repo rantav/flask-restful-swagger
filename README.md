@@ -23,7 +23,7 @@ And in your program, where you'd usually just use flask-restful, add just a litt
 
 ```python
 from flask import Flask
-from flask.ext.restful import  Api
+from flask_restful import Api
 from flask_restful_swagger import swagger
 
 app = Flask(__name__)
