@@ -2,6 +2,7 @@ import functools
 import inspect
 import os
 import re
+import six
 
 try:
     # urlparse is renamed to urllib.parse in python 3
@@ -308,7 +309,7 @@ class SwaggerEndpoint(object):
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
         for att_name, att_value in list(decorators.items()):
-          if isinstance(att_value, (str, int, list)):
+          if isinstance(att_value, six.string_types + (int, list)):
             if att_name == 'parameters':
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
@@ -446,7 +447,7 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (str,
+    if predicate(python_type_or_object, six.string_types + (
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url,
@@ -483,7 +484,7 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (str,
+    if predicate(python_type_or_object, six.string_types + (
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url)):
