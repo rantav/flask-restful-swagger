@@ -235,7 +235,7 @@ def validate_parameter_object(parameter_object):
     if 'in' not in parameter_object:
         raise ValidationError('Invalid parameter object. Missing field "in"')
     else:
-        if parameter_object['in'] not in ['path', 'query', 'header', 'body', 'form']:
+        if parameter_object['in'] not in ['path', 'query', 'header', 'body', 'formData']:
             raise ValidationError(
                     'Invalid parameter object. Value of field "in" must be path, query, header, body or form, was "{0}"'.format(
                             parameter_object['in']))
