@@ -61,7 +61,7 @@ class Api(restful_Api):
             'responses': {},
             'securityDefinitions': {},
             'security': [],
-            'tags': [],
+            'tags': kwargs.pop('tags', []),
             'externalDocs': {}
         }
         contact = kwargs.pop('contact', {})
