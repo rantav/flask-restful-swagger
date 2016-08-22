@@ -71,14 +71,18 @@ class Api(restful_Api):
         if license:
             self._swagger_object['info']['license'] = license
         api_spec_url = kwargs.pop('api_spec_url', '/api/swagger')
+        add_api_spec_resource = kwargs.pop('add_api_spec_resource', True)
         super(Api, self).__init__(*args, **kwargs)
         if self.app and not self._swagger_object['info']['title']:
             self._swagger_object['info']['title'] = self.app.name
-        api_spec_urls = [
-            '{0}.json'.format(api_spec_url),
-            '{0}.html'.format(api_spec_url),
-        ]
-        self.add_resource(create_swagger_endpoint(self), *api_spec_urls, endpoint='swagger')
+
+        # Unless told otherwise, create and register the swagger endpoint
+        if add_api_spec_resource:
+            api_spec_urls = [
+                '{0}.json'.format(api_spec_url),
+                '{0}.html'.format(api_spec_url),
+            ]
+            self.add_resource(create_swagger_endpoint(self), *api_spec_urls, endpoint='swagger')
 
     def add_resource(self, resource, *urls, **kwargs):
         path_item = {}
