@@ -64,8 +64,10 @@ def get_data_type(param):
     :return: Python type
     """
     param_type = param.get('type', None)
-
     if param_type:
+        if param_type == 'array':
+            param = param['items']
+            param_type = param['type']
         if param_type == 'string':
             param_format = param.get('format', None)
 
@@ -92,6 +94,13 @@ def get_data_type(param):
     return None
 
 
+def get_data_action(param):
+    param_type = param.get('type', None)
+
+    if param_type == 'array':
+        return 'append'
+    return 'store'
+
 def get_parser_arg(param):
     """
     Return an argument for the request parser.
@@ -106,7 +115,8 @@ def get_parser_arg(param):
             'location': 'args',
             'help': param.get('description', None),
             'required': param.get('required', False),
-            'default': param.get('default', None)
+            'default': param.get('default', None),
+            'action': get_data_action(param)
         })
 
 
