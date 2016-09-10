@@ -59,7 +59,8 @@ class SwaggerTestCase(unittest.TestCase):
             'location': 'args',
             'help': 'Name to filter by',
             'required': False,
-            'default': None
+            'default': None,
+            'action': 'store'
         })
 
         self.assertEqual(swagger.get_parser_arg(param), expected)
@@ -86,7 +87,39 @@ class SwaggerTestCase(unittest.TestCase):
             'location': 'args',
             'help': 'Name to filter by',
             'required': False,
-            'default': None
+            'default': None,
+            'action': 'store'
+        })]
+
+        self.assertEqual(swagger.get_parser_args(params), expected)
+
+    def test_array_get_parser_args(self):
+        params = [
+            {
+                'name': 'body',
+                'description': 'Request body',
+                'in': 'body',
+                'required': True,
+            },
+            {
+                'name': 'name',
+                'description': 'Name to filter by',
+                'type': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'in': 'query'
+            }
+        ]
+
+        expected = [('name', {
+            'dest': 'name',
+            'type': str,
+            'location': 'args',
+            'help': 'Name to filter by',
+            'required': False,
+            'default': None,
+            'action': 'append'
         })]
 
         self.assertEqual(swagger.get_parser_args(params), expected)
