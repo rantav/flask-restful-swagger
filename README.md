@@ -37,9 +37,10 @@ The Api class supports the following parameters:
 
 | Parameter | Description |
 | --------- | ----------- |
+| `add_api_spec_resource` | Set to `False` if you want to apply custom decorators to the Swagger resource and manually register it (defaults to `True`) |
 | `api_version` | The API version string (defaults to '0.0'). Maps to the `version` field of the [info object](http://swagger.io/specification/#infoObject). |
-| `api_spec_url` | The URL path that serves the swagger specification document (defaults to `/api/swagger`). |
 | `api_spec_base` | Instead of specifying individual Swagger fields, you can pass in a minimal [schema object](http://swagger.io/specification/#schemaObject) to use as a template. |
+| `api_spec_url` | The URL path that serves the swagger specification document (defaults to `/api/swagger`). |
 | `base_path` | The base path on which the API is served. Maps to the `basePath` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `consumes` | A list of MIME types the API can consume. Maps to the `consumes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `contact` | The contact information for the API. Maps to the `contact` field of the [info object](http://swagger.io/specification/#infoObject). |
@@ -48,9 +49,9 @@ The Api class supports the following parameters:
 | `license` | The license information for the API. Maps to the `license` field of the [info object](http://swagger.io/specification/#infoObject). |
 | `produces` | A list of MIME types the API can produce. Maps to the `produces` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `schemes` | The transfer protocol of the API. Maps the the `schemes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
+| `tags` | A list of tags used by the specification with additional metadata. Maps to the `tags` field fo the [schema object](http://swagger.io/specification/#schemaObject). |
 | `terms` | The terms of service for the API. Maps to the `termsOfService` field of the [info object](http://swagger.io/specification/#infoObject). |
 | `title` | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
-| `add_api_spec_resource` | Set to `False` if you want to apply custom decorators to the Swagger resource and manually register it (defaults to `True`) |
 
 ## Documenting API endpoints
 
