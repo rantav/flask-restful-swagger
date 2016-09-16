@@ -49,6 +49,7 @@ The Api class supports the following parameters:
 | `schemes` | The transfer protocol of the API. Maps the the `schemes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `terms` | The terms of service for the API. Maps to the `termsOfService` field of the [info object](http://swagger.io/specification/#infoObject). |
 | `title` | The title of the application (defaults to the flask app module name). Maps to the `title` field of the [info object](http://swagger.io/specification/#infoObject). |
+| `add_api_spec_resource` | Set to `False` if you want to apply custom decorators to the Swagger resource and manually register it (defaults to `True`) |
 
 ## Documenting API endpoints
 
