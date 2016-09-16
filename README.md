@@ -39,6 +39,7 @@ The Api class supports the following parameters:
 | --------- | ----------- |
 | `api_version` | The API version string (defaults to '0.0'). Maps to the `version` field of the [info object](http://swagger.io/specification/#infoObject). |
 | `api_spec_url` | The URL path that serves the swagger specification document (defaults to `/api/swagger`). |
+| `api_spec_base` | Instead of specifying individual Swagger fields, you can pass in a minimal [schema object](http://swagger.io/specification/#schemaObject) to use as a template. |
 | `base_path` | The base path on which the API is served. Maps to the `basePath` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `consumes` | A list of MIME types the API can consume. Maps to the `consumes` field of the [schema object](http://swagger.io/specification/#schemaObject). |
 | `contact` | The contact information for the API. Maps to the `contact` field of the [info object](http://swagger.io/specification/#infoObject). |
