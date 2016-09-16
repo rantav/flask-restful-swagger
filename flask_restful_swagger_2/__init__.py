@@ -1,4 +1,5 @@
 import inspect
+import copy
 
 from flask_restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
 from flask import request
@@ -39,31 +40,36 @@ def auth_required(f):
 class Resource(flask_Resource):
     decorators = [auth_required]
 
-
 class Api(restful_Api):
     def __init__(self, *args, **kwargs):
-        self._swagger_object = {
-            'swagger': '2.0',
-            'info': {
-                'title': kwargs.pop('title', ''),
-                'description': kwargs.pop('description', ''),
-                'termsOfService': kwargs.pop('terms', ''),
-                'version': kwargs.pop('api_version', '0.0')
-            },
-            'host': kwargs.pop('host', ''),
-            'basePath': kwargs.pop('base_path', ''),
-            'schemes': kwargs.pop('schemes', []),
-            'consumes': kwargs.pop('consumes', []),
-            'produces': kwargs.pop('produces', []),
-            'paths': {},
-            'definitions': {},
-            'parameters': {},
-            'responses': {},
-            'securityDefinitions': {},
-            'security': [],
-            'tags': kwargs.pop('tags', []),
-            'externalDocs': {}
-        }
+        api_spec_base = kwargs.pop('api_spec_base', None)
+
+        if api_spec_base is not None:
+            self._swagger_object = copy.deepcopy(api_spec_base)
+        else:
+            self._swagger_object = {
+                'swagger': '2.0',
+                'info': {
+                    'title': kwargs.pop('title', ''),
+                    'description': kwargs.pop('description', ''),
+                    'termsOfService': kwargs.pop('terms', ''),
+                    'version': kwargs.pop('api_version', '0.0')
+                },
+                'host': kwargs.pop('host', ''),
+                'basePath': kwargs.pop('base_path', ''),
+                'schemes': kwargs.pop('schemes', []),
+                'consumes': kwargs.pop('consumes', []),
+                'produces': kwargs.pop('produces', []),
+                'paths': {},
+                'definitions': {},
+                'parameters': {},
+                'responses': {},
+                'securityDefinitions': {},
+                'security': [],
+                'tags': kwargs.pop('tags', []),
+                'externalDocs': {}
+            }
+
         contact = kwargs.pop('contact', {})
         if contact:
             self._swagger_object['info']['contact'] = contact
