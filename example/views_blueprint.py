@@ -1,5 +1,5 @@
-from flask import request
-from flask_restful_swagger_2 import swagger, Resource
+from flask import Blueprint, request
+from flask_restful_swagger_2 import Api, swagger, Resource
 
 from models import UserModel, ErrorModel
 
@@ -133,3 +133,19 @@ class UserItemResource(Resource):
 
         # Return data through schema model
         return UserModel(**user), 200
+
+
+def get_user_resources():
+    """
+    Returns user resources.
+    :param app: The Flask instance
+    :return: User resources
+    """
+    blueprint = Blueprint('user', __name__)
+
+    api = Api(blueprint, add_api_spec_resource=False)
+
+    api.add_resource(UserResource, '/api/users')
+    api.add_resource(UserItemResource, '/api/users/<int:user_id>')
+
+    return api

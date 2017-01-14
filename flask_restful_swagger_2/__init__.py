@@ -1,12 +1,16 @@
 import inspect
 import copy
 
-from flask_restful import Api as restful_Api, abort as flask_abort, Resource as flask_Resource
-from flask import request
+from flask import Blueprint, request
+from flask_restful import (Api as restful_Api, abort as flask_abort,
+                           Resource as flask_Resource)
 
-from flask_restful_swagger_2.swagger import create_swagger_endpoint, validate_path_item_object, \
-    ValidationError, validate_operation_object, validate_definitions_object, extract_swagger_path, \
-    parse_method_doc, parse_schema_doc, _auth as auth
+from flask_restful_swagger_2.swagger import (ValidationError, create_swagger_endpoint,
+                                             set_nested, validate_path_item_object,
+                                             validate_operation_object,
+                                             validate_definitions_object,
+                                             extract_swagger_path, parse_method_doc,
+                                             parse_schema_doc, _auth as auth)
 
 
 # python3 compatibility
@@ -40,45 +44,70 @@ def auth_required(f):
 class Resource(flask_Resource):
     decorators = [auth_required]
 
+
 class Api(restful_Api):
     def __init__(self, *args, **kwargs):
         api_spec_base = kwargs.pop('api_spec_base', None)
 
+        self._swagger_object = {
+            'swagger': '2.0',
+            'info': {
+                'title': '',
+                'description': '',
+                'termsOfService': '',
+                'version': '0.0'
+            },
+            'host': '',
+            'basePath': '',
+            'schemes': [],
+            'consumes': [],
+            'produces': [],
+            'paths': {},
+            'definitions': {},
+            'parameters': {},
+            'responses': {},
+            'securityDefinitions': {},
+            'security': [],
+            'tags': [],
+            'externalDocs': {}
+        }
+
         if api_spec_base is not None:
             self._swagger_object = copy.deepcopy(api_spec_base)
-        else:
-            self._swagger_object = {
-                'swagger': '2.0',
-                'info': {
-                    'title': kwargs.pop('title', ''),
-                    'description': kwargs.pop('description', ''),
-                    'termsOfService': kwargs.pop('terms', ''),
-                    'version': kwargs.pop('api_version', '0.0')
-                },
-                'host': kwargs.pop('host', ''),
-                'basePath': kwargs.pop('base_path', ''),
-                'schemes': kwargs.pop('schemes', []),
-                'consumes': kwargs.pop('consumes', []),
-                'produces': kwargs.pop('produces', []),
-                'paths': {},
-                'definitions': {},
-                'parameters': {},
-                'responses': {},
-                'securityDefinitions': {},
-                'security': [],
-                'tags': kwargs.pop('tags', []),
-                'externalDocs': {}
-            }
 
-        contact = kwargs.pop('contact', {})
-        if contact:
-            self._swagger_object['info']['contact'] = contact
-        license = kwargs.pop('license', {})
-        if license:
-            self._swagger_object['info']['license'] = license
+        # A list of accepted parameters.  The first item in the tuple is the
+        # name of keyword argument, the second item is the default value,
+        # and the third item is the key name in the swagger object.
+        params = [
+            ('title', '', 'info.title'),
+            ('description', '', 'info.description'),
+            ('terms', '', 'info.termsOfService'),
+            ('api_version', '', 'info.version'),
+            ('contact', {}, 'info.contact'),
+            ('license', {}, 'info.license'),
+            ('host', '', 'host'),
+            ('base_path', '', 'basePath'),
+            ('schemes', [], 'schemes'),
+            ('consumes', [], 'consumes'),
+            ('produces', [], 'produces'),
+            ('parameters', {}, 'parameters'),
+            ('responses', {}, 'responses'),
+            ('security_definitions', {}, 'securityDefinitions'),
+            ('security', [], 'security'),
+            ('tags', [], 'tags'),
+            ('external_docs', {}, 'externalDocs'),
+        ]
+
+        for param in params:
+            value = kwargs.pop(param[0], param[1])
+            if value:
+                set_nested(self._swagger_object, param[2], value)
+
         api_spec_url = kwargs.pop('api_spec_url', '/api/swagger')
         add_api_spec_resource = kwargs.pop('add_api_spec_resource', True)
+
         super(Api, self).__init__(*args, **kwargs)
+
         if self.app and not self._swagger_object['info']['title']:
             self._swagger_object['info']['title'] = self.app.name
 
@@ -88,11 +117,14 @@ class Api(restful_Api):
                 '{0}.json'.format(api_spec_url),
                 '{0}.html'.format(api_spec_url),
             ]
-            self.add_resource(create_swagger_endpoint(self), *api_spec_urls, endpoint='swagger')
+
+            self.add_resource(create_swagger_endpoint(self.get_swagger_doc()),
+                              *api_spec_urls, endpoint='swagger')
 
     def add_resource(self, resource, *urls, **kwargs):
         path_item = {}
         definitions = {}
+
         for method in [m.lower() for m in resource.methods]:
             f = resource.__dict__.get(method, None)
             operation = f.__dict__.get('__swagger_operation_object', None)
@@ -103,14 +135,17 @@ class Api(restful_Api):
                 summary = parse_method_doc(f, operation)
                 if summary:
                     operation['summary'] = summary
+
         validate_definitions_object(definitions)
         self._swagger_object['definitions'].update(definitions)
+
         if path_item:
             validate_path_item_object(path_item)
             for url in urls:
                 if not url.startswith('/'):
                     raise ValidationError('paths must start with a /')
                 self._swagger_object['paths'][extract_swagger_path(url)] = path_item
+
         super(Api, self).add_resource(resource, *urls, **kwargs)
 
     def get_swagger_doc(self):
@@ -124,10 +159,12 @@ class Api(restful_Api):
             for i, o in enumerate(obj):
                 obj[i], definitions_ = self._extract_schemas(o)
                 definitions.update(definitions_)
+
         if isinstance(obj, dict):
             for k, v in obj.items():
                 obj[k], definitions_ = self._extract_schemas(v)
                 definitions.update(definitions_)
+
         if inspect.isclass(obj):
             # Object is a model. Convert it to valid json and get a definition object
             if not issubclass(obj, Schema):
@@ -141,6 +178,7 @@ class Api(restful_Api):
             definitions[obj.__name__] = definition
             definitions.update(additional_definitions)
             obj = obj.reference()
+
         return obj, definitions
 
 
@@ -165,6 +203,7 @@ class Schema(dict):
                     if type_ == 'boolean' and not isinstance(v, bool):
                         raise ValueError('The attribute "{0}" must be an int, but was "{1}"'.format(k, type(v)))
                 self[k] = v
+
         if hasattr(self, 'required'):
             for key in self.required:
                 if key not in kwargs:
@@ -181,3 +220,42 @@ class Schema(dict):
     @classmethod
     def array(cls):
         return {'type': 'array', 'items': cls}
+
+
+def get_swagger_blueprint(docs, api_spec_url='/api/swagger'):
+    """
+    Returns a Flsk blueprint to serve the given list of swagger document objects.
+    :param docs: A list of of swagger document objects
+    :param api_spec_url: The URL path that serves the swagger specification document
+    :return: A Flask blueprint
+    """
+    swagger_object = {}
+    paths = {}
+    definitions = {}
+
+    for doc in docs:
+        # Paths and definitions are appended, but overwrite other fields
+        if 'paths' in doc:
+            paths.update(doc['paths'])
+
+        if 'definitions' in doc:
+            definitions.update(doc['definitions'])
+
+        swagger_object.update(doc)
+
+    swagger_object['paths'] = paths
+    swagger_object['definitions'] = definitions
+
+    blueprint = Blueprint('swagger', __name__)
+
+    api = restful_Api(blueprint)
+
+    api_spec_urls = [
+        '{0}.json'.format(api_spec_url),
+        '{0}.html'.format(api_spec_url),
+    ]
+
+    api.add_resource(create_swagger_endpoint(swagger_object),
+                     *api_spec_urls, endpoint='swagger')
+
+    return blueprint

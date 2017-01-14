@@ -3,10 +3,10 @@
 # NOTE: Run with PYTHONPATH=. python example/app.py
 
 from flask import Flask
-from flask.ext.cors import CORS
-from flask.ext.restful_swagger_2 import Api, swagger
+from flask_cors import CORS
+from flask_restful_swagger_2 import Api, swagger
 
-from routes import routes
+from views import UserResource, UserItemResource
 
 app = Flask(__name__)
 CORS(app)
@@ -20,8 +20,8 @@ def auth(api_key, endpoint, method):
 
 swagger.auth = auth
 
-for route in routes:
-    api.add_resource(route[0], route[1])
+api.add_resource(UserResource, '/api/users')
+api.add_resource(UserItemResource, '/api/users/<int:user_id>')
 
 
 @app.route('/')

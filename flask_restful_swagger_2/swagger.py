@@ -30,14 +30,14 @@ def _auth(*args, **kwargs):
     return auth(*args, **kwargs)
 
 
-def create_swagger_endpoint(api):
+def create_swagger_endpoint(swagger_object):
     """Creates a flask_restful api endpoint for the swagger spec"""
 
     class SwaggerEndpoint(Resource):
         def get(self):
-            swagger_object = {}
+            swagger_doc = {}
             # filter keys with empty values
-            for k, v in api._swagger_object.items():
+            for k, v in swagger_object.items():
                 if v or k == 'paths':
                     if k == 'paths':
                         paths = {}
@@ -49,12 +49,27 @@ def create_swagger_endpoint(api):
                                     views[method] = docs
                             if views:
                                 paths[endpoint] = views
-                        swagger_object['paths'] = collections.OrderedDict(sorted(paths.items()))
+                        swagger_doc['paths'] = collections.OrderedDict(sorted(paths.items()))
                     else:
-                        swagger_object[k] = v
-            return swagger_object
+                        swagger_doc[k] = v
+            return swagger_doc
 
     return SwaggerEndpoint
+
+
+def set_nested(d, key_spec, value):
+    """
+    Sets a value in a nested dictionary.
+    :param d: The dictionary to set
+    :param key_spec: The key specifier in dotted notation
+    :param value: The value to set
+    """
+    keys = key_spec.split('.')
+
+    for key in keys[:-1]:
+        d = d.setdefault(key, {})
+
+    d[keys[-1]] = value
 
 
 def get_data_type(param):
@@ -100,6 +115,7 @@ def get_data_action(param):
     if param_type == 'array':
         return 'append'
     return 'store'
+
 
 def get_parser_arg(param):
     """

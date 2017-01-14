@@ -19,6 +19,11 @@ class TestModel(Schema):
 
 
 class SwaggerTestCase(unittest.TestCase):
+    def test_should_set_nested(self):
+        d = {'swagger': '2.0'}
+        swagger.set_nested(d, 'info.title', 'API')
+        self.assertEqual(d, {'swagger': '2.0', 'info': {'title': 'API'}})
+
     def test_should_get_data_type_str(self):
         self.assertEqual(swagger.get_data_type({'type': 'string'}), str)
 
