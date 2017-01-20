@@ -184,7 +184,7 @@ api.add_resource(MyView, '/some/endpoint')
 The `get_swagger_doc` method of the Api instance returns the specification document object,
 which may be useful for integration with other tools for generating formatted output or client code.
 
-## Use Flask Blueprints
+## Using Flask Blueprints
 
 To use Flask Blueprints, create a function in your views module that creates the blueprint,
 registers the resources and returns it wrapped in an Api instance:
