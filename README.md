@@ -184,7 +184,7 @@ api.add_resource(MyView, '/some/endpoint')
 The `get_swagger_doc` method of the Api instance returns the specification document object,
 which may be useful for integration with other tools for generating formatted output or client code.
 
-## Use Flask Blueprints
+## Using Flask Blueprints
 
 To use Flask Blueprints, create a function in your views module that creates the blueprint,
 registers the resources and returns it wrapped in an Api instance:
@@ -220,7 +220,7 @@ set of resources, then use the `get_swagger_blueprint` function to combine the
 documents and specify the URL to serve them at (default is '/api/swagger').
 Note that the `get_swagger_blueprint` function accepts the same keyword parameters
 as the `Api` class to populate the fields of the combined swagger document.
-Finally, register the the swagger blueprint along with the blueprints for your
+Finally, register the swagger blueprint along with the blueprints for your
 resources.
 
 ```python
@@ -240,7 +240,7 @@ docs.append(user_resources.get_swagger_doc())
 # Register the blueprint for user resources
 app.register_blueprint(user_resources.blueprint)
 
-# Prepare a blueprint to server the combined list of swagger document objects and register it
+# Prepare a blueprint to serve the combined list of swagger document objects and register it
 app.register_blueprint(get_swagger_blueprint(docs, '/api/swagger', title='Example', api_version='1'))
 ```
 
@@ -256,7 +256,7 @@ pip install flask-cors    # needed to access spec from swagger-ui
 python app.py
 ```
 
-To run the example which uses Flask blueprints:
+To run the example which uses Flask Blueprints:
 
 ```
 python app_blueprint.py
