@@ -218,7 +218,10 @@ def get_user_resources():
 In your initialization module, collect the swagger document objects for each
 set of resources, then use the `get_swagger_blueprint` function to combine the
 documents and specify the URL to serve them at (default is '/api/swagger').
-Register the the swagger blueprint along with the blueprints for your resources.
+Note that the `get_swagger_blueprint` function accepts the same keyword parameters
+as the `Api` class to populate the fields of the combined swagger document.
+Finally, register the the swagger blueprint along with the blueprints for your
+resources.
 
 ```python
 from flask_restful_swagger_2 import get_swagger_blueprint
@@ -238,7 +241,7 @@ docs.append(user_resources.get_swagger_doc())
 app.register_blueprint(user_resources.blueprint)
 
 # Prepare a blueprint to server the combined list of swagger document objects and register it
-app.register_blueprint(get_swagger_blueprint(docs, '/api/swagger'))
+app.register_blueprint(get_swagger_blueprint(docs, '/api/swagger', title='Example', api_version='1'))
 ```
 
 Refer to the files in the `example` folder for the complete code.

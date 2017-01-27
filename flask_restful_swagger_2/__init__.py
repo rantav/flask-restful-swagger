@@ -6,7 +6,7 @@ from flask_restful import (Api as restful_Api, abort as flask_abort,
                            Resource as flask_Resource)
 
 from flask_restful_swagger_2.swagger import (ValidationError, create_swagger_endpoint,
-                                             set_nested, validate_path_item_object,
+                                             add_parameters, validate_path_item_object,
                                              validate_operation_object,
                                              validate_definitions_object,
                                              extract_swagger_path, parse_method_doc,
@@ -75,33 +75,7 @@ class Api(restful_Api):
         if api_spec_base is not None:
             self._swagger_object = copy.deepcopy(api_spec_base)
 
-        # A list of accepted parameters.  The first item in the tuple is the
-        # name of keyword argument, the second item is the default value,
-        # and the third item is the key name in the swagger object.
-        params = [
-            ('title', '', 'info.title'),
-            ('description', '', 'info.description'),
-            ('terms', '', 'info.termsOfService'),
-            ('api_version', '', 'info.version'),
-            ('contact', {}, 'info.contact'),
-            ('license', {}, 'info.license'),
-            ('host', '', 'host'),
-            ('base_path', '', 'basePath'),
-            ('schemes', [], 'schemes'),
-            ('consumes', [], 'consumes'),
-            ('produces', [], 'produces'),
-            ('parameters', {}, 'parameters'),
-            ('responses', {}, 'responses'),
-            ('security_definitions', {}, 'securityDefinitions'),
-            ('security', [], 'security'),
-            ('tags', [], 'tags'),
-            ('external_docs', {}, 'externalDocs'),
-        ]
-
-        for param in params:
-            value = kwargs.pop(param[0], param[1])
-            if value:
-                set_nested(self._swagger_object, param[2], value)
+        add_parameters(self._swagger_object, kwargs)
 
         api_spec_url = kwargs.pop('api_spec_url', '/api/swagger')
         add_api_spec_resource = kwargs.pop('add_api_spec_resource', True)
@@ -222,9 +196,9 @@ class Schema(dict):
         return {'type': 'array', 'items': cls}
 
 
-def get_swagger_blueprint(docs, api_spec_url='/api/swagger'):
+def get_swagger_blueprint(docs, api_spec_url='/api/swagger', **kwargs):
     """
-    Returns a Flsk blueprint to serve the given list of swagger document objects.
+    Returns a Flask blueprint to serve the given list of swagger document objects.
     :param docs: A list of of swagger document objects
     :param api_spec_url: The URL path that serves the swagger specification document
     :return: A Flask blueprint
@@ -245,6 +219,9 @@ def get_swagger_blueprint(docs, api_spec_url='/api/swagger'):
 
     swagger_object['paths'] = paths
     swagger_object['definitions'] = definitions
+
+    if kwargs:
+        add_parameters(swagger_object, kwargs)
 
     blueprint = Blueprint('swagger', __name__)
 

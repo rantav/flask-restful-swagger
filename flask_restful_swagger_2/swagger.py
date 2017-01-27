@@ -72,6 +72,41 @@ def set_nested(d, key_spec, value):
     d[keys[-1]] = value
 
 
+def add_parameters(swagger_object, parameters):
+    """
+    Populates a swagger document with parameters.
+    :param parameters: A collection of parameters to add
+    :param swagger_object: The swagger document to add parameters to
+    """
+    # A list of accepted parameters.  The first item in the tuple is the
+    # name of keyword argument, the second item is the default value,
+    # and the third item is the key name in the swagger object.
+    fields = [
+        ('title', '', 'info.title'),
+        ('description', '', 'info.description'),
+        ('terms', '', 'info.termsOfService'),
+        ('api_version', '', 'info.version'),
+        ('contact', {}, 'info.contact'),
+        ('license', {}, 'info.license'),
+        ('host', '', 'host'),
+        ('base_path', '', 'basePath'),
+        ('schemes', [], 'schemes'),
+        ('consumes', [], 'consumes'),
+        ('produces', [], 'produces'),
+        ('parameters', {}, 'parameters'),
+        ('responses', {}, 'responses'),
+        ('security_definitions', {}, 'securityDefinitions'),
+        ('security', [], 'security'),
+        ('tags', [], 'tags'),
+        ('external_docs', {}, 'externalDocs'),
+    ]
+
+    for field in fields:
+        value = parameters.pop(field[0], field[1])
+        if value:
+            set_nested(swagger_object, field[2], value)
+
+
 def get_data_type(param):
     """
     Maps swagger data types to Python types.
