@@ -118,6 +118,12 @@ class Api(restful_Api):
             for url in urls:
                 if not url.startswith('/'):
                     raise ValidationError('paths must start with a /')
+                if self.blueprint and self.blueprint.url_prefix:
+                    if not self.blueprint.url_prefix.startswith('/'):
+                        raise ValidationError('url_prefix must start with a /')
+                    if self.blueprint.url_prefix.endswith('/'):
+                        raise ValidationError('url_prefix must not end with a /')
+                    url = self.blueprint.url_prefix + url
                 self._swagger_object['paths'][extract_swagger_path(url)] = path_item
 
         super(Api, self).add_resource(resource, *urls, **kwargs)
