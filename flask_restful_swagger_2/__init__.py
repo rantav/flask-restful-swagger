@@ -103,7 +103,11 @@ class Api(restful_Api):
             f = resource.__dict__.get(method, None)
             operation = f.__dict__.get('__swagger_operation_object', None)
             if operation:
-                operation, definitions_ = self._extract_schemas(operation)
+                if 'reqparser' in operation:
+
+                    operation, definitions_ = self._extract_reqparser(operation)
+                else:
+                    operation, definitions_ = self._extract_schemas(operation)
                 path_item[method] = operation
                 definitions.update(definitions_)
                 summary = parse_method_doc(f, operation)
@@ -146,20 +150,104 @@ class Api(restful_Api):
                 definitions.update(definitions_)
 
         if inspect.isclass(obj):
-            # Object is a model. Convert it to valid json and get a definition object
-            if not issubclass(obj, Schema):
-                raise ValueError('"{0}" is not a subclass of the schema model'.format(obj))
-            definition = obj.definitions()
-            description = parse_schema_doc(obj, definition)
-            if description:
-                definition['description'] = description
-            # The definition itself might contain models, so extract them again
-            definition, additional_definitions = self._extract_schemas(definition)
-            definitions[obj.__name__] = definition
-            definitions.update(additional_definitions)
-            obj = obj.reference()
+
+            obj, definitions = self._extract_model(obj, definitions)
 
         return obj, definitions
+
+    def _extract_model(self, obj, definitions):
+        # Object is a model. Convert it to valid json and get a definition object
+        if not issubclass(obj, Schema):
+            raise ValueError('"{0}" is not a subclass of the schema model'.format(obj))
+        definition = obj.definitions()
+        description = parse_schema_doc(obj, definition)
+        if description:
+            definition['description'] = description
+        # The definition itself might contain models, so extract them again
+        definition, additional_definitions = self._extract_schemas(definition)
+        definitions[obj.__name__] = definition
+        definitions.update(additional_definitions)
+        obj = obj.reference()
+        return obj, definitions
+
+    def _extract_reqparser(self, operation):
+        if 'parameters' in operation:
+            raise ValidationError('parameters and reqparser can\'t be in same spec')
+        operation = self._get_reqparse_args(operation)
+        return self._extract_schemas(operation)
+
+    def _get_reqparse_args(self, operation):
+        """Translate a flask-restful RequestParser into swagger params.
+        If any of the reqparser args are location=json (which is the default)
+        then a model (named model_name) will be created with all json args.
+        """
+        model_data = {'model_name': operation['reqparser']['name'], 'properties': {}, 'required': []}
+        make_model = False
+        params = []
+        for arg in operation['reqparser']['body'].args:
+            if 'json' in arg.location:
+                make_model = True
+                if arg.required:
+                    model_data['required'].append(arg.name)
+                model_data['properties'][arg.name] = self._reqparser_arg_to_swagger_param(arg)
+            else:
+                param = self._reqparser_arg_to_swagger_param(arg)
+                # note: "cookies" location not supported by swagger
+                if arg.location == 'args':
+                    param['paramType'] = 'query'
+                elif arg.location == 'headers':
+                    param['paramType'] = 'header'
+                elif arg.location == 'view_args':
+                    param['paramType'] = 'path'
+                else:
+                    param['paramType'] = arg.location
+                params.append(param)
+        del operation['reqparser']
+
+        if make_model:
+            model, definitions = self._extract_model(self.__make_model(**model_data), self._extract_schemas(operation)[0])
+            params.append({
+                'name': 'body',
+                'description': 'Request body',
+                'in': 'body',
+                'schema': model,
+                'required': len(map(lambda x: x['required'], definitions[model_data['model_name']]['properties'].values())) > 0
+            })
+        operation['parameters'] = params
+        del operation[model_data['model_name']]
+        return operation
+
+    @staticmethod
+    def _get_swagger_arg(type_):
+        if type_ in (basestring, str, unicode):
+            return 'string'
+        elif type_ == float:
+            return 'float'
+        elif type_ == int:
+            return 'integer'
+        elif type_ == long:
+            return 'long'
+        elif type_ == bool:
+            return 'boolean'
+        else:
+            raise TypeError('unexpected type: {0}'.format(type_))
+
+    @staticmethod
+    def _reqparser_arg_to_swagger_param(arg):
+        return {'type': Api._get_swagger_arg(arg.type),
+                'name': arg.name,
+                'description': arg.help,
+                'defaultValue': arg.default,
+                'allowMultiple': arg.action == 'append',
+                'required': arg.required}
+
+    def __make_model(self, **kwargs):
+        class _NewModel(Schema):
+            pass
+        _NewModel.__name__ = kwargs['model_name']
+        _NewModel.type = 'object'
+        _NewModel.properties = kwargs['properties']
+        return _NewModel
 
 
 class Schema(dict):
@@ -242,3 +330,15 @@ def get_swagger_blueprint(docs, api_spec_url='/api/swagger', **kwargs):
                      *api_spec_urls, endpoint='swagger')
 
     return blueprint
+
+
+def swagger_type(type_):
+    """Decorator to add __swagger_type property to flask-restful custom input
+    type functions
+    """
+
+    def inner(f):
+        f.__swagger_type = type_
+        return f
+
+    return inner

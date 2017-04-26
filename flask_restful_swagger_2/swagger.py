@@ -287,10 +287,14 @@ def validate_parameter_object(parameter_object):
     for k, v in parameter_object.items():
         if k not in ['name', 'in', 'description', 'required', 'schema', 'type', 'format', 'allowEmptyValue', 'items',
                      'collectionFormat', 'default', 'maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum',
-                     'maxLength', 'minLength', 'pattern', 'maxItems', 'minItems', 'uniqueItems', 'enum', 'multipleOf']:
+                     'maxLength', 'minLength', 'pattern', 'maxItems', 'minItems', 'uniqueItems', 'enum', 'multipleOf', 'reqparser']:
             raise ValidationError('Invalid parameter object. Unknown field "{field}". See {url}'.format(
                     field=k,
                     url='http://swagger.io/specification/#parameterObject'))
+    if 'reqparser' in parameter_object:
+        if 'name' not in parameter_object:
+            raise ValidationError('name for request parser not specified')
+        return
     if 'name' not in parameter_object:
         raise ValidationError('Invalid parameter object. Missing field "name"')
     if 'in' not in parameter_object:
