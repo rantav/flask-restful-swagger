@@ -2,6 +2,8 @@ import unittest
 import json
 
 from flask import Flask
+from flask_restful.reqparse import RequestParser
+
 from flask_restful_swagger_2 import Api, Resource, Schema, swagger
 
 
@@ -130,6 +132,43 @@ class UserResource(Resource):
         return UserModel(**{'id': user_id, 'name': name}), 200
 
 
+class EntityAddResource(Resource):
+    post_parser = RequestParser()
+    post_parser.add_argument('id', type=int, help='id help')
+    post_parser.add_argument('name', type=str)
+    post_parser.add_argument('value', type=float, default=1.1)
+    post_parser.add_argument('private', type=bool, required=True)
+
+    class PasswordType(str):
+        swagger_type = 'password'
+    post_parser.add_argument('password_arg', type=PasswordType, required=False)
+
+    @swagger.doc({
+        'tags': ['user'],
+        'description': 'List of entities',
+        'reqparser': {'name': 'EntityAddParser',
+                      'parser': post_parser},
+        'responses': {
+            '200': {
+                'description': 'User',
+                'examples': {
+                    'application/json': {
+                        'id': 1,
+                    }
+                }
+            }
+        }
+    })
+    def post(self):
+        """
+        Returns a specific user.
+        """
+        args = self.post_parser.parse_args()
+
+        name = args.get('name', 'somebody')
+        return UserModel(**{'id': id, 'name': name}), 200
+
+
 class ApiTestCase(unittest.TestCase):
     def setUp(self):
         app = Flask(__name__)
@@ -185,3 +224,58 @@ class ApiTestCase(unittest.TestCase):
         data = json.loads(r.data.decode('utf-8'))
         self.assertEqual(data['id'], 1)
         self.assertEqual(data['name'], 'test')
+
+
+class TestFlaskSwaggerRequestParser(unittest.TestCase):
+    def setUp(self):
+        app = Flask(__name__)
+        self.api = Api(app)
+        self.api.add_resource(EntityAddResource, '/entities/')
+        self.app = app.test_client()
+        self.context = app.test_request_context()
+
+    def test_request_parser_spec_definitions(self):
+        # Retrieve spec
+        r = self.app.get('/api/swagger.json')
+        self.assertEqual(r.status_code, 200)
+
+        data = json.loads(r.data.decode('utf-8'))
+        self.assertIn('definitions', data)
+        self.assertIn('EntityAddParser', data['definitions'])
+        self.assertEqual(data['definitions']['EntityAddParser']['type'], 'object')
+
+        properties = data['definitions']['EntityAddParser']['properties']
+        id_prop = properties.get('id')
+        self.assertIsNotNone(id_prop)
+        self.assertIsNone(id_prop['default'])
+        self.assertFalse(id_prop['required'])
+        self.assertEqual(id_prop['type'], 'integer')
+        self.assertEqual(id_prop['name'], 'id')
+        self.assertEqual(id_prop['description'], 'id help')
+
+        name_prop = properties.get('name')
+        self.assertIsNotNone(name_prop)
+        self.assertIsNone(name_prop['default'])
+        self.assertFalse(name_prop['required'])
+        self.assertEqual(name_prop['type'], 'string')
+        self.assertEqual(name_prop['name'], 'name')
+        self.assertIsNone(name_prop['description'])
+
+        priv_prop = properties.get('private')
+        self.assertIsNotNone(priv_prop)
+        self.assertIsNone(priv_prop['default'])
+        self.assertTrue(priv_prop['required'])
+        self.assertEqual(priv_prop['type'], 'boolean')
+        self.assertEqual(priv_prop['name'], 'private')
+        self.assertIsNone(priv_prop['description'])
+
+        val_prop = properties.get('value')
+        self.assertIsNotNone(val_prop)
+        self.assertEqual(val_prop['default'], 1.1)
+        self.assertFalse(val_prop['required'])
+        self.assertEqual(val_prop['type'], 'float')
+        self.assertEqual(val_prop['name'], 'value')
+        self.assertIsNone(val_prop['description'])
+
+        self.assertIsNotNone(properties.get('password_arg'))
+        self.assertEqual(properties['password_arg']['type'], 'password')

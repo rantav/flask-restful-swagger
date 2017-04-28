@@ -1,4 +1,6 @@
 from flask import request
+from flask_restful.reqparse import RequestParser
+
 from flask_restful_swagger_2 import swagger, Resource
 
 from models import UserModel, ErrorModel
@@ -133,3 +135,36 @@ class UserItemResource(Resource):
 
         # Return data through schema model
         return UserModel(**user), 200
+
+
+class GroupResource(Resource):
+    post_parser = RequestParser()
+    post_parser.add_argument('name', type=unicode, required=True)
+    post_parser.add_argument('id', type=int, help='Id of new group')
+    added_groups = []
+
+    @swagger.doc({
+        'tags': ['groups'],
+        'description': 'Adds a group',
+        'reqparser': {'name': 'GroupsModel',
+                      'parser': post_parser},
+        'responses': {
+            '201': {
+                'description': 'Created group',
+                'examples': {
+                    'application/json': {
+                        'id': 1
+                    }
+                }
+            }
+        }
+    })
+    def post(self):
+        """
+        Creates group
+        """
+        args = self.post_parser.parse_args()
+        new_group = {'name': args['name'], 'id': len(self.added_groups) + 1}
+        self.added_groups.append(new_group)
+
+        return new_group, 201

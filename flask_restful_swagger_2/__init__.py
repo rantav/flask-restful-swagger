@@ -103,11 +103,7 @@ class Api(restful_Api):
             f = resource.__dict__.get(method, None)
             operation = f.__dict__.get('__swagger_operation_object', None)
             if operation:
-                if 'reqparser' in operation:
-
-                    operation, definitions_ = self._extract_reqparser(operation)
-                else:
-                    operation, definitions_ = self._extract_schemas(operation)
+                operation, definitions_ = Extractor.extract(operation)
                 path_item[method] = operation
                 definitions.update(definitions_)
                 summary = parse_method_doc(f, operation)
@@ -135,6 +131,41 @@ class Api(restful_Api):
     def get_swagger_doc(self):
         """Returns the swagger document object."""
         return self._swagger_object
+
+
+class Extractor(object):
+    """
+    Extracts swagger.doc object to proper swagger representation by extractor implementation
+    """
+    @classmethod
+    def _choose_impl(cls, operation):
+        """
+        Chooses implementation of extractor
+        """
+        if 'reqparser' in operation:
+            impl = _RequestParserExtractorImpl
+        else:
+            impl = _BaseExtractorImpl
+        return impl(operation)
+
+    @classmethod
+    def extract(cls, operation):
+        return cls._choose_impl(operation)._extract()
+
+    def _extract(self):
+        raise NotImplementedError()
+
+
+class _BaseExtractorImpl(Extractor):
+    """
+    Base implementation of extractor
+    Uses for common extraction of swagger.doc
+    """
+    def __init__(self, operation):
+        self._operation = operation
+
+    def _extract(self):
+        return self._extract_schemas(self._operation)
 
     def _extract_schemas(self, obj):
         """Converts all schemes in a given object to its proper swagger representation."""
@@ -170,21 +201,30 @@ class Api(restful_Api):
         obj = obj.reference()
         return obj, definitions
 
-    def _extract_reqparser(self, operation):
+
+class _RequestParserExtractorImpl(_BaseExtractorImpl):
+    """
+    Uses for extraction of swagger.doc objects, which contains 'reqparser' parameter
+    """
+
+    def _extract(self):
+        return self._extract_with_reqparser(self._operation)
+
+    def _extract_with_reqparser(self, operation):
         if 'parameters' in operation:
             raise ValidationError('parameters and reqparser can\'t be in same spec')
-        operation = self._get_reqparse_args(operation)
+        # we need to pass copy because 'reqparser' will be deleted
+        operation = self._get_reqparse_args(operation.copy())
         return self._extract_schemas(operation)
 
     def _get_reqparse_args(self, operation):
-        """Translate a flask-restful RequestParser into swagger params.
-        If any of the reqparser args are location=json (which is the default)
-        then a model (named model_name) will be created with all json args.
+        """
+        Get arguments from specified RequestParser and converts it to swagger representation
         """
         model_data = {'model_name': operation['reqparser']['name'], 'properties': {}, 'required': []}
         make_model = False
         params = []
-        for arg in operation['reqparser']['body'].args:
+        for arg in operation['reqparser']['parser'].args:
             if 'json' in arg.location:
                 make_model = True
                 if arg.required:
@@ -194,31 +234,36 @@ class Api(restful_Api):
                 param = self._reqparser_arg_to_swagger_param(arg)
                 # note: "cookies" location not supported by swagger
                 if arg.location == 'args':
-                    param['paramType'] = 'query'
+                    param['in'] = 'query'
                 elif arg.location == 'headers':
-                    param['paramType'] = 'header'
+                    param['in'] = 'header'
                 elif arg.location == 'view_args':
-                    param['paramType'] = 'path'
+                    param['in'] = 'path'
                 else:
-                    param['paramType'] = arg.location
+                    param['in'] = arg.location
                 params.append(param)
         del operation['reqparser']
 
         if make_model:
-            model, definitions = self._extract_model(self.__make_model(**model_data), self._extract_schemas(operation)[0])
+            model = self.__make_model(**model_data)
             params.append({
                 'name': 'body',
                 'description': 'Request body',
                 'in': 'body',
                 'schema': model,
-                'required': len(map(lambda x: x['required'], definitions[model_data['model_name']]['properties'].values())) > 0
+                'required': model.is_required()
             })
         operation['parameters'] = params
-        del operation[model_data['model_name']]
         return operation
 
     @staticmethod
-    def _get_swagger_arg(type_):
+    def _get_swagger_arg_type(type_):
+        """
+        Converts python-type to swagger type
+        If type don't supports, tries to get `swagger_type` property from `type_`
+        :param type_:
+        :return:
+        """
         if type_ in (basestring, str, unicode):
             return 'string'
         elif type_ == float:
@@ -229,25 +274,47 @@ class Api(restful_Api):
             return 'long'
         elif type_ == bool:
             return 'boolean'
+        elif type_ == bin:
+            return 'binary'
+        elif hasattr(type_, 'swagger_type'):
+            return type_.swagger_type
         else:
             raise TypeError('unexpected type: {0}'.format(type_))
 
-    @staticmethod
-    def _reqparser_arg_to_swagger_param(arg):
-        return {'type': Api._get_swagger_arg(arg.type),
-                'name': arg.name,
-                'description': arg.help,
-                'defaultValue': arg.default,
-                'allowMultiple': arg.action == 'append',
-                'required': arg.required}
+    @classmethod
+    def _reqparser_arg_to_swagger_param(cls, arg):
+        """
+        Converts particular RequestParser argument to swagger repr
+        :param arg:
+        :return:
+        """
+        param = {'name': arg.name,
+                 'description': arg.help,
+                 'default': arg.default,
+                 'required': arg.required}
+        if arg.action == 'append':
+            cls.__update_reqparser_arg_as_array(arg, param)
+        else:
+            param['type'] = cls._get_swagger_arg_type(arg.type)
+        return param
 
-    def __make_model(self, **kwargs):
+    @staticmethod
+    def __make_model(**kwargs):
+        """
+        Creates new `Schema` type, which allows if location of some argument == 'json'
+        """
         class _NewModel(Schema):
             pass
+
         _NewModel.__name__ = kwargs['model_name']
         _NewModel.type = 'object'
         _NewModel.properties = kwargs['properties']
         return _NewModel
+
+    @classmethod
+    def __update_reqparser_arg_as_array(cls, arg, param):
+        param['items'] = {'type': cls._get_swagger_arg_type(arg.type)}
+        param['type'] = 'array'
 
 
 class Schema(dict):
@@ -288,6 +355,10 @@ class Schema(dict):
     @classmethod
     def array(cls):
         return {'type': 'array', 'items': cls}
+
+    @classmethod
+    def is_required(cls):
+        return bool(filter(lambda x: bool(x), map(lambda x: x['required'], cls.properties.values())))
 
 
 def get_swagger_blueprint(docs, api_spec_url='/api/swagger', **kwargs):
