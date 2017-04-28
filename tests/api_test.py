@@ -138,6 +138,7 @@ class EntityAddResource(Resource):
     post_parser.add_argument('name', type=str)
     post_parser.add_argument('value', type=float, default=1.1)
     post_parser.add_argument('private', type=bool, required=True)
+    post_parser.add_argument('type', type=unicode, choices=['common', 'major', 'minor'])
 
     class PasswordType(str):
         swagger_type = 'password'
