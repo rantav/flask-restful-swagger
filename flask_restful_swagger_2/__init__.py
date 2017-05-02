@@ -264,22 +264,24 @@ class _RequestParserExtractorImpl(_BaseExtractorImpl):
         :param type_:
         :return:
         """
-        if type_ in (basestring, str, unicode):
+        if hasattr(type_, 'swagger_type'):
+            return type_.swagger_type
+        elif issubclass(type_, basestring):
             return 'string'
         elif type_ == float:
             return 'float'
         elif type_ == int:
             return 'integer'
-        elif type_ == long:
-            return 'long'
         elif type_ == bool:
             return 'boolean'
         elif type_ == bin:
             return 'binary'
-        elif hasattr(type_, 'swagger_type'):
-            return type_.swagger_type
-        else:
-            raise TypeError('unexpected type: {0}'.format(type_))
+        try:
+            if type_ == long:
+                return 'long'
+        except NameError:
+            pass
+        raise TypeError('unexpected type: {0}'.format(type_))
 
     @classmethod
     def _reqparser_arg_to_swagger_param(cls, arg):

@@ -139,9 +139,9 @@ class UserItemResource(Resource):
 
 class GroupResource(Resource):
     post_parser = RequestParser()
-    post_parser.add_argument('name', type=unicode, required=True)
+    post_parser.add_argument('name', type=str, required=True)
     post_parser.add_argument('id', type=int, help='Id of new group')
-    post_parser.add_argument('type', type=unicode, choices=['first', 'second', 'third'])
+    post_parser.add_argument('type', type=str, choices=['first', 'second', 'third'])
     added_groups = []
 
     @swagger.doc({

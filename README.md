@@ -159,7 +159,7 @@ from flask_restful_swagger_2 import swagger, Resource
 
 class GroupResource(Resource):
     post_parser = RequestParser()
-    post_parser.add_argument('name', type=unicode, required=True)
+    post_parser.add_argument('name', type=str, required=True)
     post_parser.add_argument('id', type=int, help='Id of new group')
     @swagger.doc({
         'tags': ['groups'],
