@@ -292,10 +292,13 @@ class _RequestParserExtractorImpl(_BaseExtractorImpl):
         """
         param = {'name': arg.name,
                  'description': arg.help,
-                 'default': arg.default,
                  'required': arg.required}
         if arg.choices:
             param['enum'] = arg.choices
+        if arg.default:
+            param['default'] = arg.default
+            if callable(param['default']):
+                param['default'] = getattr(param['default'], 'swagger_default', None)
         if arg.action == 'append':
             cls.__update_reqparser_arg_as_array(arg, param)
         else:
