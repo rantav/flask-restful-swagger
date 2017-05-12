@@ -69,7 +69,7 @@ class ParseResource(Resource):
                 'description': 'Parsed values'
             }
         }
-     })
+    })
     def get(self, _parser):
         """
         Returns parsed query parameters.
@@ -117,7 +117,7 @@ class UserResource(Resource):
                 }
             }
         }
-     })
+    })
     def get(self, user_id, _parser):
         """
         Returns a specific user.

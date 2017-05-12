@@ -101,14 +101,15 @@ class Api(restful_Api):
 
         for method in [m.lower() for m in resource.methods]:
             f = resource.__dict__.get(method, None)
-            operation = f.__dict__.get('__swagger_operation_object', None)
-            if operation:
-                operation, definitions_ = self._extract_schemas(operation)
-                path_item[method] = operation
-                definitions.update(definitions_)
-                summary = parse_method_doc(f, operation)
-                if summary:
-                    operation['summary'] = summary
+            if f:
+                operation = f.__dict__.get('__swagger_operation_object', None)
+                if operation:
+                    operation, definitions_ = self._extract_schemas(operation)
+                    path_item[method] = operation
+                    definitions.update(definitions_)
+                    summary = parse_method_doc(f, operation)
+                    if summary:
+                        operation['summary'] = summary
 
         validate_definitions_object(definitions)
         self._swagger_object['definitions'].update(definitions)
