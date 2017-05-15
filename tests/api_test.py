@@ -248,7 +248,7 @@ class TestFlaskSwaggerRequestParser(unittest.TestCase):
         properties = data['definitions']['EntityAddParser']['properties']
         id_prop = properties.get('id')
         self.assertIsNotNone(id_prop)
-        self.assertIsNone(id_prop['default'])
+        self.assertNotIn('default', id_prop)
         self.assertFalse(id_prop['required'])
         self.assertEqual(id_prop['type'], 'integer')
         self.assertEqual(id_prop['name'], 'id')
@@ -256,7 +256,7 @@ class TestFlaskSwaggerRequestParser(unittest.TestCase):
 
         name_prop = properties.get('name')
         self.assertIsNotNone(name_prop)
-        self.assertIsNone(name_prop['default'])
+        self.assertNotIn('default', name_prop)
         self.assertFalse(name_prop['required'])
         self.assertEqual(name_prop['type'], 'string')
         self.assertEqual(name_prop['name'], 'name')
@@ -264,7 +264,7 @@ class TestFlaskSwaggerRequestParser(unittest.TestCase):
 
         priv_prop = properties.get('private')
         self.assertIsNotNone(priv_prop)
-        self.assertIsNone(priv_prop['default'])
+        self.assertNotIn('default', priv_prop)
         self.assertTrue(priv_prop['required'])
         self.assertEqual(priv_prop['type'], 'boolean')
         self.assertEqual(priv_prop['name'], 'private')
