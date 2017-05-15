@@ -1,6 +1,7 @@
 import collections
 import re
 import inspect
+import copy
 from functools import wraps
 
 from flask import request
@@ -200,7 +201,7 @@ def doc(operation_object):
     Saves the passed arguments as an attribute to use them later when generating the swagger spec.
     """
     def decorated(f):
-        f.__swagger_operation_object = operation_object
+        f.__swagger_operation_object = copy.deepcopy(operation_object)
 
         @wraps(f)
         def inner(self, *args, **kwargs):
