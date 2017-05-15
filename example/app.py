@@ -6,7 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_restful_swagger_2 import Api, swagger
 
-from views import UserResource, UserItemResource
+from views import UserResource, UserItemResource, GroupResource
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +22,7 @@ swagger.auth = auth
 
 api.add_resource(UserResource, '/api/users')
 api.add_resource(UserItemResource, '/api/users/<int:user_id>')
+api.add_resource(GroupResource, '/api/groups/')
 
 
 @app.route('/')

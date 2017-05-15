@@ -147,6 +147,62 @@ You can build your models according to the [swagger schema object specification]
 
 It is recommended that you always return a model in your views so that your code and documentation are in sync.
 
+## RequestParser support
+
+You can specify RequestParser object if you want to pass its arguments to spec. In such case, there is not need to define model manually
+
+```python
+from flask_restful.reqparse import RequestParser
+
+from flask_restful_swagger_2 import swagger, Resource
+
+
+class GroupResource(Resource):
+    post_parser = RequestParser()
+    post_parser.add_argument('name', type=str, required=True)
+    post_parser.add_argument('id', type=int, help='Id of new group')
+    @swagger.doc({
+        'tags': ['groups'],
+        'description': 'Adds a group',
+        'reqparser': {'name': 'group parser',
+                      'parser': post_parser},
+        'responses': {
+            '201': {
+                'description': 'Created group',
+                'examples': {
+                    'application/json': {
+                        'id': 1
+                    }
+                }
+            }
+        }
+    })
+    def post(self):
+    ...
+```
+Swagger schema (among other things):
+```json
+{"GroupsModel": {
+    "properties": {
+        "id": {
+            "default": null,
+            "description": "Id of new group",
+            "name": "id",
+            "required": false,
+            "type": "integer"
+            },
+        "name": {
+            "default": null,
+            "description": null,
+            "name": "name",
+            "required": true,
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
+```
+
 ## Using authentication
 
 In the example above, the view `UserItemResource` is a subclass of `Resource`, which is provided by `flask_restful`. However,
