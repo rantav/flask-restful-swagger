@@ -24,5 +24,5 @@ setup(name='flask-restful-swagger',
       author='Ran Tavory',
       license='MIT',
       long_description=long_description,
-      install_requires=['Flask-RESTful>=0.2.12']
+      install_requires=['Flask-RESTful>=0.3.6']
       )
