@@ -280,6 +280,10 @@ class _RequestParserExtractorImpl(_BaseExtractorImpl):
             return 'boolean'
         elif type_ == bin:
             return 'binary'
+        elif type_ == list:
+            return 'array'
+        elif type_ == dict:
+            return 'object'
         try:
             if type_ == long:
                 return 'long'
