@@ -5,7 +5,7 @@ import re
 import urlparse
 
 from flask import request, abort, Response
-from flask.ext.restful import Resource, fields
+from flask_restful import Resource, fields
 from flask_restful_swagger import (
   registry, api_spec_static)
 from jinja2 import Template
@@ -150,7 +150,7 @@ def _get_current_registry(api=None):
   else:
     app_name = request.blueprint
     urlparts =  urlparse.urlparse(request.url_root.rstrip('/'))
-    proto = request.headers.get("x-forwarded-proto") or urlparts[0] 
+    proto = request.headers.get("x-forwarded-proto") or urlparts[0]
     overrides = {'basePath': urlparse.urlunparse([proto] + list(urlparts[1:]))}
 
   if not app_name:

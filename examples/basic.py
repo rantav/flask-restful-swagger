@@ -7,7 +7,7 @@ Running:
 
 
 from flask import Flask, redirect
-from flask.ext.restful import reqparse, abort, Api, Resource, fields,\
+from flask_restful import reqparse, abort, Api, Resource, fields,\
     marshal_with
 from flask_restful_swagger import swagger
 
