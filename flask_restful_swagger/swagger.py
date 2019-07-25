@@ -2,7 +2,14 @@ import functools
 import inspect
 import os
 import re
-import urlparse
+import six
+
+try:
+    # urlparse is renamed to urllib.parse in python 3
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
+
 
 from flask import request, abort, Response
 from flask_restful import Resource, fields
@@ -22,25 +29,26 @@ def docs(api, apiVersion='0.0', swaggerVersion='1.2',
 
   api_add_resource = api.add_resource
 
-  def add_resource(resource, path, *args, **kvargs):
+  def add_resource(resource, *urls, **kvargs):
     register_once(api, api_add_resource, apiVersion, swaggerVersion, basePath,
                   resourcePath, produces, api_spec_url, description)
 
     resource = make_class(resource)
-    endpoint = swagger_endpoint(api, resource, path)
+    for url in urls:
+      endpoint = swagger_endpoint(api, resource, url)
 
-    # Add a .help.json help url
-    swagger_path = extract_swagger_path(path)
+      # Add a .help.json help url
+      swagger_path = extract_swagger_path(url)
 
-    # Add a .help.html help url
-    endpoint_html_str = '{0}/help'.format(swagger_path)
-    api_add_resource(
-      endpoint,
-      "{0}.help.json".format(swagger_path),
-      "{0}.help.html".format(swagger_path),
-      endpoint=endpoint_html_str)
+      # Add a .help.html help url
+      endpoint_html_str = '{0}/help'.format(swagger_path)
+      api_add_resource(
+        endpoint,
+        "{0}.help.json".format(swagger_path),
+        "{0}.help.html".format(swagger_path),
+        endpoint=endpoint_html_str)
 
-    return api_add_resource(resource, path, *args, **kvargs)
+    return api_add_resource(resource, *urls, **kvargs)
 
   api.add_resource = add_resource
 
@@ -161,7 +169,7 @@ def _get_current_registry(api=None):
   reg = registry.setdefault(app_name, {})
   reg.update(overrides)
 
-  reg['basePath'] = reg['basePath'] + reg.get('x-api-prefix', '')
+  reg['basePath'] = reg['basePath'] + (reg.get('x-api-prefix', '') or '')
 
   return reg
 
@@ -301,12 +309,12 @@ class SwaggerEndpoint(object):
         # This method was annotated with @swagger.operation
         decorators = method_impl.__dict__['__swagger_attr']
         for att_name, att_value in list(decorators.items()):
-          if isinstance(att_value, (str, int, list)):
+          if isinstance(att_value, six.string_types + (int, list)):
             if att_name == 'parameters':
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
-              if att_name in op and att_name is not 'nickname':
+              if op.get(att_name) and att_name is not 'nickname':
                 att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
@@ -439,7 +447,7 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (str,
+    if predicate(python_type_or_object, six.string_types + (
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url,
@@ -476,7 +484,7 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         predicate = issubclass
     else:
         predicate = isinstance
-    if predicate(python_type_or_object, (str,
+    if predicate(python_type_or_object, six.string_types + (
                                          fields.String,
                                          fields.FormattedString,
                                          fields.Url)):

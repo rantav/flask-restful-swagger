@@ -8,7 +8,7 @@ with open('README') as file:
 
 setup(
     name='flask-restful-swagger',
-    version='0.15',
+    version='0.20.1',
     url='https://github.com/rantav/flask-restful-swagger',
     zip_safe=False,
     packages=['flask_restful_swagger'],
@@ -25,5 +25,5 @@ setup(
     author='Ran Tavory',
     license='MIT',
     long_description=long_description,
-    install_requires=['Flask-RESTful>=0.2.12']
+    install_requires=['Flask-RESTful>=0.3.6']
 )

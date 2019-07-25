@@ -1,9 +1,15 @@
 # flask-restful-swagger
 
+### We have a new project lead!
+We have a new project lead, @niall-byrne (Dec 2015), thank you Niall!
+
+
+## What is flask-restful-swagger?
 flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.readthedocs.org/en/latest/) which enables [swagger](https://developers.helloreverb.com/swagger/) support.
 
 In essense, you just need to wrap the Api instance and add a few python decorators to get full swagger support.
 
+## How to:
 Install:
 
 ```
@@ -15,9 +21,9 @@ pip install flask-restful-swagger
 And in your program, where you'd usually just use flask-restful, add just a little bit of sauce and get a swagger spec out.
 
 
-```
+```python
 from flask import Flask
-from flask_restful import  Api
+from flask_restful import Api
 from flask_restful_swagger import swagger
 
 app = Flask(__name__)
@@ -151,7 +157,7 @@ flask-restful has a decorator `@marshal_with`. With the following setup it's pos
 
 You have to:
 
-```
+```python
 # Define your model with resource_fields
 @swagger.model
 class TodoItemWithResourceFields:
