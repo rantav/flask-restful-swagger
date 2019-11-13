@@ -1,0 +1,8 @@
+[flake8]
+
+ignore = E203, W503, W605
+max-line-length = 80
+max-complexity = 12
+
+exclude =
+    .git
