@@ -2,5 +2,5 @@ black==19.10b0
 flake8==3.7.9
 isort==4.3.21
 Flask-RESTful>=0.3.6
-pytest-cover==3.0.0
+pytest-cov==2.8.1
 tox==3.14.1
