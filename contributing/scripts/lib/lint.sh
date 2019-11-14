@@ -34,9 +34,7 @@ lint() {
 
   # Code Cleaners
   echo '- black ...'
-  black "${VERBOSE_BLACK[@]}" -q -l 80 examples
-  black "${VERBOSE_BLACK[@]}" -q -l 80 flask_restful_swagger
-  black "${VERBOSE_BLACK[@]}" -q -l 80 setup.py
+  black "${VERBOSE_BLACK[@]}" -q -l 80 examples flask_restful_swagger tests setup.py
 
   echo '- isort ...'
   isort "${VERBOSE_ISORT[@]}" -y

@@ -10,7 +10,6 @@ Running:
 
 from flask import Blueprint, Flask, redirect
 from flask_restful import Api, Resource, abort, fields, marshal_with, reqparse
-
 from flask_restful_swagger import swagger
 
 app = Flask(__name__, static_folder="../static")

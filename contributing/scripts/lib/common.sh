@@ -10,7 +10,8 @@ setup_python() {
     set -e
     pipenv --python 3.6
     source_enviroment
-    pip install -r docker/requirements-testing.txt
+    pip install -r contributing/requirements/requirements-testing.txt
+    pip install -r contributing/requirements/requirements-linting.txt
     unvirtualize
   popd  > /dev/null
 

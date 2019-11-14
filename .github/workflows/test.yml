@@ -1,0 +1,31 @@
+name: Flask Restful Swagger Test Suite
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [2.7, 3.6]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Run Black
+      uses: lgeiger/black-action@master
+      with:
+        args: "--check -l 80 examples tests flask_restful_swagger"
+    - name: Run Flake8
+      uses: cclauss/GitHub-Action-for-Flake8@master
+      with:
+        args: "flake8 -v examples flask_restful_swagger"
+    - name: Test
+      run: |
+        pip install -r ./contributing/requirements/requirements-testing.txt
+        pytest --cov=. . --cov-fail-under=100

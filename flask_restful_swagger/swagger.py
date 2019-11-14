@@ -4,11 +4,11 @@ import os
 import re
 
 import six
+
 from flask import Response, abort, request
 from flask_restful import Resource, fields
-from jinja2 import Template
-
 from flask_restful_swagger import api_spec_static, registry
+from jinja2 import Template
 
 try:
     # urlparse is renamed to urllib.parse in python 3

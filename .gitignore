@@ -8,6 +8,7 @@ sdist
 develop-eggs
 .installed.cfg
 __pycache__
+*.pyc
 
 # Installer logs
 pip-log.txt
@@ -16,6 +17,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+
 
 # Translations
 *.mo
