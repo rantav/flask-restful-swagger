@@ -6,6 +6,9 @@ import pytest
 
 def test_documentation_example():
 
+    """ This test case tests the outside function extract_path_arguments using
+        the example given in the documentation
+    """
     path = '/<string(length=2):lang_code>/<string:id>/<float:probability>'
     expected_result = [{"name": 'lang_code', "dataType": 'string', "paramType": "path"},
                        {"name": 'id', "dataType": 'string', "paramType": "path"},
@@ -16,6 +19,7 @@ def test_documentation_example():
 
 
 def nested(outer, innerName, **freeVars):
+    """This helper function extracts the code of a function nested within another one"""
     if isinstance(outer, (types.FunctionType, types.MethodType)):
         outer = outer.__code__
         for const in outer.co_consts:
@@ -28,5 +32,6 @@ def nested(outer, innerName, **freeVars):
     [('HelloWorld', {"name": 'HelloWorld', "dataType": 'string', "paramType": "path"}),
      ('Hello:World', {"name": 'World', "dataType": 'Hello', "paramType": "path"})])
 def test_split_arg(testcase_string, testcase_expected_result):
+    """This testcase tests the outside function: extract_path_arguments"""
     temp_split_arg = nested(swagger.extract_path_arguments, 'split_arg')
     assert temp_split_arg(testcase_string) == testcase_expected_result
