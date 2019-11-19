@@ -551,6 +551,8 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         six.string_types + (fields.String, fields.FormattedString, fields.Url),
     ):
         return "string"
+    if predicate(python_type_or_object, (bool, fields.Boolean)):
+        return "boolean"
     if predicate(python_type_or_object, (int, fields.Integer)):
         return "integer"
     if predicate(
@@ -558,9 +560,7 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         (float, fields.Float, fields.Arbitrary, fields.Fixed),
     ):
         return "number"
-    if predicate(python_type_or_object, (bool, fields.Boolean)):
-        return "boolean"
-    if predicate(python_type_or_object, (fields.DateTime,)):
+    if predicate(python_type_or_object, (fields.DateTime)):
         return "date-time"
 
 
