@@ -18,14 +18,14 @@ def test_documentation_example():
     assert ret_result == expected_result
 
 
-def nested(outer, innerName, **freeVars):
+def get_nested_function(outer, innerName, **freeVars):
     """This helper function extracts the code of a function nested within another one"""
     if isinstance(outer, (types.FunctionType, types.MethodType)):
         outer = outer.__code__
         for const in outer.co_consts:
             if isinstance(const, types.CodeType) and const.co_name == innerName:
                 return types.FunctionType(const, globals(), None, None, tuple(
-                    freeVar(freeVars[name]) for name in const.co_freevars))
+                    freeVars(freeVars[name]) for name in const.co_freevars))
 
 
 @pytest.mark.parametrize("testcase_string,testcase_expected_result",
@@ -33,5 +33,5 @@ def nested(outer, innerName, **freeVars):
      ('Hello:World', {"name": 'World', "dataType": 'Hello', "paramType": "path"})])
 def test_split_arg(testcase_string, testcase_expected_result):
     """This testcase tests the outside function: extract_path_arguments"""
-    temp_split_arg = nested(swagger.extract_path_arguments, 'split_arg')
+    temp_split_arg = get_nested_function(swagger.extract_path_arguments, 'split_arg')
     assert temp_split_arg(testcase_string) == testcase_expected_result
