@@ -11,6 +11,7 @@ def test_make_class_with_input_class():
 def test_make_class_with_input_instance():
     class A:
         pass
+
     a = A()
 
     assert swagger.make_class(a) == A
@@ -18,7 +19,3 @@ def test_make_class_with_input_instance():
 
 def test_make_class_with_None():
     assert isinstance(None, swagger.make_class(None))
-
-
-
-
