@@ -1,8 +1,7 @@
 import pytest
-import datetime
+from flask_restful import fields
 
 from flask_restful_swagger import swagger
-from flask_restful import fields
 
 """
 
@@ -21,7 +20,7 @@ Argument 1:
     date-time
     child class of each of those
 
-Argumentßß 2:
+Argument 2:
     blank
     None
     Something
@@ -29,6 +28,8 @@ Argumentßß 2:
 """
 
 # Instances of types
+
+
 @pytest.mark.parametrize(
     "case_name, test_input, expected",
     [
@@ -39,14 +40,15 @@ Argumentßß 2:
         ("Very large integer", 9223372036854775807, "integer"),
         ("Float less than 1", 0.8092, "number"),
         ("Float greater than 1", 98763.09, "number"),
-        ("String", "helloWorld!", "string")
+        ("String", "helloWorld!", "string"),
     ],
 )
-
 def test_deduce_swagger_type_flat_instances(case_name, test_input, expected):
     assert swagger.deduce_swagger_type_flat(test_input) == expected
 
-#instances of fields from flask
+
+# instances of fields from flask
+
 
 @pytest.mark.parametrize(
     "field_type, expected",
@@ -58,10 +60,10 @@ def test_deduce_swagger_type_flat_instances(case_name, test_input, expected):
         ("DateTime", "date-time"),
     ],
 )
-
 def test_deduce_swagger_type_flat_flask_field(field_type, expected):
     new_field = getattr(fields, field_type)()
     assert swagger.deduce_swagger_type_flat(new_field) == expected
+
 
 # Objects that are subclasses
 @pytest.mark.parametrize(
@@ -72,8 +74,9 @@ def test_deduce_swagger_type_flat_flask_field(field_type, expected):
         ("Class derived from float", float, "number"),
     ],
 )
-
-def test_deduce_swagger_type_flat_create_new_class(case_name, object_type, expected):
+def test_deduce_swagger_type_flat_create_new_class(
+    case_name, object_type, expected
+):
     class NewSubClass(object_type):
         pass
 
@@ -82,8 +85,9 @@ def test_deduce_swagger_type_flat_create_new_class(case_name, object_type, expec
 
 
 def test_deduce_swagger_type_flat_with_nested_object():
-    #new_object = fields.Nested({})
+    # new_object = fields.Nested({})
     assert swagger.deduce_swagger_type_flat("anything", "cookies") == "cookies"
+
 
 def test_deduce_swagger_type_flat_with_class():
     class NewSubClass(str):
