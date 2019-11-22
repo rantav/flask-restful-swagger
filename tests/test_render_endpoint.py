@@ -8,7 +8,7 @@ class Endpoint:
     pass
 
 
-class RenderEndpointTestCast(unittest.TestCase):
+class TestRenderEndpoint(unittest.TestCase):
     def test_render_endpoint(self):
         endpoint = Endpoint()
         with patch(
