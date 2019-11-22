@@ -28,4 +28,5 @@ jobs:
     - name: Test
       run: |
         pip install -r ./contributing/requirements/requirements-testing.txt
+        python setup.py install
         pytest --cov=. . --cov-fail-under=100

@@ -29,6 +29,7 @@ unittests() {
 
   pushd "${PROJECTHOME}" > /dev/null
     pytest --cov=. .
+    coverage_report "$@"
   popd > /dev/null
 
 }
