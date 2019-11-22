@@ -14,7 +14,7 @@ sectests() {
 
   set -e
 
-  bandit -r "${PROJECTNAME}" -c "${PROJECTNAME}"/.bandit.rc
+  bandit -r "${PROJECTNAME}" -c .bandit.rc
   pushd "${PROJECTNAME}"  > /dev/null
     safety check
   popd  > /dev/null

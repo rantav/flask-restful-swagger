@@ -1,6 +1,9 @@
-from unittest.mock import patch
-
 from flask_restful_swagger.swagger import ResourceLister
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 @patch("flask_restful_swagger.swagger.render_page")
