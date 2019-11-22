@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from flask_restful import fields
 
@@ -11,7 +13,7 @@ from flask_restful_swagger import swagger
         ("Simple False", False, {"type": "boolean"}),
         ("Simple True", True, {"type": "boolean"}),
         ("Integer", 1, {"type": "integer"}),
-        ("Very large integer", 9223372036854775807, {"type": "integer"}),
+        ("Very large integer", sys.maxsize, {"type": "integer"}),
         ("Float less than 1", 0.8092, {"type": "number"}),
         ("Float greater than 1", 98763.09, {"type": "number"}),
         ("String", "helloWorld!", {"type": "string"}),
@@ -36,7 +38,6 @@ def test_deduce_swagger_type_flask_field(field_type, expected):
     assert swagger.deduce_swagger_type(new_field) == expected
 
 
-# Objects that are subclasses
 @pytest.mark.parametrize(
     "case_name, object_type, expected",
     [
@@ -53,7 +54,6 @@ def test_deduce_swagger_type_create_new_class(case_name, object_type, expected):
     assert swagger.deduce_swagger_type(new_instance) == expected
 
 
-# Objects that are subclasses
 @pytest.mark.parametrize(
     "case_name, object_type, expected",
     [
@@ -70,7 +70,7 @@ def test_deduce_swagger_type_with_class(case_name, object_type, expected):
     assert swagger.deduce_swagger_type(NewSubClass) == expected
 
 
-def test_deduce_swagger_type_fields_FormattedString():
+def test_deduce_swagger_type_fields_formatted_string():
     new_instance = fields.FormattedString("Hello {name}")
 
     assert swagger.deduce_swagger_type(new_instance) == {"type": "string"}
