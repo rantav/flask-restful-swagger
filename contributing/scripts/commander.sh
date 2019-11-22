@@ -50,13 +50,18 @@ case $1 in
     shift
     unittests "$@"
     ;;
+  'sectest')
+    shift
+    sectests "$@"
+    ;;
   'shortlist')
-    echo "lint pipeline setup shell test"
+    echo "lint pipeline sectest setup shell test"
     ;;
   *)
     echo "Valid Commands:"
     echo ' - lint [time] [v]'
     echo ' - pipeline'
+    echo ' - sectest'
     echo ' - setup'
     echo ' - shell'
     echo ' - test'

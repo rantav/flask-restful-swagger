@@ -1,13 +1,16 @@
-from unittest.mock import mock_open, patch
-
 from flask import Response
 
 from flask_restful_swagger import swagger
 
+try:
+    from unittest.mock import patch, mock_open
+except ImportError:
+    from mock import patch, mock_open
+
 
 @patch("flask_restful_swagger.swagger._get_current_registry")
 @patch("flask_restful_swagger.swagger.open", new_callable=mock_open)
-def test_render_page(mock_open, test_reg):
+def test_render_page(mocked_open, test_reg):
     test_reg.return_value = {
         "apiVersion": "mock_version",
         "swaggerVersion": "mock_swagger_version",
@@ -22,7 +25,7 @@ def test_render_page(mock_open, test_reg):
 
 @patch("flask_restful_swagger.swagger._get_current_registry")
 @patch("flask_restful_swagger.swagger.open", new_callable=mock_open)
-def test_render_page_with_slash(mock_open, test_reg):
+def test_render_page_with_slash(mocked_open, test_reg):
     test_reg.return_value = {
         "apiVersion": "mock_version",
         "swaggerVersion": "mock_swagger_version",
@@ -39,7 +42,7 @@ def test_render_page_with_slash(mock_open, test_reg):
 
 @patch("flask_restful_swagger.swagger._get_current_registry")
 @patch("flask_restful_swagger.swagger.open", new_callable=mock_open)
-def test_render_page_in_js(mock_open, test_reg):
+def test_render_page_in_js(mocked_open, test_reg):
     test_reg.return_value = {
         "apiVersion": "mock_version",
         "swaggerVersion": "mock_swagger_version",

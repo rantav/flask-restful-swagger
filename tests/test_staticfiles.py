@@ -1,10 +1,15 @@
 import os
-from unittest.mock import patch
 
 import pytest
 
 import flask_restful_swagger
 from flask_restful_swagger.swagger import StaticFiles
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
 
 test_fixtures_renders = [
     ["index.html", None, None],
