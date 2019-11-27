@@ -584,8 +584,8 @@ def extract_path_arguments(path):
     {name: 'id', dataType: 'string'}
     {name: 'probability', dataType: 'float'}]
   """
-    # Remove all paranteses
-    path = re.sub("\([^\)]*\)", "", path)
+    # Remove all parentheses
+    path = re.sub(r"\([^)]*\)", "", path)
     args = re.findall("<([^>]+)>", path)
 
     def split_arg(arg):
