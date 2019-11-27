@@ -2,7 +2,14 @@ import sys
 from types import CodeType, FunctionType
 
 
-def find_nested_func(parent, child_name):
+def freeVar(val):
+    def nested():
+        return val
+
+    return nested.__closure__[0]
+
+
+def find_nested_func(parent, child_name, **kwargs):
     """Returns a function nested inside another function.
     :param parent: The parent function to search inside.
     :type parent: func
@@ -17,5 +24,11 @@ def find_nested_func(parent, child_name):
     for item in consts:
         if isinstance(item, CodeType):
             if item.co_name == child_name:
-                return FunctionType(item, globals())
+                return FunctionType(
+                    item,
+                    globals(),
+                    None,
+                    None,
+                    tuple(freeVar(name) for name in item.co_freevars),
+                )
     return None
