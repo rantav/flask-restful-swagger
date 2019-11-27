@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from flask import Flask
 from flask_restful import Resource
 
@@ -27,28 +28,36 @@ def test_get_swagger_endpoint(registry):
 
     resource = swagger_endpoint("some_api", MockResource, "/some_path")
     bases = [base.__name__ for base in resource.__mro__]
-    assert bases == [
-        "SwaggerResource",
-        "Resource",
+
+    assert sorted(bases) == [
         "MethodView",
+        "Resource",
+        "SwaggerResource",
         "View",
         "object",
     ]
 
     with app.test_request_context(path="/some_path.help.json"):
-        response = resource.get(resource)
-        assert list(response.keys()) == [
-            "path",
+        resource_instance = resource()
+        response = resource_instance.get()
+        assert sorted(list(response.keys())) == [
             "description",
             "notes",
             "operations",
+            "path",
         ]
+        assert response["path"] == "/some_path"
+        assert response["operations"] == []
 
     with app.test_request_context(path="/some_path.help.html"):
-        response = resource.get(resource)
+        resource_instance = resource()
+        response = resource_instance.get()
         assert response.status_code == 200
         assert isinstance(response.data, bytes)
-        assert "Valid HTML?" == "How to check?"
+        assert BeautifulSoup(
+            response.data.decode("utf-8"), "html.parser"
+        ).find()
 
     with app.test_request_context(path="/some_path"):
-        assert resource.get(resource) is None
+        resource_instance = resource()
+        assert resource_instance.get() is None
