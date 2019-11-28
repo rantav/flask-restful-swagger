@@ -1,9 +1,9 @@
-from unittest import TestCase
-
 import pytest
 from flask_restful import Resource
 
-from flask_restful_swagger.swagger import SwaggerEndpoint
+from flask_restful_swagger.swagger import SwaggerEndpoint, operation
+
+from .lib.helpers import TestCaseSupport
 
 try:
     from unittest.mock import patch
@@ -11,15 +11,11 @@ except ImportError:
     from mock import patch
 
 
-class MockDataType1:
+class MockDataType(object):
     pass
 
 
-class MockDataType2(object):
-    pass
-
-
-tc = TestCase()
+tc = TestCaseSupport()
 tc.maxDiff = None
 
 
@@ -64,8 +60,7 @@ def test_swagger_endpoint_extract_operations_empty():
             {
                 "name": "one",
                 "method": "get",
-                "other1": MockDataType1,
-                "other2": MockDataType2,
+                "other": MockDataType,
                 "parameters": [
                     {
                         "name": "identifier",
@@ -90,8 +85,7 @@ def test_swagger_endpoint_extract_operations_empty():
                 "nickname": "nickname",
                 "summary": None,
                 "notes": None,
-                "other1": "MockDataType1",
-                "other2": "MockDataType2",
+                "other": "MockDataType",
             },
         ),
     ],
@@ -110,10 +104,9 @@ def test_get_swagger_endpoint_not_subclassed_basic_example(
     }
 
     class MockResource(Resource):
+        @operation(**mock_properties)
         def get(self):
             return "OK", 200, {"Access-Control-Allow-Origin": "*"}
-
-    MockResource.get.__swagger_attr = mock_properties
 
     return_value = SwaggerEndpoint.extract_operations(
         MockResource,
@@ -133,8 +126,7 @@ def test_get_swagger_endpoint_not_subclassed_basic_example(
             {
                 "name": "one",
                 "method": "get",
-                "other1": MockDataType1,
-                "other2": MockDataType2,
+                "other": MockDataType,
                 "parameters": [
                     {
                         "name": "identifier",
@@ -159,8 +151,7 @@ def test_get_swagger_endpoint_not_subclassed_basic_example(
                 "nickname": "nickname",
                 "summary": None,
                 "notes": None,
-                "other1": "MockDataType1",
-                "other2": "MockDataType2",
+                "other": "MockDataType",
             },
         ),
     ],
@@ -179,13 +170,12 @@ def test_get_swagger_endpoint_subclassed_basic_example(
     }
 
     class MockResource(Resource):
+        @operation(**mock_properties)
         def get(self):
             return "OK", 200, {"Access-Control-Allow-Origin": "*"}
 
     class MockSubClass(MockResource):
         pass
-
-    MockSubClass.get.__swagger_attr = mock_properties
 
     return_value = SwaggerEndpoint.extract_operations(
         MockSubClass,
