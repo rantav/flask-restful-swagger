@@ -13,7 +13,7 @@ from flask_restful_swagger import api_spec_static, registry
 try:
     # urlparse is renamed to urllib.parse in python 3
     import urlparse
-except ImportError:
+except ImportError:  # no cover
     from urllib import parse as urlparse
 
 
