@@ -36,4 +36,4 @@ jobs:
         bandit -r flask_restful_swagger -c .bandit.rc
     - name: Test Suite
       run: |
-        pytest --cov=. . --cov-fail-under=100
+        pytest -vv --cov=. . --cov-fail-under=100

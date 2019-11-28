@@ -1,5 +1,6 @@
 import sys
 from types import CodeType, FunctionType
+from unittest import TestCase
 
 
 def freeVar(val):
@@ -32,3 +33,8 @@ def find_nested_func(parent, child_name, **kwargs):
                     tuple(freeVar(name) for name in item.co_freevars),
                 )
     return None
+
+
+class TestCaseSupport(TestCase):
+    def runTest(self):
+        pass
