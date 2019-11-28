@@ -3,7 +3,7 @@ import types
 from flask import Blueprint, Flask
 from flask_restful import Api, Resource
 
-from flask_restful_swagger.swagger import docs, operation
+from flask_restful_swagger.swagger import docs
 
 try:
     from unittest.mock import patch
@@ -40,8 +40,6 @@ def test_docs_simple_instantiate_add_resources(
     path, endpoint, make_class, register
 ):
 
-    app = Flask(__name__)
-    app.config["basePath"] = "/abc/123"
     my_blueprint1 = Blueprint("my_blueprint1", __name__)
 
     api1 = docs(Api(my_blueprint1), **docs_kwargs)
