@@ -32,10 +32,13 @@ def test_docs_simple_instantiate():
     assert isinstance(api1.add_resource, types.FunctionType)
 
 
-@patch('flask_restful_swagger.swagger.register_once')
-@patch('flask_restful_swagger.swagger.swagger_endpoint')
-@patch('flask_restful_swagger.swagger.extract_swagger_path')
-def test_docs_simple_instantiate_add_resources(path, endpoint, register):
+@patch("flask_restful_swagger.swagger.register_once")
+@patch("flask_restful_swagger.swagger.make_class")
+@patch("flask_restful_swagger.swagger.swagger_endpoint")
+@patch("flask_restful_swagger.swagger.extract_swagger_path")
+def test_docs_simple_instantiate_add_resources(
+    path, endpoint, make_class, register
+):
 
     app = Flask(__name__)
     app.config["basePath"] = "/abc/123"
@@ -47,8 +50,27 @@ def test_docs_simple_instantiate_add_resources(path, endpoint, register):
         def get(self):
             return "OK", 200, {"Access-Control-Allow-Origin": "*"}
 
+    make_class.return_value = MockResource
+    endpoint.return_value = MockResource
+    path.return_value = "/some/swagger/path"
+
     api1.add_resource(MockResource, "/some/url")
 
-    assert register.call_args_list == [
-        'an api version', '1.2', 'a basepath', 'a resource path', ['application/json', 'text/html'], 'an api spec url', 'an Api Description Description'
-        ]
+    # Validate All Mock Calls
+
+    assert register.call_args_list[0][0][0] == api1
+    assert register.call_args_list[0][0][2:] == (
+        "an api version",
+        "1.2",
+        "a basepath",
+        "a resource path",
+        ["application/json", "text/html"],
+        "an api spec url",
+        "an Api Description Description",
+    )
+    assert len(register.call_args_list[0][0]) == 9
+
+    path.assert_called_once_with("/some/url")
+    assert endpoint.call_args_list[0][0][0] == api1
+    assert endpoint.call_args_list[0][0][2] == "/some/url"
+    make_class.assert_called_once_with(MockResource)
