@@ -2,20 +2,20 @@ from flask_restful_swagger import swagger
 
 
 def test_make_class_with_input_class():
-    class A:
+    class TestClass:
         pass
 
-    assert swagger.make_class(A) == A
+    assert swagger.make_class(TestClass) == TestClass
 
 
 def test_make_class_with_input_instance():
-    class A:
+    class TestClass:
         pass
 
-    a = A()
+    test_class = TestClass()
 
-    assert swagger.make_class(a) == A
+    assert swagger.make_class(test_class) == TestClass
 
 
-def test_make_class_with_None():
+def test_make_class_with_none():
     assert isinstance(None, swagger.make_class(None))

@@ -13,7 +13,7 @@ from flask_restful_swagger import api_spec_static, registry
 try:
     # urlparse is renamed to urllib.parse in python 3
     import urlparse
-except ImportError:
+except ImportError:  # no cover
     from urllib import parse as urlparse
 
 
@@ -346,8 +346,10 @@ class SwaggerEndpoint(object):
                 # This method was annotated with @swagger.operation
                 decorators = method_impl.__dict__["__swagger_attr"]
                 for att_name, att_value in list(decorators.items()):
+                    print(att_name)
                     if isinstance(att_value, six.string_types + (int, list)):
                         if att_name == "parameters":
+                            print(op["parameters"])
                             op["parameters"] = merge_parameter_list(
                                 op["parameters"], att_value
                             )
@@ -357,7 +359,7 @@ class SwaggerEndpoint(object):
                                     att_value, op[att_name]
                                 )
                             op[att_name] = att_value
-                    elif isinstance(att_value, object):
+                    elif isinstance(att_value, object):  # no cover
                         op[att_name] = att_value.__name__
                 operations.append(op)
         return operations
@@ -365,6 +367,7 @@ class SwaggerEndpoint(object):
 
 def merge_parameter_list(base, override):
     base = list(base)
+    print(base)
     names = [x["name"] for x in base]
     for o in override:
         if o["name"] in names:
@@ -390,7 +393,7 @@ class SwaggerRegistry(Resource):
 
 def operation(**kwargs):
     """
-  This dedorator marks a function as a swagger operation so that we can easily
+  This decorator marks a function as a swagger operation so that we can easily
   extract attributes from it.
   It saves the decorator's key-values at the function level so we can later
   extract them later when add_resource is invoked.
@@ -551,6 +554,8 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         six.string_types + (fields.String, fields.FormattedString, fields.Url),
     ):
         return "string"
+    if predicate(python_type_or_object, (bool, fields.Boolean)):
+        return "boolean"
     if predicate(python_type_or_object, (int, fields.Integer)):
         return "integer"
     if predicate(
@@ -558,9 +563,7 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
         (float, fields.Float, fields.Arbitrary, fields.Fixed),
     ):
         return "number"
-    if predicate(python_type_or_object, (bool, fields.Boolean)):
-        return "boolean"
-    if predicate(python_type_or_object, (fields.DateTime,)):
+    if predicate(python_type_or_object, (fields.DateTime)):
         return "date-time"
 
 
@@ -584,8 +587,8 @@ def extract_path_arguments(path):
     {name: 'id', dataType: 'string'}
     {name: 'probability', dataType: 'float'}]
   """
-    # Remove all paranteses
-    path = re.sub("\([^\)]*\)", "", path)
+    # Remove all parentheses
+    path = re.sub(r"\([^)]*\)", "", path)
     args = re.findall("<([^>]+)>", path)
 
     def split_arg(arg):

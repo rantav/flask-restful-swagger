@@ -25,7 +25,15 @@ jobs:
       uses: cclauss/GitHub-Action-for-Flake8@master
       with:
         args: "flake8 -v examples flask_restful_swagger"
-    - name: Test
+    - name: Requirements
       run: |
+        [[ -n "$(python --version 2>&1 | grep 2.7)" ]] && pip install mock
         pip install -r ./contributing/requirements/requirements-testing.txt
-        pytest --cov=. . --cov-fail-under=100
+        python setup.py install
+    - name: Security
+      run: |
+        safety check
+        bandit -r flask_restful_swagger -c .bandit.rc
+    - name: Test Suite
+      run: |
+        pytest -vv --cov=. . --cov-fail-under=100

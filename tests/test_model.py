@@ -1,9 +1,13 @@
 import datetime
-from unittest.mock import patch
 
 import pytest
 
 from flask_restful_swagger import swagger
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 class TestEmptyClass:

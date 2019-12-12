@@ -3,16 +3,6 @@ import pytest
 from flask_restful_swagger import swagger
 
 
-"""
-  Docstring from extract_swagger_path:
-
-  Extracts a swagger type path from the given flask style path.
-  This /path/<parameter> turns into this /path/{parameter}
-  And this /<string(length=2):lang_code>/<string:id>/<float:probability>
-  to this: /{lang_code}/{id}/{probability}
-  """
-
-
 @pytest.mark.parametrize(
     "case_name, test_input, expected",
     [

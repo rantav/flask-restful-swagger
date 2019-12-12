@@ -1,14 +1,18 @@
 import unittest
-from unittest.mock import patch
 
 from flask_restful_swagger import swagger
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 class Endpoint:
     pass
 
 
-class RenderEndpointTestCast(unittest.TestCase):
+class TestRenderEndpoint(unittest.TestCase):
     def test_render_endpoint(self):
         endpoint = Endpoint()
         with patch(
