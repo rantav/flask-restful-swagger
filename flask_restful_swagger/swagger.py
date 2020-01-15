@@ -6,7 +6,7 @@ import six
 
 try:
     # urlparse is renamed to urllib.parse in python 3
-    import urlparse
+    import urllib.parse
 except ImportError:
     from urllib import parse as urlparse
 
@@ -157,9 +157,9 @@ def _get_current_registry(api=None):
     app_name = api.blueprint.name if api.blueprint else None
   else:
     app_name = request.blueprint
-    urlparts =  urlparse.urlparse(request.url_root.rstrip('/'))
+    urlparts =  urllib.parse.urlparse(request.url_root.rstrip('/'))
     proto = request.headers.get("x-forwarded-proto") or urlparts[0]
-    overrides = {'basePath': urlparse.urlunparse([proto] + list(urlparts[1:]))}
+    overrides = {'basePath': urllib.parse.urlunparse([proto] + list(urlparts[1:]))}
 
   if not app_name:
     app_name = 'app'
@@ -295,7 +295,7 @@ class SwaggerEndpoint(object):
       method_impl = resource.__dict__.get(method, None)
       if method_impl is None:
         for cls in resource.__mro__:
-          for item_key in cls.__dict__.keys():
+          for item_key in list(cls.__dict__.keys()):
             if item_key == method:
               method_impl = cls.__dict__[item_key]
       op = {
@@ -434,7 +434,7 @@ def add_model(model_class):
       properties[k] = {'type': 'string', "default": v}
 
   if 'swagger_metadata' in dir(model_class):
-    for field_name, field_metadata in model_class.swagger_metadata.items():
+    for field_name, field_metadata in list(model_class.swagger_metadata.items()):
         if field_name in properties:
             # does not work for Python 3.x; see: http://stackoverflow.com/questions/38987/how-can-i-merge-two-python-dictionaries-in-a-single-expression
             # properties[field_name] = dict(properties[field_name].items() + field_metadata.items())
