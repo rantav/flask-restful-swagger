@@ -1,4 +1,11 @@
-from unittest.mock import MagicMock, Mock, patch
+try:
+    from unittest.mock import patch
+    from unittest.mock import MagicMock
+    from unittest.mock import Mock
+except ImportError:
+    from mock import patch
+    from mock import MagicMock
+    from mock import Mock
 
 import pytest
 from flask_restful import fields
