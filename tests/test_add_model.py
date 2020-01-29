@@ -164,11 +164,20 @@ def test_add_model_init(model_class):
     * __init__: YES
     * swagger_metadata: NO
     """
-    with patch_registry(), patch_parse_doc(), patch_dir(
+    # need to reduce line length to pass linter
+    pdst = patch_deduce_swagger_type
+    pr = patch_registry
+    ppd = patch_parse_doc
+    pgas = patch_getargspec
+    pha = patch_hasattr
+
+    with pdst() as mock_deduce_swagger_type, patch_dir(
         ["__init__"]
-    ), patch_getargspec() as mock_getargspec:
+    ), pr(), ppd(), pgas() as mock_getargspec, pha() as mock_hasattr:
         swagger.add_model(model_class)
         mock_getargspec.assert_called_once_with(model_class.__init__)
+        mock_hasattr.assert_not_called()
+        mock_deduce_swagger_type.assert_not_called()
 
 
 @pytest.mark.parametrize(
