@@ -1,6 +1,73 @@
+try:
+    from unittest.mock import patch
+    from unittest.mock import Mock
+except ImportError:
+    from mock import patch
+    from mock import Mock
+from contextlib import contextmanager
+
 from flask_restful import fields
 
 from flask_restful_swagger import swagger
+
+
+@contextmanager
+def patch_registry():
+    with patch("flask_restful_swagger.swagger.registry") as mock_registry:
+        _temp_dict = {"models": {}}
+        mock_registry.__getitem__.side_effect = _temp_dict.__getitem__
+        mock_registry.__setitem__.side_effect = _temp_dict.__setitem__
+        yield _temp_dict
+
+
+@contextmanager
+def patch_parse_doc():
+    with patch("flask_restful_swagger.swagger._parse_doc") as mock_parse_doc:
+        mock_parse_doc.return_value = (None, None)
+        yield mock_parse_doc
+
+
+@contextmanager
+def patch_deduce_swagger_type():
+    with patch(
+        "flask_restful_swagger.swagger.deduce_swagger_type"
+    ) as mock_deduce_swagger_type:
+        mock_deduce_swagger_type.return_value = "dummy_swagger_type"
+        yield mock_deduce_swagger_type
+
+
+@contextmanager
+def patch_isinstance(patchbool):
+    with patch("flask_restful_swagger.swagger.isinstance") as mock_isinstance:
+        mock_isinstance.return_value = patchbool
+        yield mock_isinstance
+
+
+@contextmanager
+def patch_hasattr():
+    with patch("flask_restful_swagger.swagger.hasattr") as mock_hasattr:
+        mock_hasattr.return_value = True
+        yield mock_hasattr
+
+
+@contextmanager
+def patch_dir(patchreturn):
+    with patch("flask_restful_swagger.swagger.dir") as mock_dir:
+        mock_dir.return_value = patchreturn
+        yield mock_dir
+
+
+@contextmanager
+def patch_getargspec():
+    with patch(
+        "flask_restful_swagger.swagger.inspect.getargspec"
+    ) as mock_getargspec:
+        mock_argspec = Mock()
+        mock_argspec.args = ["self", "arg1", "arg2", "arg3"]
+        mock_argspec.defaults = ("123",)
+        mock_getargspec.return_value = mock_argspec
+        yield mock_getargspec
+
 
 ###############################################################################
 # Copy setup objects from examples/basic.py
