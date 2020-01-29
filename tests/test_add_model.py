@@ -1,70 +1,35 @@
 try:
     from unittest.mock import patch
-    from unittest.mock import MagicMock
     from unittest.mock import Mock
 except ImportError:
     from mock import patch
-    from mock import MagicMock
     from mock import Mock
 
 import pytest
 
 from flask_restful_swagger import swagger
 from tests.fixtures_add_model import (
-    MockBasicObject, MockBasicWithSwaggerMetadata1,
-    MockBasicWithSwaggerMetadata2, MockModelWithResourceFieldsNoRequired,
-    MockTodoItem, ModelWithResourceFieldsWithRequired,
-    ModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
-    TodoItemWithResourceFields)
-
-###############################################################################
-# Pytest code
-###############################################################################
-
-
-# Setup integration test: adds models to the global `registry` and
-# test data structure is as expected
-test_fixtures = [
-    (MockBasicObject, [], [], []),
-    (MockTodoItem, ["arg1", "arg2", "arg3"], ["arg1", "arg2"], ["arg3"]),
-    (MockModelWithResourceFieldsNoRequired, ["a_string"], [], []),
-    (
-        TodoItemWithResourceFields,
-        [
-            "a_string",
-            "a_formatted_string",
-            "an_enum",
-            "an_int",
-            "a_bool",
-            "a_url",
-            "a_float",
-            "an_float_with_arbitrary_precision",
-            "a_fixed_point_decimal",
-            "a_datetime",
-            "a_list_of_strings",
-            "a_nested_attribute",
-            "a_list_of_nested_types",
-        ],
-        ["a_string"],
-        [],
-    ),
-    (MockBasicWithSwaggerMetadata1, [], [], []),
-    (MockBasicWithSwaggerMetadata2, [], [], []),
-]
+    fixtures_add_model_get_docs, fixtures_add_model_init,
+    fixtures_add_model_init_parsing_args,
+    fixtures_add_model_with_resource_fields_nested_swagger_metadata,
+    fixtures_add_model_with_resource_fields_with_nested,
+    fixtures_add_model_with_resource_fields_without_swagger_metadata,
+    fixtures_integration_test_add_model)
 
 
 @patch("flask_restful_swagger.swagger.registry")
 @pytest.mark.parametrize(
-    "test_input,properties,required,defaults", test_fixtures
+    "test_input,properties,required,defaults",
+    fixtures_integration_test_add_model,
 )
 def test_integration_test_add_model(
     mock_registry, test_input, properties, required, defaults
 ):
     """Integration test for `add_model(...)` method.
-    Ensures models are added to `registry["models"]` with expected structure.
-    Example each model should have 'description', 'id','notes',
-    'properties', etc.
 
+    Ensures models are added to `registry["models"]` with expected structure.
+    Example each model should have 'description', 'id','notes', 'properties',
+    etc.
     Example `registry["models"]`:
         # print(registry["models"])
         {   'models': {   .....
@@ -105,19 +70,11 @@ def test_integration_test_add_model(
     assert "properties" in _mock_registry["models"][test_input.__name__]
 
 
-# Setup test - ensure `_parse_doc(..)` is called without issues
-test_fixtures_model_inputs = [
-    MockBasicObject,
-    MockTodoItem,
-    MockModelWithResourceFieldsNoRequired,
-    TodoItemWithResourceFields,
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger._parse_doc")
-@pytest.mark.parametrize("input_model", test_fixtures_model_inputs)
+@pytest.mark.parametrize("input_model", fixtures_add_model_get_docs)
 def test_add_model_get_docs(mock_parse_doc, mock_registry, input_model):
+    """Ensure `_parse_doc(...)` is called without issues"""
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
@@ -127,21 +84,6 @@ def test_add_model_get_docs(mock_parse_doc, mock_registry, input_model):
     mock_parse_doc.assert_called_once_with(input_model)
 
 
-# Setup test for - with resource fields, no init, without swagger metadata.
-mock_with_resource_fields_with_required = MagicMock(
-    spec=ModelWithResourceFieldsWithRequired
-)
-mock_with_resource_fields_with_required.__name__ = "mock_name_attribute"
-mock_with_resource_fields_with_required.resource_fields.items = Mock(
-    return_value=dict(a=1, b=2).items()
-)
-
-
-test_fixtures_model_inputs = [
-    mock_with_resource_fields_with_required,
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger.deduce_swagger_type")
 @patch("flask_restful_swagger.swagger._Nested", spec=swagger._Nested)
@@ -149,7 +91,10 @@ test_fixtures_model_inputs = [
 @patch("flask_restful_swagger.swagger.hasattr")
 @patch("flask_restful_swagger.swagger.dir")
 @patch("flask_restful_swagger.swagger._parse_doc")
-@pytest.mark.parametrize("mock_model_class", test_fixtures_model_inputs)
+@pytest.mark.parametrize(
+    "mock_model_class",
+    fixtures_add_model_with_resource_fields_without_swagger_metadata,
+)
 def test_add_model_with_resource_fields_without_swagger_metadata(
     mock_parse_doc,
     mock_dir,
@@ -160,6 +105,8 @@ def test_add_model_with_resource_fields_without_swagger_metadata(
     mock_registry,
     mock_model_class,
 ):
+    """Test adding model with resource fields, no init, without swagger metadata.
+    """
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
@@ -180,24 +127,15 @@ def test_add_model_with_resource_fields_without_swagger_metadata(
     )
 
 
-# Setup test for:
-#     * resource_fields: YES
-#     * nested subclass: YES
-#     * __init__: NO
-#     * swagger_metadata:NO
-
-test_fixtures_model_inputs = [
-    TodoItemWithResourceFields,
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger.deduce_swagger_type")
 @patch("flask_restful_swagger.swagger.isinstance")
 @patch("flask_restful_swagger.swagger.hasattr")
 @patch("flask_restful_swagger.swagger.dir")
 @patch("flask_restful_swagger.swagger._parse_doc")
-@pytest.mark.parametrize("model_class", test_fixtures_model_inputs)
+@pytest.mark.parametrize(
+    "model_class", fixtures_add_model_with_resource_fields_with_nested
+)
 def test_add_model_with_resource_fields_with_nested(
     mock_parse_doc,
     mock_dir,
@@ -207,6 +145,14 @@ def test_add_model_with_resource_fields_with_nested(
     mock_registry,
     model_class,
 ):
+    """Test for model with resource fields, nested subclass
+
+    * resource_fields: YES
+    * nested subclass: YES
+    * __init__: NO
+    * swagger_metadata:NO
+
+    """
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
@@ -227,24 +173,16 @@ def test_add_model_with_resource_fields_with_nested(
     )
 
 
-# Setup test for:
-#     * resource_fields: YES
-#     * nested subclass: YES
-#     * __init__: NO
-#     * swagger_metadata:YES
-
-test_fixtures_model_inputs = [
-    ModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger.deduce_swagger_type")
 @patch("flask_restful_swagger.swagger.isinstance")
 @patch("flask_restful_swagger.swagger.hasattr")
 @patch("flask_restful_swagger.swagger.dir")
 @patch("flask_restful_swagger.swagger._parse_doc")
-@pytest.mark.parametrize("model_class", test_fixtures_model_inputs)
+@pytest.mark.parametrize(
+    "model_class",
+    fixtures_add_model_with_resource_fields_nested_swagger_metadata,
+)
 def test_add_model_with_resource_fields_nested_swagger_metadata(
     mock_parse_doc,
     mock_dir,
@@ -254,6 +192,13 @@ def test_add_model_with_resource_fields_nested_swagger_metadata(
     mock_registry,
     model_class,
 ):
+    """Test for model with resource fields, nested subclass, swagger metadata
+
+    * resource_fields: YES
+    * nested subclass: YES
+    * __init__: NO
+    * swagger_metadata:YES
+    """
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
@@ -274,26 +219,21 @@ def test_add_model_with_resource_fields_nested_swagger_metadata(
     )
 
 
-# Setup test for:
-#     * resource_fields: NO
-#     * nested subclass: NO
-#     * __init__: YES
-#     * swagger_metadata: NO
-
-test_fixtures_model_inputs = [
-    MockBasicObject,
-    MockTodoItem,
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger.inspect.getargspec")
 @patch("flask_restful_swagger.swagger.dir")
 @patch("flask_restful_swagger.swagger._parse_doc")
-@pytest.mark.parametrize("model_class", test_fixtures_model_inputs)
+@pytest.mark.parametrize("model_class", fixtures_add_model_init)
 def test_add_model_init(
     mock_parse_doc, mock_dir, mock_getargspec, mock_registry, model_class
 ):
+    """Test for model with only init
+
+    * resource_fields: NO
+    * nested subclass: NO
+    * __init__: YES
+    * swagger_metadata: NO
+    """
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
@@ -310,21 +250,17 @@ def test_add_model_init(
     mock_getargspec.assert_called_once_with(model_class.__init__)
 
 
-# Setup test to verify args parsed correctly
-test_fixtures_model_inputs = [
-    [MockTodoItem, ["arg1", "arg2"], [("arg3", "123")]]
-]
-
-
 @patch("flask_restful_swagger.swagger.registry")
 @patch("flask_restful_swagger.swagger.dir")
 @patch("flask_restful_swagger.swagger._parse_doc")
 @pytest.mark.parametrize(
-    "model_class,required,defaults", test_fixtures_model_inputs
+    "model_class,required,defaults", fixtures_add_model_init_parsing_args
 )
 def test_add_model_init_parsing_args(
     mock_parse_doc, mock_dir, mock_registry, model_class, required, defaults
 ):
+    """Test to verify args parsed correctly
+    """
     _mock_registry = {"models": {}}
     mock_registry.__getitem__.side_effect = _mock_registry.__getitem__
     mock_registry.__setitem__.side_effect = _mock_registry.__setitem__
