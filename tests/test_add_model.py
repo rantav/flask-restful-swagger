@@ -12,8 +12,8 @@ import pytest
 from flask_restful_swagger import swagger
 from tests.fixtures_add_model import (
     MockBasicObject, MockBasicWithSwaggerMetadata1,
-    MockBasicWithSwaggerMetadata2, MockTodoItem,
-    ModelWithResourceFieldsNoRequired, ModelWithResourceFieldsWithRequired,
+    MockBasicWithSwaggerMetadata2, MockModelWithResourceFieldsNoRequired,
+    MockTodoItem, ModelWithResourceFieldsWithRequired,
     ModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
     TodoItemWithResourceFields)
 
@@ -27,7 +27,7 @@ from tests.fixtures_add_model import (
 test_fixtures = [
     (MockBasicObject, [], [], []),
     (MockTodoItem, ["arg1", "arg2", "arg3"], ["arg1", "arg2"], ["arg3"]),
-    (ModelWithResourceFieldsNoRequired, ["a_string"], [], []),
+    (MockModelWithResourceFieldsNoRequired, ["a_string"], [], []),
     (
         TodoItemWithResourceFields,
         [
@@ -109,7 +109,7 @@ def test_integration_test_add_model(
 test_fixtures_model_inputs = [
     MockBasicObject,
     MockTodoItem,
-    ModelWithResourceFieldsNoRequired,
+    MockModelWithResourceFieldsNoRequired,
     TodoItemWithResourceFields,
 ]
 
