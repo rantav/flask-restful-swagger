@@ -34,7 +34,7 @@ class MockTodoItem:
         pass
 
 
-class ModelWithResourceFieldsNoRequired:
+class MockModelWithResourceFieldsNoRequired:
     resource_fields = {"a_string": fields.String()}
 
 
@@ -45,8 +45,8 @@ class ModelWithResourceFieldsWithRequired:
 
 
 @swagger.nested(
-    a_nested_attribute=ModelWithResourceFieldsNoRequired.__name__,
-    a_list_of_nested_types=ModelWithResourceFieldsNoRequired.__name__,
+    a_nested_attribute=MockModelWithResourceFieldsNoRequired.__name__,
+    a_list_of_nested_types=MockModelWithResourceFieldsNoRequired.__name__,
 )
 class ModelWithResourceFieldsWithRequiredWithSwaggerMetadata:
     resource_fields = {
@@ -58,8 +58,8 @@ class ModelWithResourceFieldsWithRequiredWithSwaggerMetadata:
 
 
 @swagger.nested(
-    a_nested_attribute=ModelWithResourceFieldsNoRequired.__name__,
-    a_list_of_nested_types=ModelWithResourceFieldsNoRequired.__name__,
+    a_nested_attribute=MockModelWithResourceFieldsNoRequired.__name__,
+    a_list_of_nested_types=MockModelWithResourceFieldsNoRequired.__name__,
 )
 class TodoItemWithResourceFields:
     """This is an example of how Output Fields work
@@ -83,10 +83,10 @@ class TodoItemWithResourceFields:
         "a_datetime": fields.DateTime,
         "a_list_of_strings": fields.List(fields.String),
         "a_nested_attribute": fields.Nested(
-            ModelWithResourceFieldsNoRequired.resource_fields
+            MockModelWithResourceFieldsNoRequired.resource_fields
         ),
         "a_list_of_nested_types": fields.List(
-            fields.Nested(ModelWithResourceFieldsNoRequired.resource_fields)
+            fields.Nested(MockModelWithResourceFieldsNoRequired.resource_fields)
         ),
     }
 
