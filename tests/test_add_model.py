@@ -12,9 +12,9 @@ import pytest
 from flask_restful_swagger import swagger
 from tests.fixtures_add_model import (
     MockBasicObject, MockBasicWithSwaggerMetadata1,
-    MockBasicWithSwaggerMetadata2, ModelWithResourceFieldsNoRequired,
-    ModelWithResourceFieldsWithRequired,
-    ModelWithResourceFieldsWithRequiredWithSwaggerMetadata, TodoItem,
+    MockBasicWithSwaggerMetadata2, MockTodoItem,
+    ModelWithResourceFieldsNoRequired, ModelWithResourceFieldsWithRequired,
+    ModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
     TodoItemWithResourceFields)
 
 ###############################################################################
@@ -26,7 +26,7 @@ from tests.fixtures_add_model import (
 # test data structure is as expected
 test_fixtures = [
     (MockBasicObject, [], [], []),
-    (TodoItem, ["arg1", "arg2", "arg3"], ["arg1", "arg2"], ["arg3"]),
+    (MockTodoItem, ["arg1", "arg2", "arg3"], ["arg1", "arg2"], ["arg3"]),
     (ModelWithResourceFieldsNoRequired, ["a_string"], [], []),
     (
         TodoItemWithResourceFields,
@@ -68,11 +68,11 @@ def test_integration_test_add_model(
     Example `registry["models"]`:
         # print(registry["models"])
         {   'models': {   .....
-              'TodoItem': {   'description': 'This is an example of a '
+              'MockTodoItem': {   'description': 'This is an example of a '
                                              'model class that has '
                                              'parameters in its '
                                              'constructor',
-                              'id': 'TodoItem',
+                              'id': 'MockTodoItem',
                               'notes': 'and the fields in the swagger spec '
                                        'are derived from the '
                                        'parameters<br/>to __init__.<br/>In '
@@ -108,7 +108,7 @@ def test_integration_test_add_model(
 # Setup test - ensure `_parse_doc(..)` is called without issues
 test_fixtures_model_inputs = [
     MockBasicObject,
-    TodoItem,
+    MockTodoItem,
     ModelWithResourceFieldsNoRequired,
     TodoItemWithResourceFields,
 ]
@@ -282,7 +282,7 @@ def test_add_model_with_resource_fields_nested_swagger_metadata(
 
 test_fixtures_model_inputs = [
     MockBasicObject,
-    TodoItem,
+    MockTodoItem,
 ]
 
 
@@ -311,7 +311,9 @@ def test_add_model_init(
 
 
 # Setup test to verify args parsed correctly
-test_fixtures_model_inputs = [[TodoItem, ["arg1", "arg2"], [("arg3", "123")]]]
+test_fixtures_model_inputs = [
+    [MockTodoItem, ["arg1", "arg2"], [("arg3", "123")]]
+]
 
 
 @patch("flask_restful_swagger.swagger.registry")

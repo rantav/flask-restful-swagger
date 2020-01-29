@@ -22,7 +22,7 @@ class MockBasicWithSwaggerMetadata2:
     swagger_metadata = {"an_enum": {"enum": ["one", "two", "three"]}}
 
 
-class TodoItem:
+class MockTodoItem:
     """This is an example of a model class that has parameters in its constructor
     and the fields in the swagger spec are derived from the parameters
     to __init__.
