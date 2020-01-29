@@ -38,7 +38,7 @@ class MockModelWithResourceFieldsNoRequired:
     resource_fields = {"a_string": fields.String()}
 
 
-class ModelWithResourceFieldsWithRequired:
+class MockModelWithResourceFieldsWithRequired:
     resource_fields = {"a_string": fields.String()}
 
     required = ["a_string"]
@@ -48,7 +48,7 @@ class ModelWithResourceFieldsWithRequired:
     a_nested_attribute=MockModelWithResourceFieldsNoRequired.__name__,
     a_list_of_nested_types=MockModelWithResourceFieldsNoRequired.__name__,
 )
-class ModelWithResourceFieldsWithRequiredWithSwaggerMetadata:
+class MockModelWithResourceFieldsWithRequiredWithSwaggerMetadata:
     resource_fields = {
         "a_string": fields.String(),
         "an_enum": fields.String,
@@ -61,7 +61,7 @@ class ModelWithResourceFieldsWithRequiredWithSwaggerMetadata:
     a_nested_attribute=MockModelWithResourceFieldsNoRequired.__name__,
     a_list_of_nested_types=MockModelWithResourceFieldsNoRequired.__name__,
 )
-class TodoItemWithResourceFields:
+class MockTodoItemWithResourceFields:
     """This is an example of how Output Fields work
       (http://flask-restful.readthedocs.org/en/latest/fields.html).
       Output Fields lets you add resource_fields to your model in which you
@@ -92,3 +92,65 @@ class TodoItemWithResourceFields:
 
     # Specify which of the resource fields are required
     required = ["a_string"]
+
+
+###############################################################################
+# Tests Fixtures
+###############################################################################
+
+fixtures_integration_test_add_model = [
+    (MockBasicObject, [], [], []),
+    (MockTodoItem, ["arg1", "arg2", "arg3"], ["arg1", "arg2"], ["arg3"]),
+    (MockModelWithResourceFieldsNoRequired, ["a_string"], [], []),
+    (
+        MockTodoItemWithResourceFields,
+        [
+            "a_string",
+            "a_formatted_string",
+            "an_enum",
+            "an_int",
+            "a_bool",
+            "a_url",
+            "a_float",
+            "an_float_with_arbitrary_precision",
+            "a_fixed_point_decimal",
+            "a_datetime",
+            "a_list_of_strings",
+            "a_nested_attribute",
+            "a_list_of_nested_types",
+        ],
+        ["a_string"],
+        [],
+    ),
+    (MockBasicWithSwaggerMetadata1, [], [], []),
+    (MockBasicWithSwaggerMetadata2, [], [], []),
+]
+
+fixtures_add_model_get_docs = [
+    MockBasicObject,
+    MockTodoItem,
+    MockModelWithResourceFieldsNoRequired,
+    MockTodoItemWithResourceFields,
+]
+
+fixtures_add_model_with_resource_fields_without_swagger_metadata = [
+    MockModelWithResourceFieldsWithRequired,
+]
+
+fixtures_add_model_with_resource_fields_with_nested = [
+    MockTodoItemWithResourceFields,
+]
+
+fixtures_add_model_with_resource_fields_nested_swagger_metadata = [
+    MockModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
+]
+
+
+fixtures_add_model_init = [
+    MockBasicObject,
+    MockTodoItem,
+]
+
+fixtures_add_model_init_parsing_args = [
+    [MockTodoItem, ["arg1", "arg2"], [("arg3", "123")]]
+]
