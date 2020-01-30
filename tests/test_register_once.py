@@ -2,7 +2,6 @@ from flask import Blueprint
 from flask_restful import Api
 
 import flask_restful_swagger
-
 from .lib.helpers import find_nested_func
 
 

@@ -1,7 +1,6 @@
 import pytest
 
 from flask_restful_swagger.swagger import extract_path_arguments
-
 from .lib.helpers import find_nested_func
 
 

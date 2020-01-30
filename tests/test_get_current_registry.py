@@ -5,7 +5,6 @@ from flask_restful import Api, Resource
 
 from flask_restful_swagger import swagger
 from flask_restful_swagger.swagger import _get_current_registry
-
 from .lib.helpers import TestCaseSupport
 
 tc = TestCaseSupport()
