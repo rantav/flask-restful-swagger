@@ -33,10 +33,6 @@ case $1 in
     shift
     lint "$@"
     ;;
-  'pipeline')
-    shift
-    pipline "$@"
-    ;;
   'setup')
     shift
     setup_python "$@"
@@ -55,12 +51,11 @@ case $1 in
     sectests "$@"
     ;;
   'shortlist')
-    echo "lint pipeline sectest setup shell test"
+    echo "lint sectest setup shell test"
     ;;
   *)
     echo "Valid Commands:"
     echo ' - lint [time] [v]'
-    echo ' - pipeline'
     echo ' - sectest'
     echo ' - setup'
     echo ' - shell'

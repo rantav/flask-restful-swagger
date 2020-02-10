@@ -12,6 +12,7 @@ setup_python() {
     source_enviroment
     pip install -r contributing/requirements/requirements-testing.txt
     pip install -r contributing/requirements/requirements-linting.txt
+    python setup.py install
     unvirtualize
   popd  > /dev/null
 

@@ -2,7 +2,6 @@ import pytest
 from flask_restful import Resource
 
 from flask_restful_swagger.swagger import SwaggerEndpoint, operation
-
 from .lib.helpers import TestCaseSupport
 
 try:

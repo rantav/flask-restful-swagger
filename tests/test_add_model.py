@@ -1,20 +1,27 @@
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 import pytest
 
 from flask_restful_swagger import swagger
 from tests.fixtures_add_model import (
-    fixtures_add_model_get_docs, fixtures_add_model_init,
+    fixtures_add_model_get_docs,
+    fixtures_add_model_init,
     fixtures_add_model_init_parsing_args,
     fixtures_add_model_with_resource_fields_nested_swagger_metadata,
     fixtures_add_model_with_resource_fields_with_nested,
     fixtures_add_model_with_resource_fields_without_swagger_metadata,
-    fixtures_integration_test_add_model, patch_deduce_swagger_type, patch_dir,
-    patch_getargspec, patch_hasattr, patch_isinstance, patch_parse_doc,
-    patch_registry)
+    fixtures_integration_test_add_model,
+    patch_deduce_swagger_type,
+    patch_dir,
+    patch_getargspec,
+    patch_hasattr,
+    patch_isinstance,
+    patch_parse_doc,
+    patch_registry,
+)
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 @pytest.mark.parametrize(
