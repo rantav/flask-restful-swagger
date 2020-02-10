@@ -75,10 +75,14 @@ def patch_getargspec():
 
 
 class MockBasicObject:
-    pass
+    def __init__(self, arg1):
+        pass
 
 
 class MockBasicWithSwaggerMetadata1:
+    def __init__(self, arg1):
+        pass
+
     swagger_metadata = {"an_enum": {"enum": ["one", "two", "three"]}}
 
 

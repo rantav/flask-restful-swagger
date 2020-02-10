@@ -62,10 +62,20 @@ def test_integration_test_add_model(test_input, properties, required, defaults):
         assert "description" in registry["models"][test_input.__name__]
         assert "notes" in registry["models"][test_input.__name__]
 
+        if "resource_fields" not in dir(test_input) and "__init__" not in dir(
+            test_input
+        ):
+            # in py2, classes without __init__ or resource_fields defined
+            # will cause issues.
+            # note, no issue in PY3.
+            pytest.fail(
+                "do not call without resource_fields or __init__ defined."
+            )
+
         if "resource_fields" in dir(test_input):
             if hasattr(test_input, "required"):
                 assert "required" in registry["models"][test_input.__name__]
-        else:
+        elif "__init__" in dir(test_input):
             assert "required" in registry["models"][test_input.__name__]
 
         assert "properties" in registry["models"][test_input.__name__]
