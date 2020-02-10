@@ -18,7 +18,7 @@ jobs:
         PYTHON_CONTAINER="python:3.7-slim"
         DOCKER_CONTENT=$(tail -n +2 development/Dockerfile)
         echo "FROM ${PYTHON_CONTAINER}" > development/Dockerfile
-        echo "${DOCKER_CONTENT}" > development/Dockerfile
+        echo "${DOCKER_CONTENT}" >> development/Dockerfile
     - name: Ensure File System is Writable by the Container
       run: |
         sudo chmod -R 777 .
