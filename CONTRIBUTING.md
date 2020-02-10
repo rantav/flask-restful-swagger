@@ -4,6 +4,9 @@
 
 [Contribution Guide](./development/DEVELOPMENT.md)
 
-# Maintainers
+# Contacts
 
-@niall-byrne
+- @rantav
+- @niall-byrne
+
+__This project is part of the [Cloudify Cosmo project](https://github.com/CloudifySource/)__
