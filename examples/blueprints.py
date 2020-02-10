@@ -249,4 +249,4 @@ if __name__ == "__main__":
     TodoItem(1, 2, "3")
     app.register_blueprint(my_blueprint1, url_prefix="/api1")
     app.register_blueprint(my_blueprint2, url_prefix="/api2")
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

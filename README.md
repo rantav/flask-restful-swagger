@@ -9,7 +9,7 @@ flask-restful-swagger is a wrapper for [flask-restful](http://flask-restful.read
 
 In essence, you just need to wrap the Api instance and add a few python decorators to get full swagger support.
 
-## How to:
+## Installation:
 Install:
 
 ```
@@ -18,7 +18,19 @@ pip install flask-restful-swagger
 (This installs flask-restful as well)
 
 
-And in your program, where you'd usually just use flask-restful, add just a little bit of sauce and get a swagger spec out.
+## See Some Quick Examples:
+
+```bash
+PYTHONPATH=. python examples/basic.py
+PYTHONPATH=. python examples/blueprints.py
+PYTHONPATH=. python examples/inheritance.py
+```
+
+Browse to: [http://localhost:5000/api/spec.html](http://localhost:5000/api/spec.html)
+
+## How To:
+
+In your program, where you'd usually just use flask-restful, add just a little bit of sauce and get a swagger spec out.
 
 
 ```python
