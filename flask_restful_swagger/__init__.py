@@ -1,5 +1,3 @@
-registry = {
-  'models': {}
-}
+registry = {"models": {}}
 
-api_spec_static = ''
+api_spec_static = ""

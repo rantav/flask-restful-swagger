@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# Do Not Modify This File, It's Intended To Be Updated From Time to TIme
+# INSTEAD: add additional functionality though the .bash_customize file.
+
+# ----------------------------------------------------------------
+# Bash Git Support - Show Git Repo Information in Bash Prompt
+# ----------------------------------------------------------------
+
+env_colors() {
+    # Normal Colors
+    Black='\033[30m'        # Black
+    Red='\033[31m'          # Red
+    Green='\033[32m'        # Green
+    Yellow='\033[33m'       # Yellow
+    Blue='\033[34m'         # Blue
+    Purple='\033[35m'       # Purple
+    Cyan='\033[36m'         # Cyan
+    White='\033[37m'        # White
+
+    # Bold
+    BBlack='\033[30m'       # Black
+    BRed='\033[31m'         # Red
+    BGreen='\033[32m'       # Green
+    BYellow='\033[33m'      # Yellow
+    BBlue='\033[34m'        # Blue
+    BPurple='\033[35m'      # Purple
+    BCyan='\033[36m'        # Cyan
+    BWhite='\033[37m'       # White
+
+    # Background
+    On_Black='\033[40m'       # Black
+    On_Red='\033[41m'         # Red
+    On_Green='\033[42m'       # Green
+    On_Yellow='\033[43m'      # Yellow
+    On_Blue='\033[44m'        # Blue
+    On_Purple='\033[45m'      # Purple
+    On_Cyan='\033[46m'        # Cyan
+    On_White='\033[47m'       # White
+
+    NC="\033[0m"               # Color Reset
+}
+
+find_git_dirty() {
+  local git_dirty
+  local status
+  env_colors
+
+  status=$(git status --porcelain 2> /dev/null)
+  if [[ "$status" != "" ]]; then
+    git_dirty="${BRed}*${NC}"
+  else
+    git_dirty=""
+  fi
+
+  echo -en "${git_dirty}"
+
+}
+
+find_git_branch() {
+  env_colors
+
+  local branch
+  local git_branch
+  local repository_name
+
+  if branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null); then
+    if [[ "$branch" == "HEAD" ]]; then
+      branch='detached*'
+    fi
+
+    repository_name=$(git rev-parse --show-toplevel)
+    repository_name=$(basename "${repository_name}")
+
+    git_branch="[r:${Yellow}${repository_name}${NC}/b:${Cyan}${branch}${NC}]\n"
+  else
+    git_branch=""
+  fi
+  echo -en "${git_branch}"
+}
+
+git_status() {
+  find_git_dirty
+  find_git_branch
+}
+
+PROMPT_COMMAND="git_status; $PROMPT_COMMAND"
