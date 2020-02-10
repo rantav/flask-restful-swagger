@@ -115,4 +115,7 @@ def test_get_current_registry_request_features_and_docs():
     with app.test_request_context(path="some_path.html"):
         registry = _get_current_registry()
 
-    tc.assertDictEqual(registry, {"basePath": "http://localhost", "models": {}})
+    tc.assertDictEqual(
+        registry,
+        {"basePath": "http://localhost", "models": {}}
+    )

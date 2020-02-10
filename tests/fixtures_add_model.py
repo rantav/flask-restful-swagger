@@ -73,6 +73,9 @@ def patch_getargspec():
 # Copy setup objects from examples/basic.py
 ###############################################################################
 
+MockBasicObjectNoInit = Mock()
+MockBasicObjectNoInit.__name__ = MockBasicObjectNoInit
+
 
 class MockBasicObject:
     def __init__(self, arg1):
@@ -157,7 +160,9 @@ class MockTodoItemWithResourceFields:
             MockModelWithResourceFieldsNoRequired.resource_fields
         ),
         "a_list_of_nested_types": fields.List(
-            fields.Nested(MockModelWithResourceFieldsNoRequired.resource_fields)
+            fields.Nested(
+                MockModelWithResourceFieldsNoRequired.resource_fields
+            )
         ),
     }
 
@@ -216,6 +221,10 @@ fixtures_add_model_with_resource_fields_nested_swagger_metadata = [
     MockModelWithResourceFieldsWithRequiredWithSwaggerMetadata,
 ]
 
+
+fixtures_add_model_no_properties = [
+    MockBasicObjectNoInit,
+]
 
 fixtures_add_model_init = [
     MockBasicObject,

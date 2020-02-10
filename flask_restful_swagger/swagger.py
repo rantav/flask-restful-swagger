@@ -16,19 +16,18 @@ try:
 except ImportError:  # no cover
     from urllib import parse as urlparse
 
-
 resource_listing_endpoint = None
 
 
 def docs(
-    api,
-    apiVersion="0.0",
-    swaggerVersion="1.2",
-    basePath="http://localhost:5000",
-    resourcePath="/",
-    produces=["application/json"],
-    api_spec_url="/api/spec",
-    description="Auto generated API docs by flask-restful-swagger",
+        api,
+        apiVersion="0.0",
+        swaggerVersion="1.2",
+        basePath="http://localhost:5000",
+        resourcePath="/",
+        produces=["application/json"],
+        api_spec_url="/api/spec",
+        description="Auto generated API docs by flask-restful-swagger",
 ):
 
     api_add_resource = api.add_resource
@@ -79,15 +78,15 @@ def make_class(class_or_instance):
 
 
 def register_once(
-    api,
-    add_resource_func,
-    apiVersion,
-    swaggerVersion,
-    basePath,
-    resourcePath,
-    produces,
-    endpoint_path,
-    description,
+        api,
+        add_resource_func,
+        apiVersion,
+        swaggerVersion,
+        basePath,
+        resourcePath,
+        produces,
+        endpoint_path,
+        description,
 ):
     global api_spec_static
     global resource_listing_endpoint
@@ -242,11 +241,11 @@ class StaticFiles(Resource):
                 if dir3 is not None:
                     filePath = "%s/%s" % (filePath, dir3)
         if filePath in [
-            "index.html",
-            "o2c.html",
-            "swagger-ui.js",
-            "swagger-ui.min.js",
-            "lib/swagger-oauth.js",
+                "index.html",
+                "o2c.html",
+                "swagger-ui.js",
+                "swagger-ui.min.js",
+                "lib/swagger-oauth.js",
         ]:
             conf = {"resource_list_url": req_registry["spec_endpoint_path"]}
             return render_page(filePath, conf)
@@ -270,17 +269,16 @@ class ResourceLister(Resource):
     def get(self):
         req_registry = _get_current_registry()
         return {
-            "apiVersion": req_registry["apiVersion"],
-            "swaggerVersion": req_registry["swaggerVersion"],
-            "apis": [
-                {
-                    "path": (
-                        req_registry["basePath"]
-                        + req_registry["spec_endpoint_path"]
-                    ),
-                    "description": req_registry["description"],
-                }
-            ],
+            "apiVersion":
+            req_registry["apiVersion"],
+            "swaggerVersion":
+            req_registry["swaggerVersion"],
+            "apis": [{
+                "path": (req_registry["basePath"] +
+                         req_registry["spec_endpoint_path"]),
+                "description":
+                req_registry["description"],
+            }],
         }
 
 
@@ -311,7 +309,7 @@ def _parse_doc(obj):
         line_feed = full_doc.find("\n")
         if line_feed != -1:
             first_line = _sanitize_doc(full_doc[:line_feed])
-            other_lines = _sanitize_doc(full_doc[line_feed + 1 :])
+            other_lines = _sanitize_doc(full_doc[line_feed + 1:])
         else:
             first_line = full_doc
 
@@ -351,13 +349,11 @@ class SwaggerEndpoint(object):
                         if att_name == "parameters":
                             print(op["parameters"])
                             op["parameters"] = merge_parameter_list(
-                                op["parameters"], att_value
-                            )
+                                op["parameters"], att_value)
                         else:
                             if op.get(att_name) and att_name != "nickname":
                                 att_value = "{0}<br/>{1}".format(
-                                    att_value, op[att_name]
-                                )
+                                    att_value, op[att_name])
                             op[att_name] = att_value
                     elif isinstance(att_value, object):  # no cover
                         op[att_name] = att_value.__name__
@@ -383,11 +379,9 @@ class SwaggerRegistry(Resource):
     def get(self):
         req_registry = _get_current_registry()
         if request.path.endswith(".html"):
-            return render_homepage(
-                req_registry["basePath"]
-                + req_registry["spec_endpoint_path"]
-                + "/_/resource_list.json"
-            )
+            return render_homepage(req_registry["basePath"] +
+                                   req_registry["spec_endpoint_path"] +
+                                   "/_/resource_list.json")
         return req_registry
 
 
@@ -398,7 +392,6 @@ def operation(**kwargs):
   It saves the decorator's key-values at the function level so we can later
   extract them later when add_resource is invoked.
   """
-
     def inner(f):
         f.__swagger_attr = kwargs
         return f
@@ -445,8 +438,8 @@ def add_model(model_class):
     model = models[name] = {"id": name}
     model["description"], model["notes"] = _parse_doc(model_class)
     if "resource_fields" in dir(model_class):
-        # We take special care when the model class has a field resource_fields.
-        # By convension this field specifies what flask-restful would return
+        # We take special care when a model class has a field resource_fields.
+        # By convention this field specifies what flask-restful would return
         # when this model is used as a return value from an HTTP endpoint.
         # We look at the class and search for an attribute named
         # resource_fields.
@@ -457,14 +450,13 @@ def add_model(model_class):
             required = model["required"] = model_class.required
 
         properties = model["properties"] = {}
-        nested = (
-            model_class.nested() if isinstance(model_class, _Nested) else {}
-        )
-        for field_name, field_type in list(model_class.resource_fields.items()):
+        nested = (model_class.nested()
+                  if isinstance(model_class, _Nested) else {})
+        for field_name, field_type in list(
+                model_class.resource_fields.items()):
             nested_type = nested[field_name] if field_name in nested else None
             properties[field_name] = deduce_swagger_type(
-                field_type, nested_type
-            )
+                field_type, nested_type)
     elif "__init__" in dir(model_class):
         # Alternatively, if a resource_fields does not exist, we deduce the
         # model fields from the parameters sent to its __init__ method
@@ -477,8 +469,7 @@ def add_model(model_class):
         required = model["required"] = []
         if argspec.defaults:
             defaults = list(
-                zip(argspec.args[-len(argspec.defaults) :], argspec.defaults)
-            )
+                zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
         properties = model["properties"] = {}
         required_args_count = len(argspec.args) - len(defaults)
         for arg in argspec.args[:required_args_count]:  # type: str
@@ -504,22 +495,21 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
     else:
         predicate = isinstance
     if predicate(
-        python_type_or_object,
-        six.string_types
-        + (
-            fields.String,
-            fields.FormattedString,
-            fields.Url,
-            int,
-            fields.Integer,
-            float,
-            fields.Float,
-            fields.Arbitrary,
-            fields.Fixed,
-            bool,
-            fields.Boolean,
-            fields.DateTime,
-        ),
+            python_type_or_object,
+            six.string_types + (
+                fields.String,
+                fields.FormattedString,
+                fields.Url,
+                int,
+                fields.Integer,
+                float,
+                fields.Float,
+                fields.Arbitrary,
+                fields.Fixed,
+                bool,
+                fields.Boolean,
+                fields.DateTime,
+            ),
     ):
         return {"type": deduce_swagger_type_flat(python_type_or_object)}
     if predicate(python_type_or_object, (fields.List)):
@@ -529,9 +519,9 @@ def deduce_swagger_type(python_type_or_object, nested_type=None):
             return {
                 "type": "array",
                 "items": {
-                    "$ref": deduce_swagger_type_flat(
-                        python_type_or_object.container, nested_type
-                    )
+                    "$ref":
+                    deduce_swagger_type_flat(python_type_or_object.container,
+                                             nested_type)
                 },
             }
     if predicate(python_type_or_object, (fields.Nested)):
@@ -550,19 +540,30 @@ def deduce_swagger_type_flat(python_type_or_object, nested_type=None):
     else:
         predicate = isinstance
     if predicate(
-        python_type_or_object,
-        six.string_types + (fields.String, fields.FormattedString, fields.Url),
+            python_type_or_object,
+            six.string_types + (
+                fields.String,
+                fields.FormattedString,
+                fields.Url,
+            ),
     ):
         return "string"
     if predicate(python_type_or_object, (bool, fields.Boolean)):
         return "boolean"
     if predicate(python_type_or_object, (int, fields.Integer)):
         return "integer"
+    # yapf: disable
     if predicate(
         python_type_or_object,
-        (float, fields.Float, fields.Arbitrary, fields.Fixed),
+        (
+            float,
+            fields.Float,
+            fields.Arbitrary,
+            fields.Fixed,
+        ),
     ):
         return "number"
+    # yapf: enable
     if predicate(python_type_or_object, (fields.DateTime)):
         return "date-time"
 

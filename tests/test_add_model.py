@@ -5,6 +5,7 @@ from tests.fixtures_add_model import (
     fixtures_add_model_get_docs,
     fixtures_add_model_init,
     fixtures_add_model_init_parsing_args,
+    fixtures_add_model_no_properties,
     fixtures_add_model_with_resource_fields_nested_swagger_metadata,
     fixtures_add_model_with_resource_fields_with_nested,
     fixtures_add_model_with_resource_fields_without_swagger_metadata,
@@ -28,7 +29,9 @@ except ImportError:
     "test_input,properties,required,defaults",
     fixtures_integration_test_add_model,
 )
-def test_integration_test_add_model(test_input, properties, required, defaults):
+def test_integration_test_add_model(
+    test_input, properties, required, defaults
+):
     """Integration test for `add_model(...)` method.
 
     Ensures models are added to `registry["models"]` with expected structure.
@@ -99,21 +102,25 @@ def test_add_model_with_resource_fields_without_swagger_metadata(
 ):
     """Test adding model with resource fields, no init, without swagger metadata.
     """
-    with patch_registry(), patch_parse_doc(), patch_isinstance(
-        False
-    ) as mock_isinstance, patch_hasattr() as mock_hasattr, patch_dir(
-        ["resource_fields"]
-    ) as mock_dir, patch_deduce_swagger_type() as mock_deduce_swagger_type:
+    pdst = patch_deduce_swagger_type
+    pr = patch_registry
+    ppd = patch_parse_doc
+    pha = patch_hasattr
 
-        swagger.add_model(mock_model_class)
+    with pr(), ppd(), patch_isinstance(False) as mock_isinstance:
+        with pha() as mock_hasattr, patch_dir(["resource_fields"]) as mock_dir:
+            with pdst() as mock_deduce_swagger_type:
 
-        mock_dir.assert_called_with(mock_model_class)
-        assert mock_dir.call_count == 2
-        mock_hasattr.assert_called_once_with(mock_model_class, "required")
-        mock_isinstance.assert_called_with(mock_model_class, mock_nested)
-        assert mock_deduce_swagger_type.call_count == len(
-            mock_model_class.resource_fields.items()
-        )
+                swagger.add_model(mock_model_class)
+                mock_dir.assert_called_with(mock_model_class)
+                assert mock_dir.call_count == 2
+                mock_hasattr.assert_called_once_with(
+                    mock_model_class, "required")
+                mock_isinstance.assert_called_with(
+                    mock_model_class, mock_nested)
+                assert mock_deduce_swagger_type.call_count == len(
+                    mock_model_class.resource_fields.items()
+                )
 
 
 @pytest.mark.parametrize(
@@ -128,20 +135,24 @@ def test_add_model_with_resource_fields_with_nested(model_class,):
     * swagger_metadata:NO
 
     """
-    with patch_registry(), patch_parse_doc(), patch_isinstance(
-        True
-    ) as mock_isinstance, patch_hasattr() as mock_hasattr, patch_dir(
-        ["resource_fields"]
-    ) as mock_dir, patch_deduce_swagger_type() as mock_deduce_swagger_type:
-        swagger.add_model(model_class)
+    pdst = patch_deduce_swagger_type
+    pr = patch_registry
+    ppd = patch_parse_doc
+    pha = patch_hasattr
 
-        mock_dir.assert_called_with(model_class)
-        assert mock_dir.call_count == 2
-        mock_hasattr.assert_called_once_with(model_class, "required")
-        mock_isinstance.assert_called_with(model_class, swagger._Nested)
-        assert mock_deduce_swagger_type.call_count == len(
-            model_class.resource_fields.items()
-        )
+    with pr(), ppd(), patch_isinstance(True) as mock_isinstance:
+        with pha() as mock_hasattr, patch_dir(["resource_fields"]) as mock_dir:
+            with pdst() as mock_deduce_swagger_type:
+
+                swagger.add_model(model_class)
+                mock_dir.assert_called_with(model_class)
+                assert mock_dir.call_count == 2
+                mock_hasattr.assert_called_once_with(model_class, "required")
+                mock_isinstance.assert_called_with(
+                    model_class, swagger._Nested)
+                assert mock_deduce_swagger_type.call_count == len(
+                    model_class.resource_fields.items()
+                )
 
 
 @pytest.mark.parametrize(
@@ -156,20 +167,26 @@ def test_add_model_with_resource_fields_nested_swagger_metadata(model_class,):
     * __init__: NO
     * swagger_metadata:YES
     """
-    with patch_registry(), patch_parse_doc(), patch_isinstance(
-        True
-    ) as mock_isinstance, patch_hasattr() as mock_hasattr, patch_dir(
-        ["resource_fields"]
-    ) as mock_dir, patch_deduce_swagger_type() as mock_deduce_swagger_type:
-        swagger.add_model(model_class)
+    pdst = patch_deduce_swagger_type
+    pr = patch_registry
+    ppd = patch_parse_doc
+    pha = patch_hasattr
 
-        mock_dir.assert_called_with(model_class)
-        assert mock_dir.call_count == 2
-        mock_hasattr.assert_called_once_with(model_class, "required")
-        mock_isinstance.assert_called_with(model_class, swagger._Nested)
-        assert mock_deduce_swagger_type.call_count == len(
-            model_class.resource_fields.items()
-        )
+    with pr(), ppd(), patch_isinstance(True) as mock_isinstance:
+        with pha() as mock_hasattr:
+            with patch_dir(["resource_fields"]) as mock_dir:
+                with pdst() as mock_deduce_swagger_type:
+                    swagger.add_model(model_class)
+
+                    mock_dir.assert_called_with(model_class)
+                    assert mock_dir.call_count == 2
+                    mock_hasattr.assert_called_once_with(
+                        model_class, "required")
+                    mock_isinstance.assert_called_with(
+                        model_class, swagger._Nested)
+                    assert mock_deduce_swagger_type.call_count == len(
+                        model_class.resource_fields.items()
+                    )
 
 
 @pytest.mark.parametrize("model_class", fixtures_add_model_init)
@@ -181,20 +198,43 @@ def test_add_model_init(model_class):
     * __init__: YES
     * swagger_metadata: NO
     """
-    # need to reduce line length to pass linter
     pdst = patch_deduce_swagger_type
     pr = patch_registry
     ppd = patch_parse_doc
     pgas = patch_getargspec
     pha = patch_hasattr
 
-    with pdst() as mock_deduce_swagger_type, patch_dir(
-        ["__init__"]
-    ), pr(), ppd(), pgas() as mock_getargspec, pha() as mock_hasattr:
-        swagger.add_model(model_class)
-        mock_getargspec.assert_called_once_with(model_class.__init__)
-        mock_hasattr.assert_not_called()
-        mock_deduce_swagger_type.assert_not_called()
+    with pdst() as mock_deduce_swagger_type:
+        with patch_dir(["__init__"]), pr(), ppd(), pgas() as mock_getargspec:
+            with pha() as mock_hasattr:
+                swagger.add_model(model_class)
+                mock_getargspec.assert_called_once_with(model_class.__init__)
+                mock_hasattr.assert_not_called()
+                mock_deduce_swagger_type.assert_not_called()
+
+
+@pytest.mark.parametrize("model_class", fixtures_add_model_no_properties)
+def test_add_model_no_init(model_class):
+    """Test for model with only init
+
+    * resource_fields: NO
+    * nested subclass: NO
+    * __init__: NO
+    * swagger_metadata: NO
+    """
+    pdst = patch_deduce_swagger_type
+    pr = patch_registry
+    ppd = patch_parse_doc
+    pgas = patch_getargspec
+    pha = patch_hasattr
+
+    with pdst() as mock_deduce_swagger_type:
+        with pr(), ppd(), pgas() as mock_getargspec:
+            with pha() as mock_hasattr:
+                swagger.add_model(model_class)
+                mock_getargspec.assert_not_called()
+                mock_hasattr.assert_not_called()
+                mock_deduce_swagger_type.assert_not_called()
 
 
 @pytest.mark.parametrize(

@@ -46,7 +46,8 @@ def test_deduce_swagger_type_flask_field(field_type, expected):
         ("Class derived from float", float, {"type": "number"}),
     ],
 )
-def test_deduce_swagger_type_create_new_class(case_name, object_type, expected):
+def test_deduce_swagger_type_create_new_class(
+        case_name, object_type, expected):
     class NewSubClass(object_type):
         pass
 

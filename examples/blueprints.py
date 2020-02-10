@@ -73,7 +73,8 @@ class Todo(Resource):
     @swagger.operation(
         notes="get a todo item by ID",
         nickname="get",
-        # Parameters can be automatically extracted from URLs (e.g. <string:id>)
+        # Parameters can be automatically extracted from URLs.
+        #   For Example: <string:id>
         # but you could also override them here, or add other parameters.
         parameters=[
             {
@@ -126,8 +127,8 @@ class Todo(Resource):
         return task, 201, {"Access-Control-Allow-Origin": "*"}
 
     def options(self, **args):
-        # since this method is not decorated with @swagger.operation it does not
-        # get added to the swagger docs
+        # since this method is not decorated with @swagger.operation it does
+        # not get added to the swagger docs
         return (
             {"Allow": "GET,PUT,POST,DELETE"},
             200,
