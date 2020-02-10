@@ -1,4 +1,4 @@
-name: flask_restful_swagger Python2.7 Test
+name: flask_restful_swagger Python2.7
 
 on: [push]
 

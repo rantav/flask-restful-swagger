@@ -1,7 +1,7 @@
 # flask-restful-swagger
 
-[![flask_restful_swagger-automation](https://github.com/rantav/flask-restful-swagger/workflows/flask_restful_swagger%20Python2.7%20Test/badge.svg)](https://github.com/rantav/flask-restful-swagger/actions)<br>
-[![flask_restful_swagger-automation](https://github.com/rantav/flask-restful-swagger/workflows/flask_restful_swagger%20Python3.7%20Test/badge.svg)](https://github.com/rantav/flask-restful-swagger/actions)<br>
+[![flask_restful_swagger-automation](https://github.com/rantav/flask-restful-swagger/workflows/flask_restful_swagger%20Python2.7/badge.svg)](https://github.com/rantav/flask-restful-swagger/actions)<br>
+[![flask_restful_swagger-automation](https://github.com/rantav/flask-restful-swagger/workflows/flask_restful_swagger%20Python3.7/badge.svg)](https://github.com/rantav/flask-restful-swagger/actions)<br>
 
 
 ## What is flask-restful-swagger?
