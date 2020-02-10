@@ -344,10 +344,8 @@ class SwaggerEndpoint(object):
                 # This method was annotated with @swagger.operation
                 decorators = method_impl.__dict__["__swagger_attr"]
                 for att_name, att_value in list(decorators.items()):
-                    print(att_name)
                     if isinstance(att_value, six.string_types + (int, list)):
                         if att_name == "parameters":
-                            print(op["parameters"])
                             op["parameters"] = merge_parameter_list(
                                 op["parameters"], att_value)
                         else:
@@ -363,7 +361,6 @@ class SwaggerEndpoint(object):
 
 def merge_parameter_list(base, override):
     base = list(base)
-    print(base)
     names = [x["name"] for x in base]
     for o in override:
         if o["name"] in names:
