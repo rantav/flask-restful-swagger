@@ -1,8 +1,6 @@
 [run]
 branch = True
-omit = */contributing*
-       */docker/*
-       tests/*
+omit = tests/*
        setup.py
 source = .
 
