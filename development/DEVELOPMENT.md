@@ -2,6 +2,10 @@
 
 A Swagger Spec Extractor for Flask-Restful
 
+## Please Do's!
+ - Please use commitizen to normalize your commit messages
+ - Please lint your code before sending pull requests
+
 ## Development Dependencies
 
 You'll need to install:
