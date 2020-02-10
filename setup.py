@@ -8,7 +8,7 @@ with open("README") as file:
 
 setup(
     name="flask-restful-swagger",
-    version="0.20.1",
+    version="0.20.2",
     url="https://github.com/rantav/flask-restful-swagger",
     zip_safe=False,
     packages=["flask_restful_swagger"],
@@ -21,9 +21,12 @@ setup(
             "static/lib/shred/*.*",
         ]
     },
-    description="Extract swagger specs from your flast-restful project",
+    description="Extract swagger specs from your flask-restful project",
     author="Ran Tavory",
     license="MIT",
     long_description=long_description,
-    install_requires=["Flask-RESTful>=0.3.6"],
+    install_requires=[
+        "Jinja2>=2.10.1,<3.0.0",
+        "Flask-RESTful>=0.3.6",
+    ],
 )

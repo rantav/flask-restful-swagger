@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# ASDF
-if [[ -f "${HOME}/.asdf/asdf.sh" ]]; then
-    # shellcheck disable=SC1090
-    . "${HOME}/.asdf/asdf.sh"
-fi
-
 _script()
 {
 
@@ -27,9 +21,9 @@ dev_identifier() {
   Cyan='\033[36m'         # Cyan
   BRed='\033[31m'         # Red
   BGreen='\033[32m'       # Green
-  NC="\033[0m"               # Color Reset
-  echo -en "(${BGreen}flask-restful-swagger${NC})"
+  NC="\033[0m"            # Color Reset
+  echo -en "(${BGreen}flask_restful_swagger${NC})"
 }
 
-alias dev='$(git rev-parse --show-toplevel)/contributing/scripts/commander.sh'
+alias dev='$(git rev-parse --show-toplevel)/scripts/commander.sh'
 PROMPT_COMMAND="dev_identifier; $PROMPT_COMMAND"
