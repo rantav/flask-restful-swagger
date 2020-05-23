@@ -314,7 +314,7 @@ class SwaggerEndpoint(object):
               op['parameters'] = merge_parameter_list(
                 op['parameters'], att_value)
             else:
-              if op.get(att_name) and att_name is not 'nickname':
+              if op.get(att_name) and att_name != 'nickname':
                 att_value = '{0}<br/>{1}'.format(att_value, op[att_name])
               op[att_name] = att_value
           elif isinstance(att_value, object):
@@ -525,7 +525,7 @@ def extract_path_arguments(path):
     {name: 'probability', dataType: 'float'}]
   """
   # Remove all paranteses
-  path = re.sub('\([^\)]*\)', '', path)
+  path = re.sub(r'\([^\)]*\)', '', path)
   args = re.findall('<([^>]+)>', path)
 
   def split_arg(arg):
