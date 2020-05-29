@@ -28,6 +28,12 @@ PYTHONPATH=. python examples/inheritance.py
 
 Browse to: [http://localhost:5000/api/spec.html](http://localhost:5000/api/spec.html)
 
+## Contributing, and Making Improvements:
+
+- [Contribution Guide](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Development Environment](./development/DEVELOPMENT.md)
+
 ## How To:
 
 In your program, where you'd usually just use flask-restful, add just a little bit of sauce and get a swagger spec out.
