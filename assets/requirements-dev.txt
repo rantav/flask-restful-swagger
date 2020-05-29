@@ -1,0 +1,12 @@
+# Development Requirements
+bandit>=1.6.2,<1.7.0
+bs4>=0.0.1,<0.1.0
+commitizen>=0.9.11,<1.17.0
+isort>=4.3.21,<4.4.0
+flake8>=3.7.9,<3.8.0s
+mock>=3.0.5,<3.1.0
+pytest>=4.6.9,<5.3.0
+pytest-cov>=2.8.1,<2.9.0
+safety>=1.8.5,<1.9.0
+wheel>=0.34.1,<0.35.0
+yapf>=0.28.0,<0.29.0
