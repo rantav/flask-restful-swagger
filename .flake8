@@ -1,0 +1,15 @@
+[flake8]
+
+ignore = E203, W503, W504, W605
+max-line-length = 79
+max-complexity = 12
+
+exclude =
+    .git
+    dist
+    build
+    flask_restful_swagger.egg-info
+    htmlcov
+    scripts
+    static
+

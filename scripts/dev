@@ -1,0 +1,29 @@
+#!/bin/bash
+
+_script()
+{
+
+  shopt -s expand_aliases
+  _script_commands=$(dev shortlist)
+
+  local cur
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+
+  while IFS='' read -r line; do COMPREPLY+=("$line"); done < <(compgen -W "${_script_commands}" -- "${cur}")
+  return 0
+
+}
+
+complete -o nospace -F _script dev
+
+dev_identifier() {
+  Cyan='\033[36m'         # Cyan
+  BRed='\033[31m'         # Red
+  BGreen='\033[32m'       # Green
+  NC="\033[0m"            # Color Reset
+  echo -en "(${BGreen}flask_restful_swagger${NC})"
+}
+
+alias dev='$(git rev-parse --show-toplevel)/scripts/commander.sh'
+PROMPT_COMMAND="dev_identifier; $PROMPT_COMMAND"

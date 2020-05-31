@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "Entering Development Container ..."
+docker-compose exec flask_restful_swagger bash

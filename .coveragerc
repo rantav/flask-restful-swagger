@@ -1,0 +1,12 @@
+[run]
+branch = True
+omit = tests/*
+       setup.py
+source = .
+
+[report]
+precision = 1
+show_missing = True
+ignore_errors = True
+exclude_lines =
+    no cover

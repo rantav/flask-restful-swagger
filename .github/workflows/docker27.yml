@@ -1,0 +1,37 @@
+name: flask_restful_swagger Python2.7
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Create Docker Mounted Content
+      run: |
+        echo | ssh-keygen
+        touch ${HOME}/.gitconfig
+        touch ${HOME}/.gitconfig_global
+    - name: Modify Dockerfile's Python Version
+      run: |
+        PYTHON_CONTAINER="python:2.7-slim"
+        DOCKER_CONTENT=$(tail -n +2 development/Dockerfile)
+        echo "FROM ${PYTHON_CONTAINER}" > development/Dockerfile
+        echo "${DOCKER_CONTENT}" >> development/Dockerfile
+    - name: Ensure File System is Writable by the Container
+      run: |
+        sudo chmod -R 777 .
+    - name: Build Container
+      run: |
+        docker-compose build
+        docker-compose up -d
+    - name: Run Linter
+      run: |
+        docker-compose exec -T flask_restful_swagger bash -l -c 'scripts/commander.sh lint-validate'
+    - name: Run Sec Test
+      run: |
+        docker-compose exec -T flask_restful_swagger bash -l -c 'scripts/commander.sh sectest'
+    - name: Run Unit Tests
+      run: |
+        docker-compose exec -T flask_restful_swagger bash -l -c 'scripts/commander.sh test coverage'
