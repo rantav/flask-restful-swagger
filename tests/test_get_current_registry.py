@@ -40,8 +40,8 @@ def test_get_current_registry_request_features():
         def get(self):
             return "OK", 200, {"Access-Control-Allow-Origin": "*"}
 
-    app.register_blueprint(my_blueprint1, url_prefix="")
     api1.add_resource(MockResource, "/some/urls")
+    app.register_blueprint(my_blueprint1, url_prefix="")
 
     with app.test_request_context(path="some_path.html"):
         registry = _get_current_registry(api=api1)
@@ -101,7 +101,6 @@ def test_get_current_registry_request_features_and_docs():
     app = Flask(__name__)
     app.config["basePath"] = "/abc/123"
     my_blueprint1 = Blueprint("my_blueprint1", __name__)
-    app.register_blueprint(my_blueprint1, url_prefix="")
     _ = swagger.docs(
         Api(my_blueprint1),
         apiVersion="0.1",
@@ -111,6 +110,7 @@ def test_get_current_registry_request_features_and_docs():
         api_spec_url="/api/spec",
         description="Blueprint1 Description",
     )
+    app.register_blueprint(my_blueprint1, url_prefix="")
 
     with app.test_request_context(path="some_path.html"):
         registry = _get_current_registry()

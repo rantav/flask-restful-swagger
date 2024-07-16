@@ -26,7 +26,7 @@ setup(
     license="MIT",
     long_description=long_description,
     install_requires=[
-        "Jinja2>=2.10.1,<3.0.0",
+        "Jinja2>=2.10.1,<=3.1.2",
         "Flask-RESTful>=0.3.6",
     ],
 )
